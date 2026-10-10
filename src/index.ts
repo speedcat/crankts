@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { analyzeProject } from "./analysis/analyze-project.js";
 import { StageTimer } from "./analysis/timings.js";
+import { SUPPORTED_KERNEL_SHAPES, type SupportedKernelShape } from "./lowering/contract.js";
+import { extractKernel, type ExtractRequest } from "./lowering/extract.js";
 import { renderJsonReport } from "./report/json.js";
 import { renderTextReport } from "./report/text.js";
 
@@ -26,6 +28,10 @@ export type { IrVerification, VerifyDiagnostic } from "./lowering/verify.js";
 export { interpretIr, KernelTrap } from "./lowering/interpret.js";
 export type { InterpretOptions } from "./lowering/interpret.js";
 export { deriveKernelContract } from "./lowering/derive-contract.js";
+export { emitRustCrate, KERNEL_TRAP_PREFIX } from "./lowering/backend-rust.js";
+export { extractKernel } from "./lowering/extract.js";
+export { emitTypeScriptWrapper } from "./lowering/wrapper-ts.js";
+export type { ExtractRequest, ExtractResult } from "./lowering/extract.js";
 export type { DeriveContractRequest, DerivedContract } from "./lowering/derive-contract.js";
 
 type OutputFormat = "text" | "json";
@@ -48,6 +54,10 @@ export function runCli(arguments_: readonly string[]): number {
   if (arguments_.length === 0 || arguments_[0] === "--help" || arguments_[0] === "help") {
     printUsage();
     return 0;
+  }
+
+  if (arguments_[0] === "extract") {
+    return runExtract(arguments_.slice(1));
   }
 
   if (arguments_[0] !== "analyze") {
@@ -114,6 +124,95 @@ function writeTimings(path: string, target: string, timer: StageTimer, cliMs: nu
   writeFileSync(resolve(path), `${JSON.stringify(timings, null, 2)}\n`);
 }
 
+function runExtract(arguments_: readonly string[]): number {
+  if (arguments_.includes("--help")) {
+    printUsage();
+    return 0;
+  }
+  let request: ExtractRequest;
+  try {
+    request = parseExtractOptions(arguments_);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    printUsage();
+    return 2;
+  }
+  const result = extractKernel(request);
+  if (!result.ok) {
+    console.error(`CrankTS extract failed closed at ${result.stage}:`);
+    for (const message of result.messages) {
+      console.error(`  ${message}`);
+    }
+    return 1;
+  }
+  console.log(`Extracted ${result.contract.name} (${result.contract.shape}); contract is lowerable.`);
+  for (const obligation of result.contract.proofObligations) {
+    console.log(`  ${obligation.kind}: ${obligation.status}${obligation.runtimeGuard ? ` (${obligation.runtimeGuard})` : ""}`);
+  }
+  for (const warning of result.warnings) {
+    console.log(`  WARNING ${warning.code}: ${warning.message}`);
+  }
+  for (const file of result.files) {
+    console.log(`  wrote ${file}`);
+  }
+  return 0;
+}
+
+function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
+  let target: string | undefined;
+  const values = new Map<string, string>();
+  const valueOptions = new Set(["--shape", "--out", "--prepare", "--graph", "--direction", "--name"]);
+  for (let index = 0; index < arguments_.length; index += 1) {
+    const argument = arguments_[index] ?? "";
+    const [flag, inline] = argument.includes("=") ? [argument.slice(0, argument.indexOf("=")), argument.slice(argument.indexOf("=") + 1)] : [argument, undefined];
+    if (valueOptions.has(flag)) {
+      const value = inline ?? arguments_[index + 1];
+      if (inline === undefined) {
+        index += 1;
+      }
+      if (!value || value.startsWith("-")) {
+        throw new Error(`${flag} requires a value.`);
+      }
+      values.set(flag, value);
+      continue;
+    }
+    if (argument.startsWith("-")) {
+      throw new Error(`Unknown extract option '${argument}'.`);
+    }
+    if (target) {
+      throw new Error("The extract command accepts exactly one <file>#<function> target.");
+    }
+    target = argument;
+  }
+  const shape = values.get("--shape");
+  const outDir = values.get("--out");
+  if (!target || !shape || !outDir) {
+    throw new Error("extract requires <file>#<function>, --shape, and --out.");
+  }
+  if (!(SUPPORTED_KERNEL_SHAPES as readonly string[]).includes(shape)) {
+    throw new Error(`--shape must be one of ${SUPPORTED_KERNEL_SHAPES.join(", ")}.`);
+  }
+  const graph = values.get("--graph");
+  const direction = values.get("--direction") ?? "directed";
+  if (direction !== "directed" && direction !== "undirected") {
+    throw new Error("--direction must be 'directed' or 'undirected'.");
+  }
+  const [offsets, neighbors, ...extra] = graph?.split(",") ?? [];
+  if (graph && (!offsets || !neighbors || extra.length > 0)) {
+    throw new Error("--graph expects <offsetsParameter>,<neighborsParameter>.");
+  }
+  const prepare = values.get("--prepare");
+  const name = values.get("--name");
+  return {
+    target,
+    shape: shape as SupportedKernelShape,
+    outDir,
+    ...(prepare ? { prepare } : {}),
+    ...(offsets && neighbors ? { graph: { offsets, neighbors, direction } } : {}),
+    ...(name ? { crateName: name } : {}),
+  };
+}
+
 function printUsage(): void {
   console.log("Usage: crankts analyze [target] [options]");
   console.log("Analyze a TypeScript project or a file/directory within it.");
@@ -127,6 +226,16 @@ function printUsage(): void {
   console.log("  --workload <label>    Label the workload represented by attached profiles");
   console.log("  --workspace-references Analyze transitive TypeScript project references");
   console.log("  --timings <file>      Write per-stage wall time and memory to a separate JSON file");
+  console.log("");
+  console.log("Usage: crankts extract <file>#<function> --shape <shape> --out <dir> [options]");
+  console.log("Lower an explicitly selected function to a Rust/N-API crate; fails closed unless its contract is lowerable.");
+  console.log("Options:");
+  console.log(`  --shape <${SUPPORTED_KERNEL_SHAPES.join("|")}>`);
+  console.log("  --out <dir>           Directory for Cargo.toml, src/lib.rs, contract.json, and kernel.ir");
+  console.log("  --prepare <file>#<fn> PREPARED_STATE: the function that builds the native state");
+  console.log("  --graph <offsets>,<neighbors>  GRAPH_BATCH: the CSR Uint32Array parameters");
+  console.log("  --direction <directed|undirected>  GRAPH_BATCH graph direction (default: directed)");
+  console.log("  --name <crate>        Crate name (default: <function>-kernel)");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {

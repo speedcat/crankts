@@ -55,7 +55,7 @@ export type IrExpr =
   | { readonly op: "mapNew" }
   | { readonly op: "field"; readonly target: IrExpr; readonly name: string }
   | { readonly op: "struct"; readonly name: string; readonly fields: readonly { readonly name: string; readonly value: IrExpr }[] }
-  /** Checked length; every element starts as `fill`. */
+  /** Checked length (integer in [0, 2^28]); every element starts as `fill`. */
   | { readonly op: "arrayNew"; readonly type: IrType & { readonly kind: "array" }; readonly length: IrExpr; readonly fill: IrExpr }
   | { readonly op: "arrayLiteral"; readonly type: IrType & { readonly kind: "array" }; readonly elements: readonly IrExpr[] }
   | { readonly op: "call"; readonly callee: string; readonly args: readonly IrExpr[] };

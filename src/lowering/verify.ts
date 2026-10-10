@@ -26,7 +26,30 @@ export interface IrVerification {
   readonly obligations: readonly ProofObligation[];
 }
 
-type Origin = "PARAM" | "FRESH";
+export type Origin = "PARAM" | "FRESH";
+
+export interface OriginAnalysis {
+  /** Per function: origin of every reference-typed local (flow-insensitive, joined over bindings). */
+  readonly locals: ReadonlyMap<string, ReadonlyMap<string, Origin>>;
+  readonly returnsFresh: ReadonlyMap<string, boolean>;
+  readonly originOf: (functionName: string, expr: IrExpr) => Origin;
+}
+
+/** The origin analysis the verifier uses, exposed for backends (owned vs. borrowed storage). */
+export function analyzeOrigins(module: IrModule): OriginAnalysis {
+  const returnsFresh = new Map<string, boolean>();
+  const locals = new Map<string, Map<string, Origin>>();
+  for (const fn of module.functions) {
+    const origins = computeOrigins(fn, collectLocalTypes(fn), returnsFresh);
+    locals.set(fn.name, origins);
+    returnsFresh.set(fn.name, returnExpressions(fn.body).every((expr) => exprOrigin(expr, origins, returnsFresh) === "FRESH"));
+  }
+  return {
+    locals,
+    returnsFresh,
+    originOf: (functionName, expr) => exprOrigin(expr, locals.get(functionName) ?? new Map(), returnsFresh),
+  };
+}
 
 export const ITERATION_BUDGET_GUARD = "while-loop iterations counted against a budget; exceeding it traps to the TypeScript fallback";
 export const CHECKED_OPERATIONS_GUARD = "checked index, charCodeAt, slice, array length, and typed-store operations trap to the TypeScript fallback";

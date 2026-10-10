@@ -1,6 +1,6 @@
 # Lowering: Kernel Contracts and Boundary Representations
 
-Status: v0.2.1. This covers kernel contracts and boundary representations (v0.2.0), plus the Kernel IR, TS → IR lowering, IR verification, a reference interpreter, and contract derivation (v0.2.1). There is no native code generation yet; that is v0.2.2. The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
+Status: v0.2.3. This covers kernel contracts and boundary representations (v0.2.0), the Kernel IR with lowering, verification, interpreter, and contract derivation (v0.2.1), the Rust/N-API backend with `crankts extract` (v0.2.2), and the generated TypeScript wrapper with fallback and parity runner (v0.2.3). The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
 
 ## Kernel Contract
 
@@ -126,10 +126,94 @@ The real sources still fail closed with exact diagnostics:
 
 Turning those into the kernel form, by interning ids and producing packed layouts upstream, is the job of v0.2.5 and v0.2.6.
 
+## Rust/N-API Backend and `crankts extract` (v0.2.2)
+
+```bash
+crankts extract test/fixtures/lowering/src/graph-kernel.ts#graphBatch \
+  --shape GRAPH_BATCH --graph offsets,neighbors --out /tmp/graph-kernel
+
+crankts extract test/fixtures/lowering/src/kwx-kernel.ts#scanAsciiTerms \
+  --prepare test/fixtures/lowering/src/kwx-kernel.ts#prepareDictionary \
+  --shape PREPARED_STATE --name kwx-scan --out /tmp/kwx-scan
+```
+
+[`extractKernel`](../src/lowering/extract.ts) selects the named function declarations and lowers them. It then derives and validates the contract, and only writes output if the contract is lowerable. The output is `Cargo.toml`, `src/lib.rs`, `contract.json`, `kernel.ir`, and a README. Lowering, verification, contract, and backend failures exit with code 1 and list every diagnostic; nothing is written.
+
+[`emitRustCrate`](../src/lowering/backend-rust.ts) translates verified IR into a napi-rs crate:
+
+- **Storage follows the verifier's origin analysis.** Fresh arrays, maps, and structs are owned (`Vec`, `HashMap<Rc<[u16]>, f64>`, `struct`); parameter-derived storage is borrowed. `NO_ALIASING` is what makes owned values behave like JS references.
+- **Strings are `Rc<[u16]>`.** They cross the boundary as `Utf16String` (`napi_get_value_string_utf16`). That keeps UTF-16 code units, including lone surrogates. A UTF-8 `String` would replace them and change `charCodeAt`.
+- **Every checked IR operation is a `Result` helper.** A failed check returns an error whose message starts with `CRANKTS_KERNEL_TRAP`. `Math.min`/`max` keep JS `NaN` and `-0` semantics. `while` loops tick an iteration budget, which `__setIterationBudget(n)` sets.
+- **The N-API surface follows the contract.**
+  - Scalars, `Utf16String`, typed arrays (zero-copy borrows), and arrays of scalars or strings cross directly.
+  - `PREPARED_STATE` becomes a `#[napi]` class (here `PreparedDictionary`) that `prepare` returns and `execute` takes as `&H_PreparedDictionary`.
+
+### Native Parity
+
+[`native-backend.test.ts`](../test/native-backend.test.ts) runs `crankts extract` for four kernels, builds them with cargo, and loads the addons. It runs locally when `cargo` is available, and in CI only with `CRANKTS_NATIVE_TESTS=1`, so the default CI job stays Rust-free. It checks four things:
+
+- the graph kernel equals TypeScript on the same 206 graphs as the interpreter tests
+- the KWX kernel equals TypeScript through a native handle, on 60 dictionaries plus texts with lone surrogates
+- malformed CSR input, non-ASCII `toLowerCase`, and an exhausted iteration budget trap with `CRANKTS_KERNEL_TRAP`
+- the budget can be reset
+
+### Performance Smoke Check (not a gate)
+
+The release build of the generated graph addon ran through the unchanged [MVP-9b harness](../evaluation/graph-native-poc/README.md), on W1 with the `replicate` topology, with 5 runs each. Its results matched TypeScript in every run. The handwritten PoC is shown for comparison:
+
+| W1 | TS kernel | Handwritten (total / call) | Generated (total / call) |
+| --- | ---: | ---: | ---: |
+| 1× (3,679 nodes) | 4.4 to 4.7 ms | 1.60 / 0.26 ms (3.0x) | 2.75 / 0.94 ms (1.6x) |
+| 10× | 44 ms | 16.4 / 1.5 ms (2.7x) | 20.9 / 6.1 ms (2.1x) |
+| 100× (367,900 nodes) | 575 ms | 138 / 13.7 ms (4.2x) | 187 / 59 ms (3.1x) |
+
+The generated code is already faster than TypeScript including transfer, but its call is 3.6 to 4.3 times slower than the handwritten kernel. The known causes:
+
+- every number is `f64`, and each index goes through a checked conversion
+- the result is a JS array instead of a `Uint32Array`
+- a fresh `members` vector is allocated per component
+
+These are v0.2.4 work: integer range analysis to lower proven indexes to `u32`, typed outputs, and buffer reuse. The acceptance gate there must measure them.
+
+## Generated Wrapper and Parity Runner (v0.2.3)
+
+`crankts extract` also writes `ts/<entry>.ts` and `ts/parity.ts` ([`wrapper-ts.ts`](../src/lowering/wrapper-ts.ts)). Wrapped entries must be exported, because the wrapper imports them as its fallback. For `PREPARED_STATE`, prepare and execute must be in the same module.
+
+**Wrapper.** Each wrapped function keeps the original signature (`(...args: Parameters<typeof original>) => ReturnType<typeof original>`). It loads `<crate>.node` from next to the crate, or from `$CRANKTS_ADDON_<CRATE>`. It runs the original TypeScript function whenever:
+
+- the addon is missing
+- a check in the kernel traps (`CRANKTS_KERNEL_TRAP`)
+- the call fails for any other reason, e.g. napi cannot convert an argument
+
+`nativeStatus` counts native calls, traps, native errors, and state fallbacks. `CRANKTS_ITERATION_BUDGET` sets the TERMINATION guard.
+
+**`PREPARED_STATE`.** The contract's `IMMUTABLE_DURING_HANDLE` proof covers the kernel, not its callers. The original API returns a plain state object that callers may read and mutate. The wrapper therefore returns a view typed as the original state:
+
+- **The view holds the native handle and a snapshot of the prepare arguments.** A later TypeScript state then equals one built at prepare time, even if the caller mutates its input array afterwards.
+- **Its fields are lazy getters.** The first access builds the TypeScript state and marks the view as observed.
+- **Once observed, a state always runs in TypeScript,** because the caller may have mutated it. This keeps the wrapper sound without proving anything about callers.
+- **States the wrapper did not create (`foreignStates`) also run in TypeScript.**
+- **When an execute call traps, it falls back** to the original with the internally built TypeScript state.
+
+**Parity runner.** `ts/parity.ts` checks two properties for every case:
+
+1. The wrapper's outcome (value or exception) equals the original's.
+2. The addon either traps or returns exactly the original's value.
+
+Values are compared with `Object.is`, element-wise for arrays and typed arrays, and entry-wise for maps. Inputs come from seeded, type-directed fuzzing over the contract's parameter types, which include `NaN`, `-0`, `2^31`, non-ASCII text, astral characters, and lone surrogates. Further cases can be supplied as tagged JSON (`--cases`, e.g. `{"$u32": [...]}`). The report includes `nativeAgreed`, because fuzzing alone can mostly hit traps: on 2,000 fuzzed graph cases, 1,670 were malformed CSR that trapped and 330 ran natively. For KWX, all 2,000 ran natively. There were no mismatches in either.
+
+Fallbacks are only safe if native code cannot crash the process. Allocation lengths are therefore capped at 2^28 elements in the interpreter and in Rust; larger requests trap instead of risking an out-of-memory abort.
+
+The native test suite checks four things:
+
+- the wrapper runs natively, falls back on traps and on unconvertible arguments, and returns the original's results
+- prepare inputs are snapshotted
+- an observed and mutated state matches the original
+- the parity runner passes on fuzzed and supplied cases
+
+Without an addon, the wrapper and parity runner fall back fully; this case is tested without Rust.
+
 ## Next Steps (from review.md)
 
-1. **v0.2.2:** a Rust/N-API backend and an explicit `crankts extract --target <function>` command.
-   The backend emits Rust from verified IR. It is tested against `interpretIr` (same results, same traps), so v0.2.1's parity suites carry over unchanged.
-2. **v0.2.3:** a generated wrapper with TypeScript fallback on `KernelTrap`, and differential parity tests.
-3. **v0.2.4:** a generated benchmark and a transformation acceptance gate. A transformation must not lose its speedup at the boundary.
-4. **v0.2.5 / v0.2.6:** reproduce the KWX and MVP-9b contracts from the original sources. That requires interning string ids and packing layouts upstream before lowering.
+1. **v0.2.4:** a generated benchmark and a transformation acceptance gate. A transformation must not lose its speedup at the boundary. This includes the backend optimizations listed above: integer range analysis to `u32`, typed outputs, and buffer reuse.
+2. **v0.2.5 / v0.2.6:** reproduce the KWX and MVP-9b contracts from the original sources. That requires interning string ids and packing layouts upstream before lowering.

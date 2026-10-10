@@ -56,6 +56,10 @@ pnpm dev analyze . --workspace-references
 
 # Write per-stage wall time and memory of the analysis itself to a separate file
 pnpm dev analyze . --timings timings.json
+
+# Lower an explicitly selected kernel to a Rust/N-API crate (fails closed unless its contract is lowerable)
+pnpm dev extract test/fixtures/lowering/src/graph-kernel.ts#graphBatch \
+  --shape GRAPH_BATCH --graph offsets,neighbors --out /tmp/graph-kernel
 ```
 
 Project-reference analysis creates a separate TypeScript program and checker per referenced project, then joins source-resolved calls using stable workspace-relative IDs. The default remains single-project analysis. Imports whose implementation is available only through declaration files remain external boundaries.
@@ -129,7 +133,7 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | Milestone | Deliverable |
 | --- | --- |
 | Analysis and validation | Measure native KWX RSS/GC and preserve mutable-dictionary semantics before integration; extend workspace-reference coverage for package methods/constructors; keep worker and sink claims tied to repeated parity-tested runs. |
-| **v0.2: Deterministic Extraction** | Done: kernel contracts, boundary representations, reference contracts, and a Kernel IR with fail-closed lowering, proof-obligation discharge, and an interpreter that matches TypeScript on both PoC kernels ([lowering](docs/lowering.md)). Next: explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
+| **v0.2: Deterministic Extraction** | Done: kernel contracts, boundary representations, reference contracts, and a Kernel IR with fail-closed lowering, proof-obligation discharge, and an interpreter that matches TypeScript on both PoC kernels, plus `crankts extract`, which generates a Rust/N-API crate, a TypeScript wrapper that falls back to the original function, and a differential parity runner ([lowering](docs/lowering.md)). Next: explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
 | **v0.3: Automatic Offload** | Introduce a stable Native IR and Rust/N-API backend; gate automatic region selection on proof, workload evidence, and boundary costs; integrate builds and reversible call-path replacement with validation and rollback. |
 
 This is not arbitrary TypeScript-to-Rust translation. Other backends, including WebAssembly and native JIT, remain longer-term options.

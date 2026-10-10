@@ -32,7 +32,8 @@ type Signal =
 const NORMAL: Signal = { kind: "normal" };
 const BREAK: Signal = { kind: "break" };
 const CONTINUE: Signal = { kind: "continue" };
-const MAX_ARRAY_LENGTH = 2 ** 32 - 1;
+/** Larger allocations trap (and fall back) instead of risking an out-of-memory abort in native code. */
+export const MAX_ARRAY_LENGTH = 2 ** 28;
 
 class Scope {
   private readonly values = new Map<string, Value>();
