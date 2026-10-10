@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -50,7 +50,7 @@ describe("crankts extract", () => {
     ]);
     expect(result.exitCode, result.error).toBe(0);
     expect(result.output).toContain("contract is lowerable");
-    for (const file of ["Cargo.toml", "src/lib.rs", "contract.json", "kernel.ir", "README.md", "ts/graphBatch.ts", "ts/parity.ts"]) {
+    for (const file of ["Cargo.toml", "src/lib.rs", "contract.json", "kernel.ir", "README.md", "ts/graphBatch.ts", "ts/parity.ts", "ts/benchmark.ts"]) {
       expect(existsSync(join(out, file)), file).toBe(true);
     }
     const contract = JSON.parse(readFileSync(join(out, "contract.json"), "utf8")) as KernelContract;
@@ -130,7 +130,86 @@ describe("crankts extract", () => {
     const parity = await import(pathToFileURL(join(out, "ts/parity.ts")).href) as {
       runParity(options: { iterations: number }): { cases: number; nativeAvailable: boolean; mismatches: unknown[] };
     };
-    expect(parity.runParity({ iterations: 200 })).toMatchObject({ cases: 200, nativeAvailable: false, mismatches: [] });
+    const report = parity.runParity({ iterations: 200 }) as unknown as { byCategory: Record<string, { cases: number }> };
+    expect(report).toMatchObject({ cases: 200, nativeAvailable: false, mismatches: [] });
+    expect(Object.fromEntries(Object.entries(report.byCategory).map(([category, entry]) => [category, entry.cases])))
+      .toEqual({ normal: 50, boundary: 50, strings: 50, trapDomain: 50 });
+  });
+
+  it("falls back only on traps and contract guards; internal errors surface", async () => {
+    const generatedRoot = fileURLToPath(new URL("./.generated", import.meta.url));
+    mkdirSync(generatedRoot, { recursive: true });
+    const scenario = async (name: string, body: string) => {
+      const out = mkdtempSync(join(generatedRoot, `${name}-`));
+      temporaryDirectories.push(out);
+      const result = cli([
+        "extract", join(fixtures, "graph-kernel.ts#graphBatch"),
+        "--shape", "GRAPH_BATCH", "--graph", "offsets,neighbors", "--name", name, "--out", out,
+      ]);
+      expect(result.exitCode, result.error).toBe(0);
+      // A stand-in addon loaded through the documented override variable.
+      const fake = join(out, "fake-addon.cjs");
+      writeFileSync(fake, `exports.graphBatch = () => { ${body} };\nexports.__lastKernelNanos = () => 0;\n`);
+      process.env[`CRANKTS_ADDON_${name.replace(/-/g, "_").toUpperCase()}`] = fake;
+      return {
+        wrapper: await import(pathToFileURL(join(out, "ts/graphBatch.ts")).href) as {
+          graphBatch: typeof graphBatch;
+          nativeStatus: { loaded: boolean; traps: number; contractGuards: number; internalErrors: number };
+        },
+        parity: await import(pathToFileURL(join(out, "ts/parity.ts")).href) as {
+          runParity(options: { iterations: number }): { mismatches: { kind: string }[] };
+        },
+      };
+    };
+    const input = randomGraph(5);
+    const args = [input.offsets, input.neighbors, input.fileRank, input.line] as const;
+
+    const trapping = await scenario("fake-trap", `throw new Error("CRANKTS_KERNEL_TRAP: index");`);
+    expect(trapping.wrapper.nativeStatus.loaded).toBe(true);
+    expect(trapping.wrapper.graphBatch(...args)).toEqual(graphBatch(...args));
+    expect(trapping.wrapper.nativeStatus).toMatchObject({ traps: 1, internalErrors: 0 });
+    expect(trapping.parity.runParity({ iterations: 50 }).mismatches).toEqual([]);
+
+    const broken = await scenario("fake-internal", `throw new Error("boom");`);
+    expect(() => broken.wrapper.graphBatch(...args)).toThrow(/^CRANKTS_INTERNAL_ERROR in graphBatch: boom$/);
+    expect(broken.wrapper.nativeStatus).toMatchObject({ traps: 0, internalErrors: 1 });
+    // Codegen bugs cannot hide behind the fallback: parity reports them.
+    expect(broken.parity.runParity({ iterations: 20 }).mismatches.some((mismatch) => mismatch.kind === "wrapper")).toBe(true);
+
+    const guarded = await scenario("fake-guard", `throw new Error("must not be called");`);
+    const outsideContract = [[0, 1], [0], [0], [1]] as unknown as Parameters<typeof graphBatch>;
+    expect(guarded.wrapper.graphBatch(...outsideContract)).toEqual(graphBatch(...outsideContract));
+    expect(guarded.wrapper.nativeStatus).toMatchObject({ contractGuards: 1, internalErrors: 0 });
+  });
+
+  it("emits integer-specialized Rust with typed outputs and reused loop buffers", () => {
+    const out = outDir();
+    expect(cli([
+      "extract", join(fixtures, "graph-kernel.ts#graphBatch"),
+      "--shape", "GRAPH_BATCH", "--graph", "offsets,neighbors", "--out", out,
+    ]).exitCode).toBe(0);
+    const contract = JSON.parse(readFileSync(join(out, "contract.json"), "utf8")) as KernelContract;
+    expect(contract.outputs[0]).toMatchObject({ type: { kind: "typedArray", element: "u32" } });
+    const lib = readFileSync(join(out, "src/lib.rs"), "utf8");
+    expect(lib).toContain("-> napi::Result<Uint32Array>");
+    expect(lib).toContain("let mut l_visited: Vec<bool>");
+    expect(lib).toContain("let mut l_discovery: Vec<i64>");
+    expect(lib).toContain("let mut __buffer_members: Vec<i64> = Vec::new();");
+    expect(lib).toContain("std::panic::catch_unwind");
+    // Every index in the kernel is INT, so no f64 index conversion remains in its body.
+    const kernel = lib.slice(lib.indexOf("fn f_graphBatch("), lib.indexOf('#[napi(js_name = "graphBatch")]'));
+    expect(kernel).toContain("idx_i(");
+    expect(kernel).not.toMatch(/\bidx\(/);
+
+    const kwx = outDir();
+    expect(cli([
+      "extract", join(fixtures, "kwx-kernel.ts#scanAsciiTerms"),
+      "--prepare", join(fixtures, "kwx-kernel.ts#prepareDictionary"),
+      "--shape", "PREPARED_STATE", "--out", kwx,
+    ]).exitCode).toBe(0);
+    const kwxContract = JSON.parse(readFileSync(join(kwx, "contract.json"), "utf8")) as KernelContract;
+    expect(kwxContract.outputs[0]).toMatchObject({ type: { kind: "typedArray", element: "f64" } });
+    expect(readFileSync(join(kwx, "src/lib.rs"), "utf8")).toContain("pub f_headByLower: HashMap<Str, i64>,");
   });
 
   it("requires exported targets so the wrapper can fall back to them", () => {

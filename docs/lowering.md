@@ -1,6 +1,12 @@
 # Lowering: Kernel Contracts and Boundary Representations
 
-Status: v0.2.3. This covers kernel contracts and boundary representations (v0.2.0), the Kernel IR with lowering, verification, interpreter, and contract derivation (v0.2.1), the Rust/N-API backend with `crankts extract` (v0.2.2), and the generated TypeScript wrapper with fallback and parity runner (v0.2.3). The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
+Status: v0.2.4. This covers:
+
+- kernel contracts and boundary representations (v0.2.0)
+- the Kernel IR with lowering, verification, interpreter, and contract derivation (v0.2.1)
+- the Rust/N-API backend with `crankts extract` (v0.2.2)
+- the generated TypeScript wrapper and parity runner (v0.2.3)
+- the backend quality pass with the generated benchmark and acceptance gate (v0.2.4) The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
 
 ## Kernel Contract
 
@@ -157,7 +163,7 @@ crankts extract test/fixtures/lowering/src/kwx-kernel.ts#scanAsciiTerms \
 - malformed CSR input, non-ASCII `toLowerCase`, and an exhausted iteration budget trap with `CRANKTS_KERNEL_TRAP`
 - the budget can be reset
 
-### Performance Smoke Check (not a gate)
+### Performance Smoke Check (not a gate; superseded by v0.2.4 below)
 
 The release build of the generated graph addon ran through the unchanged [MVP-9b harness](../evaluation/graph-native-poc/README.md), on W1 with the `replicate` topology, with 5 runs each. Its results matched TypeScript in every run. The handwritten PoC is shown for comparison:
 
@@ -179,13 +185,15 @@ These are v0.2.4 work: integer range analysis to lower proven indexes to `u32`, 
 
 `crankts extract` also writes `ts/<entry>.ts` and `ts/parity.ts` ([`wrapper-ts.ts`](../src/lowering/wrapper-ts.ts)). Wrapped entries must be exported, because the wrapper imports them as its fallback. For `PREPARED_STATE`, prepare and execute must be in the same module.
 
-**Wrapper.** Each wrapped function keeps the original signature (`(...args: Parameters<typeof original>) => ReturnType<typeof original>`). It loads `<crate>.node` from next to the crate, or from `$CRANKTS_ADDON_<CRATE>`. It runs the original TypeScript function whenever:
+**Wrapper.** Each wrapped function keeps the original signature (`(...args: Parameters<typeof original>) => ReturnType<typeof original>`). It loads `<crate>.node` from next to the crate, or from `$CRANKTS_ADDON_<CRATE>`. It runs the original TypeScript function in exactly three cases (tightened in v0.2.4):
 
-- the addon is missing
-- a check in the kernel traps (`CRANKTS_KERNEL_TRAP`)
-- the call fails for any other reason, e.g. napi cannot convert an argument
+- `ADDON_MISSING`: the addon cannot be loaded.
+- `CONTRACT_GUARD`: an argument is outside the contract's domain. Generated TypeScript guards check this before the call (e.g. `instanceof Uint32Array`, or arrays whose elements are all numbers).
+- `CRANKTS_KERNEL_TRAP`: a checked operation in the kernel trapped.
 
-`nativeStatus` counts native calls, traps, native errors, and state fallbacks. `CRANKTS_ITERATION_BUDGET` sets the TERMINATION guard.
+Any other native failure, including a Rust panic (caught with `catch_unwind`), is a CrankTS bug. It is rethrown as `CRANKTS_INTERNAL_ERROR` and never masked by the fallback; the parity runner then reports a wrapper mismatch.
+
+`nativeStatus` counts native calls, traps, contract guards, internal errors, and state fallbacks. `CRANKTS_ITERATION_BUDGET` sets the TERMINATION guard.
 
 **`PREPARED_STATE`.** The contract's `IMMUTABLE_DURING_HANDLE` proof covers the kernel, not its callers. The original API returns a plain state object that callers may read and mutate. The wrapper therefore returns a view typed as the original state:
 
@@ -200,20 +208,79 @@ These are v0.2.4 work: integer range analysis to lower proven indexes to `u32`, 
 1. The wrapper's outcome (value or exception) equals the original's.
 2. The addon either traps or returns exactly the original's value.
 
-Values are compared with `Object.is`, element-wise for arrays and typed arrays, and entry-wise for maps. Inputs come from seeded, type-directed fuzzing over the contract's parameter types, which include `NaN`, `-0`, `2^31`, non-ASCII text, astral characters, and lone surrogates. Further cases can be supplied as tagged JSON (`--cases`, e.g. `{"$u32": [...]}`). The report includes `nativeAgreed`, because fuzzing alone can mostly hit traps: on 2,000 fuzzed graph cases, 1,670 were malformed CSR that trapped and 330 ran natively. For KWX, all 2,000 ran natively. There were no mismatches in either.
+Values are compared with `Object.is`, element-wise for arrays and typed arrays, and entry-wise for maps. Inputs come from seeded, type-directed fuzzing over the contract's parameter types, in four categories that are reported separately (v0.2.4):
+
+- `normal`: small integers and ASCII text
+- `boundary`: `NaN`, `-0`, `±Infinity`, `2^31`, `2^53`, empty and single-element values
+- `strings`: non-ASCII text, astral characters, and lone surrogates
+- `trapDomain`: index values outside their arrays, and non-integers Further cases can be supplied as tagged JSON (`--cases`, e.g. `{"$u32": [...]}`). The report includes `nativeAgreed`, because fuzzing alone can mostly hit traps: on 2,000 fuzzed graph cases, 1,670 were malformed CSR that trapped and 330 ran natively. For KWX, all 2,000 ran natively. There were no mismatches in either.
 
 Fallbacks are only safe if native code cannot crash the process. Allocation lengths are therefore capped at 2^28 elements in the interpreter and in Rust; larger requests trap instead of risking an out-of-memory abort.
 
 The native test suite checks four things:
 
-- the wrapper runs natively, falls back on traps and on unconvertible arguments, and returns the original's results
+- the wrapper runs natively, falls back on traps and on arguments outside the contract, and returns the original's results
 - prepare inputs are snapshotted
 - an observed and mutated state matches the original
 - the parity runner passes on fuzzed and supplied cases
 
 Without an addon, the wrapper and parity runner fall back fully; this case is tested without Rust.
 
+## Backend Quality Pass and Acceptance Gate (v0.2.4)
+
+**Integer specialization.** [`analyzeIntegers`](../src/lowering/integer-analysis.ts) is a flow-insensitive dataflow analysis over the IR. A numeric value is INT when every definition reaching it is an exact integer. Its sources are:
+
+- integer literals other than `-0`
+- lengths, `charCodeAt`, and integer typed-array reads
+- `+`, `-`, `min`, `max`, and `?:` of INT operands
+- INT locals, fields, returns, array elements, and map values
+
+`*`, `/`, `%`, and unary `-` stay `f64`, because they can produce `-0` or non-integers. Array element and map value classes are unified with union-find along every flow (bindings, calls, returns, struct fields). One non-INT store demotes the whole class. Parameters that come from JavaScript are always `f64`. INT values become `i64` in Rust, with arithmetic checked to |v| ≤ 2^53, so they always equal the JS `f64` values; exceeding the bound traps. A `NONNEG` flag additionally proves values ≥ 0.
+
+On the fixtures:
+
+- **Graph kernel:** every local and array is INT, and its output is non-negative.
+- **KWX:** the prepared state (`termCount`, `headByLower` values, `next`) and all scan locals are INT. The JS-supplied `minLength` stays `f64`. The output is INT but not provably non-negative (`firstOffset` starts at -1).
+
+**Typed outputs in the contract.** A `number[]` return now crosses as a typed array declared in the contract's `BoundaryType`. It is `Uint32Array` when every element is proven non-negative INT, and `Float64Array` otherwise, which is exact for every number. The wrapper materializes `number[]` with `Array.from`, so the original signature is kept. A source that returns a typed array itself avoids that copy.
+
+**Allocation reuse.** A non-escaping array allocated inside a loop gets one buffer per allocation site. At the original site the buffer is cleared and refilled. Non-escaping means it is never returned, stored, moved into a struct or container, or copied into another binding.
+
+**Generated benchmark and gate.** `crankts extract` also writes `ts/benchmark.ts`. It times five things over supplied workloads:
+
+- the original TypeScript
+- the wrapper (guards, addon call, result materialization)
+- the raw addon call, including N-API conversion
+- the Rust-side kernel compute (`__lastKernelNanos`)
+- an optional reference implementation, such as a handwritten PoC
+
+It then evaluates the acceptance gate:
+
+| Gate | Criterion |
+| --- | --- |
+| Correctness | generated parity on supplied and fuzzed cases: wrapper ≡ original, native ≡ original or trap |
+| Performance | wrapper total < original total (median), i.e. the net saved time is positive |
+| Backend quality | addon call ≤ 2× reference call (only with a reference) |
+| Boundary | (wrapper − kernel compute) / (original − kernel compute) ≤ 0.5: transfer and materialization consume at most half of the possible saving |
+
+**Results** ([crankts-v024-backend-quality.json](../evaluation/crankts-v024-backend-quality.json), [run-v024.ts](../evaluation/backend-quality/run-v024.ts)). Release builds, median of 5 runs, with the handwritten MVP-9b and MVP-8 addons as references. All four gates pass on every workload.
+
+| Workload | Original TS | Wrapper | Generated call | Kernel | Handwritten | Ratio | Boundary share |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Graph W1 (3,679 nodes) | 2.89 ms | 0.39 ms | 0.24 ms | 0.22 ms | 0.31 ms | 0.77x | 0.06 |
+| Graph W1 ×10 | 10.9 ms | 2.78 ms | 1.53 ms | 1.48 ms | 1.44 ms | 1.06x | 0.14 |
+| Graph W1 ×100 (367,900 nodes) | 106 ms | 29.9 ms | 16.7 ms | 16.4 ms | 13.6 ms | 1.23x | 0.15 |
+| KWX (3,231 terms, 18,331 texts) | 217 ms | 139 ms | 133 ms | 119 ms | 90.7 ms | 1.47x | 0.20 |
+
+Before v0.2.4 the generated graph call was 0.94, 6.1, and 59 ms (3.6 to 4.3 times the handwritten kernel). It is now 0.77 to 1.23 times the handwritten kernel. Three caveats apply to these numbers:
+
+- **"Original" is the kernel-style TypeScript.** The graph original is 2.89 ms on W1, already faster than `islands.ts` with `Map`/`Set` (4.4 ms in MVP-9b). The speedups are therefore relative to an optimized TypeScript baseline.
+- **The KWX workload is a stand-in for MVP-8's AX dictionary and chunks.** It uses IntentWeave's function names as the dictionary and paragraphs of its Markdown and `packages/*/src` TypeScript as texts, with no traps, guards, or internal errors in 111,192 native calls.
+- **Each W1 graph run is a single call,** so the 1× numbers are close to timer resolution.
+
 ## Next Steps (from review.md)
 
-1. **v0.2.4:** a generated benchmark and a transformation acceptance gate. A transformation must not lose its speedup at the boundary. This includes the backend optimizations listed above: integer range analysis to `u32`, typed outputs, and buffer reuse.
-2. **v0.2.5 / v0.2.6:** reproduce the KWX and MVP-9b contracts from the original sources. That requires interning string ids and packing layouts upstream before lowering.
+1. **v0.2.5:** real KWX source → `PREPARED_STATE`. This needs callback and fast-path extraction from `extractDictionary`, plus mutation and lifetime handling of the caller's dictionary `Set`.
+2. **v0.2.6:** real graph source → `GRAPH_BATCH`. This needs `FunctionId` interning, CSR packing upstream in the producer, and a producer-aware transformation.
+3. **v0.2.7:** an explicit `TransformationPlan` that unifies both: extraction region, producer changes, preparation site, call replacement, fallback path, and validation plan. It also covers reversible source integration. This is a separate model between the TS semantic model and the Kernel IR; it does not belong in the IR.
+4. **v0.3:** automatic candidate selection (advisor → qualifier → transformer), enabled only after validation.

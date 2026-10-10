@@ -44,7 +44,8 @@ interface NativeStatus {
   loaded: boolean;
   nativeCalls: number;
   traps: number;
-  nativeErrors: number;
+  contractGuards: number;
+  internalErrors: number;
   foreignStates: number;
   observedStates: number;
 }
@@ -123,7 +124,10 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     const graphs = [...shapedGraphs(), ...Array.from({ length: 200 }, (_, seed) => randomGraph(seed + 1))];
     for (const input of graphs) {
       const args = [input.offsets, input.neighbors, input.fileRank, input.line] as const;
-      expect(call(graph.addon.graphBatch, ...args)).toEqual(graphBatch(...args));
+      const native = call(graph.addon.graphBatch, ...args);
+      // The contract declares a typed output: non-negative INT elements cross as Uint32Array.
+      expect(native).toBeInstanceOf(Uint32Array);
+      expect(Array.from(native as Uint32Array)).toEqual(graphBatch(...args));
     }
   });
 
@@ -134,7 +138,8 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
       const handle = call(kwx.addon.prepareDictionary, terms, minLength);
       const state = prepareDictionary(terms, minLength);
       for (const text of [...texts, `${texts[0] ?? ""}\uD800Graph\uDC00node_1`]) {
-        expect(call(kwx.addon.scanAsciiTerms, text, handle)).toEqual(scanAsciiTerms(text, state));
+        // INT but not provably non-negative (firstOffset starts at -1): Float64Array.
+        expect(Array.from(call(kwx.addon.scanAsciiTerms, text, handle) as Float64Array)).toEqual(scanAsciiTerms(text, state));
       }
     }
   });
@@ -163,10 +168,13 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     const malformed = [Uint32Array.from([0, 1]), Uint32Array.from([5]), Uint32Array.from([0]), Uint32Array.from([1])] as const;
     expect(wrapper.graphBatch(...malformed)).toEqual(graphBatch(...malformed));
     expect(wrapper.nativeStatus.traps).toBe(1);
-    // Arguments napi cannot convert are native errors, not traps; the original decides.
+    // Arguments outside the contract (plain arrays instead of Uint32Array) are caught by the
+    // TypeScript contract guard before the addon is called; the original decides.
     const wrongTypes = [[0, 1], [0], [0], [1]] as unknown as Parameters<typeof graphBatch>;
-    expect(() => wrapper.graphBatch(...wrongTypes)).not.toThrow();
-    expect(wrapper.nativeStatus.nativeErrors).toBe(1);
+    expect(wrapper.graphBatch(...wrongTypes)).toEqual(graphBatch(...wrongTypes));
+    expect(wrapper.nativeStatus).toMatchObject({ contractGuards: 1, internalErrors: 0 });
+    // The wrapper returns the original's representation (number[]), not the typed output.
+    expect(Array.isArray(wrapper.graphBatch(...args))).toBe(true);
   });
 
   it("wraps PREPARED_STATE with a lazily materialized state that downgrades to TypeScript once observed", async () => {
@@ -193,6 +201,31 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     // States the wrapper did not create always run in TypeScript.
     expect(wrapper.scanAsciiTerms(text, reference)).toEqual(scanAsciiTerms(text, reference));
     expect(wrapper.nativeStatus.foreignStates).toBe(1);
+  });
+
+  it("runs the generated benchmark and evaluates the acceptance gate", async () => {
+    const benchmark = await importGenerated<{
+      runBenchmark(options: Record<string, unknown>): {
+        gate: Record<string, string>;
+        accepted: boolean;
+        kernelMs: { median: number };
+        nativeCallMs: { median: number };
+        parity: { mismatches: number };
+      };
+    }>(graph.out, "benchmark.ts");
+    const input = randomGraph(42);
+    const report = benchmark.runBenchmark({
+      cases: [{ calls: [[input.offsets, input.neighbors, input.fileRank, input.line]] }],
+      runs: 3,
+      reference: { graphBatch: (...args: unknown[]) => graphBatch(...(args as Parameters<typeof graphBatch>)) },
+      parityIterations: 50,
+    });
+    expect(Object.keys(report.gate).sort()).toEqual(["backendQuality", "boundary", "correctness", "performance"]);
+    expect(report.gate.correctness).toBe("PASS");
+    expect(report.parity.mismatches).toBe(0);
+    expect(report.kernelMs.median).toBeLessThanOrEqual(report.nativeCallMs.median);
+    // Tiny debug-build inputs prove nothing about speed; the gate verdicts are only shape-checked here.
+    expect(["PASS", "FAIL"]).toContain(report.gate.performance);
   });
 
   it("runs the generated parity runner with fuzzed and supplied cases", async () => {

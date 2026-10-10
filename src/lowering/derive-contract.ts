@@ -7,7 +7,8 @@ import type {
   ProofStatus,
   SupportedKernelShape,
 } from "./contract.js";
-import { formatIrType, type IrModule, type IrType } from "./ir.js";
+import { analyzeIntegers } from "./integer-analysis.js";
+import { formatIrType, mergeModules, type IrModule, type IrType } from "./ir.js";
 import { verifyIrModule, type IrVerification, type VerifyDiagnostic } from "./verify.js";
 
 /**
@@ -96,7 +97,16 @@ export function deriveKernelContract(request: DeriveContractRequest): DerivedCon
 
   const outputs: KernelOutput[] = [];
   if (execute.returnType.kind !== "void") {
-    const type = boundaryType(execute.returnType);
+    const returnsNumbers = execute.returnType.kind === "array" && execute.returnType.storage === "dynamic"
+      && execute.returnType.element.kind === "f64";
+    let type = boundaryType(execute.returnType);
+    if (returnsNumbers) {
+      // Typed outputs avoid per-element N-API conversion: Uint32Array when the integer analysis proves
+      // every element a non-negative INT, else Float64Array (exact for every number, incl. NaN and -0).
+      const merged = request.prepare ? mergeModules(request.execute, request.prepare) : request.execute;
+      const integers = analyzeIntegers(merged, [execute.name, ...(prepare ? [prepare.name] : [])]);
+      type = { kind: "typedArray", element: integers.returnElementsNonneg(execute.name) ? "u32" : "f64" };
+    }
     if (!type) {
       return fail(`return type ${formatIrType(execute.returnType)} cannot cross the boundary`);
     }

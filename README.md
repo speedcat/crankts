@@ -17,7 +17,7 @@
 
 CrankTS is an evidence-first, deterministic acceleration system for existing TypeScript projects. It finds acceleration opportunities, qualifies safe transformations, and is designed to automatically offload supported regions without requiring a manual rewrite.
 
-**Today:** static analysis, profile correlation, and deterministic advice. **Next:** a fail-closed transformer with parity and performance validation. The current CLI does not execute the analyzed application, rewrite its source, or generate native code.
+**Today:** static analysis, profile correlation, and deterministic advice. `crankts extract` also transforms explicitly selected kernels into Rust/N-API crates. It does this only when a fail-closed contract validates, and each crate comes with a TypeScript fallback wrapper, a parity runner, and a benchmark with an acceptance gate. **Next:** deriving such kernels from unmodified real-world sources. The `analyze` command does not execute the analyzed application or rewrite its source.
 
 Native offload is a core execution strategy when evidence supports it. The advisor determines whether native execution, an algorithm change, workers, a compact data layout, or batching is justified before a transformation is attempted.
 
@@ -133,7 +133,7 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | Milestone | Deliverable |
 | --- | --- |
 | Analysis and validation | Measure native KWX RSS/GC and preserve mutable-dictionary semantics before integration; extend workspace-reference coverage for package methods/constructors; keep worker and sink claims tied to repeated parity-tested runs. |
-| **v0.2: Deterministic Extraction** | Done: kernel contracts, boundary representations, reference contracts, and a Kernel IR with fail-closed lowering, proof-obligation discharge, and an interpreter that matches TypeScript on both PoC kernels, plus `crankts extract`, which generates a Rust/N-API crate, a TypeScript wrapper that falls back to the original function, and a differential parity runner ([lowering](docs/lowering.md)). Next: explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
+| **v0.2: Deterministic Extraction** | Done (v0.2.0–v0.2.4): kernel contracts and a Kernel IR with fail-closed lowering and proof-obligation discharge. `crankts extract` generates an integer-specialized Rust/N-API crate, a TypeScript wrapper that falls back only on traps, contract guards, or a missing addon, a parity runner, and a benchmark with an acceptance gate. Generated kernels run at 0.77 to 1.47 times the handwritten PoCs ([lowering](docs/lowering.md)). Next (v0.2.5–v0.2.7): derive both kernels from the real IntentWeave and CrankTS sources, including id interning and upstream packing, and introduce an explicit `TransformationPlan`. |
 | **v0.3: Automatic Offload** | Introduce a stable Native IR and Rust/N-API backend; gate automatic region selection on proof, workload evidence, and boundary costs; integrate builds and reversible call-path replacement with validation and rollback. |
 
 This is not arbitrary TypeScript-to-Rust translation. Other backends, including WebAssembly and native JIT, remain longer-term options.

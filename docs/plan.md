@@ -306,7 +306,29 @@ MVP-9a is complete: the graph passes are cold on W1 (0.7% of wall), so the outco
 
 MVP-9b is complete as a crossover test (9b.1 to 9b.3). Native WCC/Tarjan matches exactly and wins from about 40 nodes up: 2.9x on W1 including transfer, 4.2 to 5.0x at 100×, and 18 to 43x call only. `GRAPH_BATCH` is therefore confirmed as a shape; its advisor gate is the kernel's wall share, not graph size. CSR preparation is 75 to 90% of the native cost. The CrankTS self-offload ends here. Per [review.md](review.md), the next steps are external candidate discovery (Knip, where `KEEP_TS` is also an allowed outcome) and, in parallel, v0.2a (`PREPARED_STATE` from KWX).
 
-v0.2 now follows the sequence at the end of [review.md](review.md), which supersedes MVP-9c and v0.2a/b above. **v0.2.0 is done:** `src/lowering/` contains the Kernel Contract with fail-closed validation, the boundary representation analysis, and reference contracts for KWX and MVP-9b; see [lowering.md](lowering.md). That covers the planned MVP-9c lowering contract. One correction to v0.2a above: invalidating a handle by checking `Set` identity and size is unsound, so the KWX contract uses `WRAP_MUTATORS`. **v0.2.1 is done:** the Kernel IR, TS → IR lowering (fail-closed), IR verification with obligation discharge, a reference interpreter with traps, and contract derivation. Kernel-style versions of both PoC kernels lower to lowerable contracts and match TypeScript in the interpreter; the graph kernel also matches the real `islands.ts`. **v0.2.2 is done:** a Rust/N-API backend from verified IR plus `crankts extract`, which fails closed. The generated addons match TypeScript on all parity suites, including traps. The generated graph kernel is 1.6x faster than TypeScript on W1 including transfer (3.1x at 100×), but its call is about 4x slower than the handwritten PoC; see [lowering.md](lowering.md). **v0.2.3 is done:** `crankts extract` also generates a TypeScript wrapper with the original signature and a differential parity runner. The wrapper falls back to the original function when the addon is missing, traps, or errors. Its prepared-state view runs in TypeScript once a caller has observed it. The parity runner checks wrapper ≡ original and native ≡ original-or-trap. Next is v0.2.4: a generated benchmark, an acceptance gate, and the backend optimizations.
+v0.2 now follows the sequence at the end of [review.md](review.md), which supersedes MVP-9c and v0.2a/b above. **v0.2.0 is done:** `src/lowering/` contains the Kernel Contract with fail-closed validation, the boundary representation analysis, and reference contracts for KWX and MVP-9b; see [lowering.md](lowering.md). That covers the planned MVP-9c lowering contract. One correction to v0.2a above: invalidating a handle by checking `Set` identity and size is unsound, so the KWX contract uses `WRAP_MUTATORS`. **v0.2.1 is done:** the Kernel IR, TS → IR lowering (fail-closed), IR verification with obligation discharge, a reference interpreter with traps, and contract derivation. Kernel-style versions of both PoC kernels lower to lowerable contracts and match TypeScript in the interpreter; the graph kernel also matches the real `islands.ts`. **v0.2.2 is done:** a Rust/N-API backend from verified IR plus `crankts extract`, which fails closed. The generated addons match TypeScript on all parity suites, including traps. The generated graph kernel is 1.6x faster than TypeScript on W1 including transfer (3.1x at 100×), but its call is about 4x slower than the handwritten PoC; see [lowering.md](lowering.md). **v0.2.3 is done:** `crankts extract` also generates a TypeScript wrapper with the original signature and a differential parity runner. The wrapper falls back to the original function when the addon is missing, traps, or errors. Its prepared-state view runs in TypeScript once a caller has observed it. The parity runner checks wrapper ≡ original and native ≡ original-or-trap. **v0.2.4 is done.** Following the second review round, v0.2.4 makes three changes.
+
+It narrows the fallback taxonomy. The wrapper falls back only for `ADDON_MISSING`, `CONTRACT_GUARD`, or `CRANKTS_KERNEL_TRAP`; any other failure, including a caught Rust panic, surfaces as `CRANKTS_INTERNAL_ERROR`.
+
+It adds a backend quality pass:
+
+- integer specialization from IR dataflow (`i64`, checked to 2^53)
+- typed-array outputs as part of the contract's `BoundaryType`
+- reuse of loop-local buffers
+
+It adds a generated benchmark with an acceptance gate covering correctness, net speed, ≤ 2× the handwritten PoC, and a boundary share ≤ 0.5. All gates pass on W1 at 1×, 10×, and 100× and on an IntentWeave-derived KWX workload. The generated kernels now run at 0.77 to 1.47 times the handwritten PoCs, down from about 4 times; see [crankts-v024-backend-quality.json](../evaluation/crankts-v024-backend-quality.json).
+
+### Roadmap after v0.2.4 (from review.md)
+
+| Step | Content |
+| --- | --- |
+| v0.2.5 | Real KWX source → automatic `PREPARED_STATE`: callback and fast-path extraction from `extractDictionary`, plus mutation and lifetime handling of the dictionary `Set` |
+| v0.2.6 | Real graph source → automatic `GRAPH_BATCH`: `FunctionId` interning, CSR packing upstream in the producer, and a producer-aware transformation |
+| v0.2.7 | Explicit `TransformationPlan` (kernel, extraction region, producer changes, preparation site, call replacement, fallback path, validation plan) unifying both transformations; reversible source integration |
+| v0.3 | Automatic candidate selection (advisor → qualifier → transformer), enabled only after validation |
+| in parallel | External evaluation #1 (Knip): analyze and profile; `KEEP_TS` is an allowed outcome |
+
+The `TransformationPlan` sits between the TS semantic model and the Kernel IR. v0.2.5 and v0.2.6 need it to express producer rewrites and call replacement, which do not belong in the Kernel IR.
 
 ## Open Points
 

@@ -7,7 +7,8 @@ import { validateKernelContract } from "../src/lowering/contract.js";
 import { deriveKernelContract } from "../src/lowering/derive-contract.js";
 import { interpretIr, KernelTrap } from "../src/lowering/interpret.js";
 import type { IrModule, IrStmt } from "../src/lowering/ir.js";
-import { printIrModule } from "../src/lowering/ir.js";
+import { mergeModules, printIrModule } from "../src/lowering/ir.js";
+import { analyzeIntegers } from "../src/lowering/integer-analysis.js";
 import { lowerKernel } from "../src/lowering/lower.js";
 import { verifyIrModule, walkStatements } from "../src/lowering/verify.js";
 import { graphBatch } from "./fixtures/lowering/src/graph-kernel.js";
@@ -121,6 +122,46 @@ describe("Kernel IR verification", () => {
     expect(recursive.obligations.find((obligation) => obligation.kind === "TERMINATION")?.status).toBe("UNPROVEN");
     const growing = verifyIrModule(lowered("src/negative.ts", "growsWhileIterating"));
     expect(growing.errors).toContainEqual(expect.objectContaining({ message: expect.stringContaining("bound reads copy, which the body mutates") }));
+  });
+});
+
+describe("integer specialization analysis", () => {
+  it("proves the graph kernel integer-only with a non-negative output", () => {
+    const module = lowered("src/graph-kernel.ts", "graphBatch");
+    const integers = analyzeIntegers(module);
+    for (const name of ["nodeCount", "componentCount", "clock", "node", "slot", "impact"]) {
+      expect(integers.localInt("graphBatch", name), name).toBe(true);
+    }
+    for (const array of ["discovery", "low", "parent", "members", "pending", "output"]) {
+      expect(integers.localElementsInt("graphBatch", array), array).toBe(true);
+    }
+    expect(integers.localNonneg("graphBatch", "nodeParent")).toBe(false);
+    expect(integers.returnElementsInt("graphBatch")).toBe(true);
+    expect(integers.returnElementsNonneg("graphBatch")).toBe(true);
+  });
+
+  it("specializes the KWX state across prepare and execute, but not JS-supplied parameters", () => {
+    const merged = mergeModules(lowered("src/kwx-kernel.ts", "scanAsciiTerms"), lowered("src/kwx-kernel.ts", "prepareDictionary"));
+    const integers = analyzeIntegers(merged, ["scanAsciiTerms", "prepareDictionary"]);
+    expect(integers.fieldInt("PreparedDictionary", "termCount")).toBe(true);
+    expect(integers.fieldElementsInt("PreparedDictionary", "headByLower")).toBe(true);
+    expect(integers.fieldElementsInt("PreparedDictionary", "next")).toBe(true);
+    expect(integers.localInt("prepareDictionary", "minLength")).toBe(false);
+    expect(integers.localInt("isWordCode", "code")).toBe(true);
+    // firstOffset starts at -1, so the output is INT but not provably non-negative.
+    expect(integers.returnElementsInt("scanAsciiTerms")).toBe(true);
+    expect(integers.returnElementsNonneg("scanAsciiTerms")).toBe(false);
+  });
+
+  it("keeps multiplication, -0, and values derived from parameters f64", () => {
+    const integers = analyzeIntegers(lowered("src/negative.ts", "mixedNumbers"));
+    expect(integers.localInt("mixedNumbers", "count")).toBe(true);
+    expect(integers.localInt("mixedNumbers", "index")).toBe(true);
+    expect(integers.localInt("mixedNumbers", "negativeZero")).toBe(false);
+    expect(integers.localInt("mixedNumbers", "scale")).toBe(false);
+    expect(integers.localInt("mixedNumbers", "scaled")).toBe(false);
+    expect(integers.localElementsInt("mixedNumbers", "out")).toBe(false);
+    expect(integers.localElementsInt("mixedNumbers", "values")).toBe(false);
   });
 });
 

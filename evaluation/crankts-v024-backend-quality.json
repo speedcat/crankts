@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "v0.2.4-generated-backend-quality",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "rust": "1.95.0",
+    "build": "cargo --release (opt-level 3, LTO, codegen-units 1)"
+  },
+  "gateDefinition": {
+    "correctness": "generated parity: wrapper ≡ original and native ≡ original-or-trap on supplied + fuzzed cases",
+    "performance": "wrapper total < original TypeScript total (median)",
+    "backendQuality": "generated addon call <= 2x handwritten PoC call (median)",
+    "boundary": "(wrapper - kernel compute) / (original - kernel compute) <= 0.5"
+  },
+  "baselineBeforeV024": {
+    "note": "v0.2.2 generated graph kernel through the MVP-9b harness (f64 everywhere, JS array output, per-component allocation)",
+    "w1": {
+      "generatedCallMs": 0.94,
+      "handwrittenCallMs": 0.26
+    },
+    "w1x10": {
+      "generatedCallMs": 6.11,
+      "handwrittenCallMs": 1.54
+    },
+    "w1x100": {
+      "generatedCallMs": 59.09,
+      "handwrittenCallMs": 13.66
+    }
+  },
+  "graph": {
+    "workload": "W1 candidate graph (IntentWeave full workspace), replicated",
+    "results": [
+      {
+        "scale": 1,
+        "nodes": 3679,
+        "report": {
+          "runs": 5,
+          "calls": 1,
+          "originalMs": {
+            "median": 2.891,
+            "min": 0.62,
+            "max": 5.547
+          },
+          "wrapperMs": {
+            "median": 0.392,
+            "min": 0.326,
+            "max": 0.604
+          },
+          "nativeCallMs": {
+            "median": 0.236,
+            "min": 0.211,
+            "max": 0.389
+          },
+          "kernelMs": {
+            "median": 0.223,
+            "min": 0.198,
+            "max": 0.369
+          },
+          "referenceMs": {
+            "median": 0.305,
+            "min": 0.252,
+            "max": 0.381
+          },
+          "netSavedMs": 2.499,
+          "boundaryShare": 0.063,
+          "referenceRatio": 0.774,
+          "parity": {
+            "cases": 201,
+            "nativeAgreed": 54,
+            "nativeTrapped": 147,
+            "byCategory": {
+              "supplied": {
+                "cases": 1,
+                "nativeAgreed": 1,
+                "nativeTrapped": 0,
+                "mismatches": 0
+              },
+              "normal": {
+                "cases": 50,
+                "nativeAgreed": 14,
+                "nativeTrapped": 36,
+                "mismatches": 0
+              },
+              "boundary": {
+                "cases": 50,
+                "nativeAgreed": 22,
+                "nativeTrapped": 28,
+                "mismatches": 0
+              },
+              "strings": {
+                "cases": 50,
+                "nativeAgreed": 6,
+                "nativeTrapped": 44,
+                "mismatches": 0
+              },
+              "trapDomain": {
+                "cases": 50,
+                "nativeAgreed": 11,
+                "nativeTrapped": 39,
+                "mismatches": 0
+              }
+            },
+            "mismatches": 0
+          },
+          "gate": {
+            "correctness": "PASS",
+            "performance": "PASS",
+            "backendQuality": "PASS",
+            "boundary": "PASS"
+          },
+          "accepted": true,
+          "nativeStatus": {
+            "loaded": true,
+            "nativeCalls": 180,
+            "traps": 441,
+            "contractGuards": 0,
+            "internalErrors": 0,
+            "foreignStates": 0,
+            "observedStates": 0
+          }
+        }
+      },
+      {
+        "scale": 10,
+        "nodes": 36790,
+        "report": {
+          "runs": 5,
+          "calls": 1,
+          "originalMs": {
+            "median": 10.947,
+            "min": 10.79,
+            "max": 11.338
+          },
+          "wrapperMs": {
+            "median": 2.782,
+            "min": 2.737,
+            "max": 3.968
+          },
+          "nativeCallMs": {
+            "median": 1.528,
+            "min": 1.512,
+            "max": 1.678
+          },
+          "kernelMs": {
+            "median": 1.48,
+            "min": 1.469,
+            "max": 1.623
+          },
+          "referenceMs": {
+            "median": 1.444,
+            "min": 1.372,
+            "max": 1.705
+          },
+          "netSavedMs": 8.165,
+          "boundaryShare": 0.138,
+          "referenceRatio": 1.058,
+          "parity": {
+            "cases": 201,
+            "nativeAgreed": 54,
+            "nativeTrapped": 147,
+            "byCategory": {
+              "supplied": {
+                "cases": 1,
+                "nativeAgreed": 1,
+                "nativeTrapped": 0,
+                "mismatches": 0
+              },
+              "normal": {
+                "cases": 50,
+                "nativeAgreed": 14,
+                "nativeTrapped": 36,
+                "mismatches": 0
+              },
+              "boundary": {
+                "cases": 50,
+                "nativeAgreed": 22,
+                "nativeTrapped": 28,
+                "mismatches": 0
+              },
+              "strings": {
+                "cases": 50,
+                "nativeAgreed": 6,
+                "nativeTrapped": 44,
+                "mismatches": 0
+              },
+              "trapDomain": {
+                "cases": 50,
+                "nativeAgreed": 11,
+                "nativeTrapped": 39,
+                "mismatches": 0
+              }
+            },
+            "mismatches": 0
+          },
+          "gate": {
+            "correctness": "PASS",
+            "performance": "PASS",
+            "backendQuality": "PASS",
+            "boundary": "PASS"
+          },
+          "accepted": true,
+          "nativeStatus": {
+            "loaded": true,
+            "nativeCalls": 180,
+            "traps": 441,
+            "contractGuards": 0,
+            "internalErrors": 0,
+            "foreignStates": 0,
+            "observedStates": 0
+          }
+        }
+      },
+      {
+        "scale": 100,
+        "nodes": 367900,
+        "report": {
+          "runs": 5,
+          "calls": 1,
+          "originalMs": {
+            "median": 105.846,
+            "min": 102.324,
+            "max": 119.048
+          },
+          "wrapperMs": {
+            "median": 29.9,
+            "min": 27.66,
+            "max": 30.204
+          },
+          "nativeCallMs": {
+            "median": 16.737,
+            "min": 16.263,
+            "max": 16.948
+          },
+          "kernelMs": {
+            "median": 16.361,
+            "min": 15.899,
+            "max": 16.56
+          },
+          "referenceMs": {
+            "median": 13.587,
+            "min": 13.359,
+            "max": 13.927
+          },
+          "netSavedMs": 75.946,
+          "boundaryShare": 0.151,
+          "referenceRatio": 1.232,
+          "parity": {
+            "cases": 201,
+            "nativeAgreed": 54,
+            "nativeTrapped": 147,
+            "byCategory": {
+              "supplied": {
+                "cases": 1,
+                "nativeAgreed": 1,
+                "nativeTrapped": 0,
+                "mismatches": 0
+              },
+              "normal": {
+                "cases": 50,
+                "nativeAgreed": 14,
+                "nativeTrapped": 36,
+                "mismatches": 0
+              },
+              "boundary": {
+                "cases": 50,
+                "nativeAgreed": 22,
+                "nativeTrapped": 28,
+                "mismatches": 0
+              },
+              "strings": {
+                "cases": 50,
+                "nativeAgreed": 6,
+                "nativeTrapped": 44,
+                "mismatches": 0
+              },
+              "trapDomain": {
+                "cases": 50,
+                "nativeAgreed": 11,
+                "nativeTrapped": 39,
+                "mismatches": 0
+              }
+            },
+            "mismatches": 0
+          },
+          "gate": {
+            "correctness": "PASS",
+            "performance": "PASS",
+            "backendQuality": "PASS",
+            "boundary": "PASS"
+          },
+          "accepted": true,
+          "nativeStatus": {
+            "loaded": true,
+            "nativeCalls": 180,
+            "traps": 441,
+            "contractGuards": 0,
+            "internalErrors": 0,
+            "foreignStates": 0,
+            "observedStates": 0
+          }
+        }
+      }
+    ]
+  },
+  "kwx": {
+    "workload": "dictionary = IntentWeave function names; texts = paragraphs of IntentWeave Markdown and packages/*/src TypeScript",
+    "terms": 3231,
+    "texts": 18331,
+    "textUnits": 5605154,
+    "report": {
+      "runs": 5,
+      "calls": 18331,
+      "originalMs": {
+        "median": 217.104,
+        "min": 215.484,
+        "max": 223.769
+      },
+      "wrapperMs": {
+        "median": 138.95,
+        "min": 137.196,
+        "max": 142.137
+      },
+      "nativeCallMs": {
+        "median": 133.113,
+        "min": 132.327,
+        "max": 158.756
+      },
+      "kernelMs": {
+        "median": 119.391,
+        "min": 118.879,
+        "max": 140.627
+      },
+      "referenceMs": {
+        "median": 90.651,
+        "min": 87.835,
+        "max": 91.265
+      },
+      "netSavedMs": 78.154,
+      "boundaryShare": 0.2,
+      "referenceRatio": 1.468,
+      "parity": {
+        "cases": 600,
+        "nativeAgreed": 600,
+        "nativeTrapped": 0,
+        "byCategory": {
+          "supplied": {
+            "cases": 200,
+            "nativeAgreed": 200,
+            "nativeTrapped": 0,
+            "mismatches": 0
+          },
+          "normal": {
+            "cases": 100,
+            "nativeAgreed": 100,
+            "nativeTrapped": 0,
+            "mismatches": 0
+          },
+          "boundary": {
+            "cases": 100,
+            "nativeAgreed": 100,
+            "nativeTrapped": 0,
+            "mismatches": 0
+          },
+          "strings": {
+            "cases": 100,
+            "nativeAgreed": 100,
+            "nativeTrapped": 0,
+            "mismatches": 0
+          },
+          "trapDomain": {
+            "cases": 100,
+            "nativeAgreed": 100,
+            "nativeTrapped": 0,
+            "mismatches": 0
+          }
+        },
+        "mismatches": 0
+      },
+      "gate": {
+        "correctness": "PASS",
+        "performance": "PASS",
+        "backendQuality": "PASS",
+        "boundary": "PASS"
+      },
+      "accepted": true,
+      "nativeStatus": {
+        "loaded": true,
+        "nativeCalls": 111192,
+        "traps": 0,
+        "contractGuards": 0,
+        "internalErrors": 0,
+        "foreignStates": 0,
+        "observedStates": 0
+      }
+    }
+  }
+}

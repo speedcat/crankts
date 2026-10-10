@@ -107,6 +107,30 @@ export interface IrModule {
   readonly structs: readonly IrStruct[];
 }
 
+/** PREPARED_STATE lowers two modules that may share helpers and structs; they must agree. */
+export function mergeModules(execute: IrModule, prepare?: IrModule): IrModule {
+  if (!prepare) {
+    return execute;
+  }
+  const functions = new Map(prepare.functions.map((fn) => [fn.name, fn]));
+  for (const fn of execute.functions) {
+    const existing = functions.get(fn.name);
+    if (existing && JSON.stringify(existing) !== JSON.stringify(fn)) {
+      throw new Error(`prepare and execute define different functions named ${fn.name}`);
+    }
+    functions.set(fn.name, fn);
+  }
+  const structs = new Map(prepare.structs.map((struct) => [struct.name, struct]));
+  for (const struct of execute.structs) {
+    const existing = structs.get(struct.name);
+    if (existing && JSON.stringify(existing) !== JSON.stringify(struct)) {
+      throw new Error(`prepare and execute define different structs named ${struct.name}`);
+    }
+    structs.set(struct.name, struct);
+  }
+  return { irVersion: 1, entry: execute.entry, functions: [...functions.values()], structs: [...structs.values()] };
+}
+
 export function isReferenceType(type: IrType): boolean {
   return type.kind === "array" || type.kind === "map" || type.kind === "struct";
 }

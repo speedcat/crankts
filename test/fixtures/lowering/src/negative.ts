@@ -50,3 +50,16 @@ export function spins(limit: number): number {
 export function truthiness(value: number): boolean {
   return value ? true : false;
 }
+
+export function mixedNumbers(values: number[], scale: number): number[] {
+  const out: number[] = [];
+  let count = 0;
+  for (let index = 0; index < values.length; index++) {
+    out.push(index * 2);
+    count += 1;
+  }
+  const negativeZero = -0;
+  const scaled = count + scale;
+  out.push(count + negativeZero + scaled);
+  return out;
+}
