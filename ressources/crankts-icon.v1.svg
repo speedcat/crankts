@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">CrankTS workshop icon</title>
+  <desc id="desc">A cream crank forming the letter C over an industrial yellow brush stripe and electric-blue flywheel.</desc>
+
+  <rect id="badge" width="256" height="256" rx="46" fill="#11151B"/>
+
+  <g id="hazard-brush" fill="#FFC13D">
+    <path d="M-9 168 L238 61 L217 84 L267 75 L235 99 L268 102 L223 119 L8 211 L25 188 L-13 193 Z"/>
+    <path d="M-6 207 L188 124 L166 145 L11 218 Z" opacity=".55"/>
+  </g>
+
+  <circle id="flywheel-shadow" cx="125" cy="130" r="89" fill="#07090D"/>
+  <circle id="flywheel" cx="125" cy="130" r="82" fill="#197EBB" stroke="#07090D" stroke-width="8"/>
+
+  <g id="crank" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path id="c-shadow" d="M171 81 A69 69 0 1 0 173 178" stroke="#07090D" stroke-width="38"/>
+    <path id="c-wheel" d="M171 81 A69 69 0 1 0 173 178" stroke="#FFF7E8" stroke-width="25"/>
+    <path id="handle-shadow" d="M125 130 L181 74" stroke="#07090D" stroke-width="31"/>
+    <path id="handle" d="M125 130 L181 74" stroke="#FFF7E8" stroke-width="19"/>
+  </g>
+
+  <circle id="hub-shadow" cx="125" cy="130" r="24" fill="#07090D"/>
+  <circle id="hub" cx="125" cy="130" r="15" fill="#FFF7E8"/>
+  <circle id="hub-pin" cx="125" cy="130" r="7" fill="#FFC13D"/>
+  <circle id="knob-shadow" cx="181" cy="74" r="25" fill="#07090D"/>
+  <circle id="knob" cx="181" cy="74" r="16" fill="#FFC13D" stroke="#FFF7E8" stroke-width="7"/>
+
+  <g id="speed-flecks" fill="#18B9F2" stroke="#07090D" stroke-linejoin="round" stroke-width="4">
+    <path d="M194 39 L211 20 L207 48 Z"/>
+    <path d="M212 59 L240 52 L218 70 Z"/>
+  </g>
+
+  <g id="dry-brush-cuts" fill="none" stroke="#07090D" stroke-linecap="round" stroke-width="5" opacity=".66">
+    <path d="M81 81 L99 75 M59 118 L78 112 M68 170 L87 163 M152 190 L169 182"/>
+  </g>
+</svg>
