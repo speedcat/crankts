@@ -32,7 +32,9 @@ export type BoundaryType =
     /** Neighbor order inside a node's slice is part of the input (it drives traversal order). */
     readonly neighborOrder: "INSERTION" | "UNSPECIFIED";
   }
-  | { readonly kind: "handle"; readonly state: string };
+  | { readonly kind: "handle"; readonly state: string }
+  /** A caller-owned `Map<string, V>` the kernel updates with has/set only (see IN_OUT_REPLAYED). */
+  | { readonly kind: "inoutMap"; readonly value: BoundaryType };
 
 export interface BoundaryField {
   readonly name: string;
@@ -44,7 +46,9 @@ export type Ownership =
   | "COPIED"
   | "BORROWED"
   /** Consumed by `prepare` into native state owned by a handle. */
-  | "MOVED_INTO_HANDLE";
+  | "MOVED_INTO_HANDLE"
+  /** In-out map: keys are copied in, the ordered set-log is returned and replayed by the caller. */
+  | "IN_OUT_REPLAYED";
 
 export type InputMutability =
   | "IMMUTABLE"
@@ -93,7 +97,12 @@ export type InvalidationStrategy =
   /** Sound but cold: MVP-8 measured per-chunk re-preparation slower than TypeScript. */
   | "REPREPARE_PER_CALL"
   /** No invalidation needed; requires a PROVEN `IMMUTABLE_DURING_HANDLE` obligation. */
-  | "PROVEN_IMMUTABLE";
+  | "PROVEN_IMMUTABLE"
+  /**
+   * The handle is reused only while the prepare inputs equal a snapshot (compared by value on every
+   * use, O(inputs) per call). Sound for any mutation of caller-owned sources, without wrapping them.
+   */
+  | "CONTENT_SNAPSHOT";
 
 export interface PreparedState {
   readonly name: string;
@@ -182,7 +191,8 @@ export type ContractDiagnosticCode =
   | "FALLBACK_INCOMPLETE"
   | "PROOF_UNPROVEN"
   | "GUARD_MISSING"
-  | "PER_CALL_PACKING";
+  | "PER_CALL_PACKING"
+  | "INOUT_MISMATCH";
 
 export interface ContractDiagnostic {
   readonly severity: "ERROR" | "WARNING";
@@ -252,6 +262,12 @@ export function validateKernelContract(contract: KernelContract): ContractValida
         `${path}.mutability`,
         `${port.name} is mutable; use WRAP_MUTATORS or REPREPARE_PER_CALL instead of PROVEN_IMMUTABLE.`,
       );
+    }
+    if ((port.ownership === "IN_OUT_REPLAYED") !== (port.type.kind === "inoutMap")) {
+      error("INOUT_MISMATCH", `${path}.ownership`, `${port.name}: IN_OUT_REPLAYED ownership and the inoutMap type must go together.`);
+    }
+    if (port.ownership === "IN_OUT_REPLAYED" && isPrepare) {
+      error("INOUT_MISMATCH", `${path}.ownership`, `${port.name}: prepare inputs cannot be in-out.`);
     }
     if (port.packing === "PER_CALL" && PACKED_KINDS.has(port.type.kind) && !isPrepare) {
       warning(

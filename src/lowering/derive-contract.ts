@@ -73,6 +73,23 @@ export function deriveKernelContract(request: DeriveContractRequest): DerivedCon
     if (request.graph && param.name === request.graph.neighbors) {
       continue;
     }
+    if (param.inout && param.type.kind === "map") {
+      const value = param.type.value.kind === "struct"
+        ? structBoundary(request.execute, param.type.value.name)
+        : boundaryType(param.type.value);
+      if (!value) {
+        return fail(`in-out map ${param.name} has values that cannot cross the boundary`);
+      }
+      inputs.push({
+        name: param.name,
+        type: { kind: "inoutMap", value },
+        sourceType: formatIrType(param.type),
+        ownership: "IN_OUT_REPLAYED",
+        mutability: "IMMUTABLE",
+        packing: "PER_CALL",
+      });
+      continue;
+    }
     if (request.graph && param.name === request.graph.offsets) {
       const neighbors = execute.params.find((candidate) => candidate.name === request.graph?.neighbors);
       if (!isTypedArray(param.type, "u32") || !neighbors || !isTypedArray(neighbors.type, "u32")) {
@@ -234,6 +251,15 @@ function boundaryType(type: IrType): BoundaryType | undefined {
     default:
       return undefined;
   }
+}
+
+/** Struct values (of in-out maps) cross field by field; only scalars and strings are supported. */
+function structBoundary(module: IrModule, name: string): BoundaryType | undefined {
+  const struct = module.structs.find((candidate) => candidate.name === name);
+  const fields = struct?.fields.map((field) => ({ name: field.name, type: boundaryType(field.type) }));
+  return fields && fields.every((field) => field.type && ["scalar", "string"].includes(field.type.kind))
+    ? { kind: "struct", fields: fields as { name: string; type: BoundaryType }[] }
+    : undefined;
 }
 
 function isTypedArray(type: IrType, storage: string): boolean {

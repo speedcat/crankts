@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "v0.2.5-region-extraction-real-kwx",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "build": "cargo --release"
+  },
+  "source": {
+    "file": "intentweave/packages/analyzer/src/kwg/heuristicExtractor.ts",
+    "commit": "04ca61b",
+    "modified": false,
+    "regions": {
+      "prepare": "303-315 (sliced on simpleTermsByLower; state declaration on line 299 pulled in)",
+      "execute": "325-360"
+    }
+  },
+  "contract": {
+    "shape": "PREPARED_STATE",
+    "invalidation": "CONTENT_SNAPSHOT",
+    "obligations": [
+      "PURE:PROVEN",
+      "NO_ALIASING:PROVEN",
+      "DETERMINISTIC_ORDER:PROVEN",
+      "TERMINATION:GUARDED",
+      "INTEGER_RANGE:GUARDED",
+      "STRING_SEMANTICS:GUARDED",
+      "IMMUTABLE_DURING_HANDLE:PROVEN"
+    ]
+  },
+  "intentweaveTests": {
+    "original": {
+      "passed": 5,
+      "failed": 0
+    },
+    "patched": {
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "differential": {
+    "workload": "dictionary = IntentWeave function names; texts = IntentWeave Markdown and packages/*/src paragraphs; plus 2,000 extractions with Set mutation every 50 calls",
+    "dictionaryTerms": 3231,
+    "texts": 18331,
+    "comparedExtractions": 20331,
+    "dictionaryMatches": 19426,
+    "mismatches": 0
+  },
+  "regionParity": {
+    "cases": 2000,
+    "nativeAgreed": 2000,
+    "nativeTrapped": 0,
+    "mismatches": 0
+  },
+  "fullExtractorMs": {
+    "note": "median of runs, each variant in a fresh process",
+    "original": 14200.253,
+    "patched": 11393.644,
+    "speedup": 1.246,
+    "patchedTypeScriptOnly": 11950.241,
+    "speedupTypeScriptOnly": 1.188
+  },
+  "regionMs": {
+    "typescript": 5269.698,
+    "typescriptScanOnly": 53.616,
+    "integration": 177.844,
+    "nativeCall": 76.512,
+    "kernel": 54.86,
+    "reference": 87.103
+  },
+  "gate": {
+    "correctness": "PASS",
+    "performance": "PASS",
+    "backendQuality": "PASS",
+    "nativeKernelVsV8Scan": 0.977,
+    "boundary": "PASS",
+    "referenceRatio": 0.878,
+    "boundaryShare": 0.024
+  },
+  "nativeStatus": {
+    "loaded": true,
+    "nativeCalls": 136356,
+    "traps": 0,
+    "contractGuards": 0,
+    "internalErrors": 0,
+    "foreignStates": 0,
+    "observedStates": 0
+  },
+  "regionStatus": {
+    "preparations": 2039,
+    "cacheHits": 132278
+  }
+}

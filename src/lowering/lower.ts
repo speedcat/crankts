@@ -2,6 +2,7 @@ import { relative, sep } from "node:path";
 import type * as ts from "typescript";
 import type { CompilerFacade } from "../compiler/compiler-facade.js";
 import type { ArrayStorage, BinaryOperator, IrExpr, IrFunction, IrModule, IrStmt, IrStruct, IrType } from "./ir.js";
+import { walkStatements } from "./verify.js";
 
 /**
  * TS -> Kernel IR lowering (v0.2.1). Lowers an entry function and its transitive same-program
@@ -71,6 +72,8 @@ class Lowerer {
   private readonly callees = new Map<string, Set<string>>();
   private current: ts.FunctionDeclaration | undefined;
   private hiddenCounter = 0;
+  /** `const v = m.get(k)` bindings used only as `v ?? fallback`; each use becomes mapGetOr. */
+  private readonly deferredGets = new Map<ts.Symbol, { readonly map: ts.Expression; readonly key: ts.Expression }>();
 
   constructor(facade: Facade, private readonly options: LoweringOptions) {
     this.ts = facade.typescript;
@@ -149,11 +152,21 @@ class Lowerer {
     const signature = this.checker.getSignatureFromDeclaration(declaration);
     const returnType = signature ? this.irType(this.checker.getReturnTypeOfSignature(signature), declaration, true) : undefined;
     const body = this.block(declaration.body.statements);
+    // Map parameters the body mutates become in-out (has/set only; checked by the verifier).
+    const mutatedMaps = new Set<string>();
+    walkStatements(body, (statement) => {
+      if ((statement.stmt === "mapSet" || statement.stmt === "mapAppend") && statement.map.op === "local") {
+        mutatedMaps.add(statement.map.name);
+      }
+    }, () => undefined);
+    const finalParams = params.map((param) => (
+      param.type.kind === "map" && mutatedMaps.has(param.name) ? { ...param, inout: true } : param
+    ));
     if (returnType) {
       this.lowered.set(name, {
         name,
         source: this.location(declaration),
-        params,
+        params: finalParams,
         returnType,
         body,
       });
@@ -163,7 +176,70 @@ class Lowerer {
   // --- statements -----------------------------------------------------------------------------
 
   private block(statements: readonly ts.Statement[]): IrStmt[] {
-    return statements.flatMap((statement) => this.statement(statement));
+    const lowered: IrStmt[] = [];
+    for (let index = 0; index < statements.length; index += 1) {
+      const append = this.mapAppendIdiom(statements, index);
+      if (append) {
+        lowered.push(...append);
+        index += 2;
+        continue;
+      }
+      lowered.push(...this.statement(statements[index] as ts.Statement));
+    }
+    return lowered;
+  }
+
+  /**
+   * Multimap append: `const v = m.get(k) ?? []; v.push(x); m.set(k, v);` with `v` used nowhere else
+   * and `k` built only from const bindings, so evaluating it once is equivalent.
+   */
+  private mapAppendIdiom(statements: readonly ts.Statement[], index: number): IrStmt[] | undefined {
+    const t = this.ts;
+    const [first, second, third] = [statements[index], statements[index + 1], statements[index + 2]];
+    if (!first || !second || !third || !t.isVariableStatement(first) || !(first.declarationList.flags & t.NodeFlags.Const)) {
+      return undefined;
+    }
+    const declaration = first.declarationList.declarations[0];
+    if (first.declarationList.declarations.length !== 1 || !declaration || !t.isIdentifier(declaration.name)) {
+      return undefined;
+    }
+    const init = declaration.initializer;
+    if (!init || !t.isBinaryExpression(init) || init.operatorToken.kind !== t.SyntaxKind.QuestionQuestionToken
+      || !t.isArrayLiteralExpression(init.right) || init.right.elements.length !== 0
+      || !t.isCallExpression(init.left) || !t.isPropertyAccessExpression(init.left.expression)
+      || init.left.expression.name.text !== "get" || init.left.arguments.length !== 1) {
+      return undefined;
+    }
+    const variable = declaration.name.text;
+    const mapNode = init.left.expression.expression;
+    const keyNode = init.left.arguments[0] as ts.Expression;
+    const isCall = (statement: ts.Statement, receiver: string, method: string, count: number): statement is ts.ExpressionStatement => (
+      t.isExpressionStatement(statement) && t.isCallExpression(statement.expression)
+      && t.isPropertyAccessExpression(statement.expression.expression)
+      && statement.expression.expression.name.text === method
+      && statement.expression.expression.expression.getText() === receiver
+      && statement.expression.arguments.length === count
+    );
+    if (!isCall(second, variable, "push", 1) || !isCall(third, mapNode.getText(), "set", 2)) {
+      return undefined;
+    }
+    const setCall = third.expression as ts.CallExpression;
+    const [setKey, setValue] = setCall.arguments;
+    if (!setKey || !setValue || setKey.getText() !== keyNode.getText() || !t.isIdentifier(setValue) || setValue.text !== variable) {
+      return undefined;
+    }
+    const symbol = this.checker.getSymbolAtLocation(declaration.name);
+    if (!symbol || this.references(symbol).length !== 2 || !this.isConstExpression(keyNode)) {
+      return undefined;
+    }
+    const mapType = this.irType(this.checker.getTypeAtLocation(mapNode), mapNode);
+    if (mapType?.kind !== "map" || mapType.value.kind !== "array") {
+      return undefined;
+    }
+    const map = this.expr(mapNode);
+    const key = this.stringExpr(keyNode);
+    const value = this.expr((second.expression as ts.CallExpression).arguments[0] as ts.Expression, mapType.value.element);
+    return map && key && value ? [{ stmt: "mapAppend", map, key, value }] : [];
   }
 
   private statement(node: ts.Statement): IrStmt[] {
@@ -226,12 +302,45 @@ class Lowerer {
       this.report(declaration, "declarations need an identifier and an initializer");
       return [];
     }
+    if (this.deferGet(declaration)) {
+      return [];
+    }
     const type = this.irType(this.checker.getTypeAtLocation(declaration.name), declaration);
     if (!type) {
       return [];
     }
     const init = this.expr(declaration.initializer, type);
     return init ? [{ stmt: "let", name: declaration.name.text, type, init }] : [];
+  }
+
+  /**
+   * `const v = m.get(k)` (type `V | undefined`) whose every use is `v ?? fallback` and whose key is
+   * built only from const bindings: the binding is dropped and each use lowers to mapGetOr.
+   */
+  private deferGet(declaration: ts.VariableDeclaration): boolean {
+    const t = this.ts;
+    const init = declaration.initializer;
+    const parentList = declaration.parent;
+    if (!init || !t.isIdentifier(declaration.name) || !t.isVariableDeclarationList(parentList) || !(parentList.flags & t.NodeFlags.Const)
+      || !t.isCallExpression(init) || !t.isPropertyAccessExpression(init.expression) || init.expression.name.text !== "get"
+      || init.arguments.length !== 1
+      || this.irType(this.checker.getTypeAtLocation(init.expression.expression), init.expression.expression, false, true)?.kind !== "map") {
+      return false;
+    }
+    const symbol = this.checker.getSymbolAtLocation(declaration.name);
+    const key = init.arguments[0] as ts.Expression;
+    if (!symbol || !this.isConstExpression(key)) {
+      return false;
+    }
+    const uses = this.references(symbol);
+    const onlyCoalesced = uses.length > 0 && uses.every((use) => (
+      t.isBinaryExpression(use.parent) && use.parent.operatorToken.kind === t.SyntaxKind.QuestionQuestionToken && use.parent.left === use
+    ));
+    if (!onlyCoalesced) {
+      return false;
+    }
+    this.deferredGets.set(symbol, { map: init.expression.expression, key });
+    return true;
   }
 
   private forStatement(node: ts.ForStatement): IrStmt[] {
@@ -284,19 +393,24 @@ class Lowerer {
       return [];
     }
     const index = `__index${this.hiddenCounter++}`;
+    // A non-trivial iterable (e.g. `m.get(k) ?? []`) is evaluated once, as JS does.
+    const simple = t.isIdentifier(node.expression) || t.isPropertyAccessExpression(node.expression);
+    const iterableName = `__iterable${this.hiddenCounter++}`;
+    const source: IrExpr = simple ? iterable : { op: "local", name: iterableName };
     const element: IrStmt = {
       stmt: "let",
       name: declaration.name.text,
       type: iterableType.element,
-      init: { op: "index", target: iterable, index: { op: "local", name: index } },
+      init: { op: "index", target: source, index: { op: "local", name: index } },
     };
-    return [{
+    const loop: IrStmt = {
       stmt: "forRange",
       variable: index,
       start: { op: "num", value: 0 },
-      end: { op: "length", target: iterable },
+      end: { op: "length", target: source },
       body: [element, ...this.nested(node.statement)],
-    }];
+    };
+    return simple ? [loop] : [{ stmt: "block", body: [{ stmt: "let", name: iterableName, type: iterableType, init: iterable }, loop] }];
   }
 
   private expressionStatement(node: ts.Expression): IrStmt[] {
@@ -394,7 +508,7 @@ class Lowerer {
       if (receiverType?.kind === "map" && method === "set" && node.arguments.length === 2) {
         const map = this.expr(callee.expression);
         const key = this.stringExpr(node.arguments[0] as ts.Expression);
-        const value = this.numberExpr(node.arguments[1] as ts.Expression);
+        const value = this.typedTo(node.arguments[1] as ts.Expression, receiverType.value);
         return map && key && value ? [{ stmt: "mapSet", map, key, value }] : [];
       }
     }
@@ -590,16 +704,27 @@ class Lowerer {
     return undefined;
   }
 
-  /** `map.get(key) ?? fallback` is the only lowered form of a map lookup. */
+  /** `map.get(key) ?? fallback` (directly or via a deferred `const v = map.get(key)`) is the only lowered map lookup. */
   private mapGetOr(node: ts.BinaryExpression): IrExpr | undefined {
     const t = this.ts;
     const left = node.left;
+    let mapNode: ts.Expression | undefined;
+    let keyNode: ts.Expression | undefined;
     if (t.isCallExpression(left) && t.isPropertyAccessExpression(left.expression) && left.expression.name.text === "get"
-      && left.arguments.length === 1
-      && this.irType(this.checker.getTypeAtLocation(left.expression.expression), left.expression.expression)?.kind === "map") {
-      const map = this.expr(left.expression.expression);
-      const key = this.stringExpr(left.arguments[0] as ts.Expression);
-      const fallback = this.numberExpr(node.right);
+      && left.arguments.length === 1) {
+      mapNode = left.expression.expression;
+      keyNode = left.arguments[0] as ts.Expression;
+    } else if (t.isIdentifier(left)) {
+      const symbol = this.checker.getSymbolAtLocation(left);
+      const deferred = symbol ? this.deferredGets.get(symbol) : undefined;
+      mapNode = deferred?.map;
+      keyNode = deferred?.key;
+    }
+    const mapType = mapNode ? this.irType(this.checker.getTypeAtLocation(mapNode), mapNode) : undefined;
+    if (mapNode && keyNode && mapType?.kind === "map") {
+      const map = this.expr(mapNode);
+      const key = this.stringExpr(keyNode);
+      const fallback = this.typedTo(node.right, mapType.value);
       return map && key && fallback ? { op: "mapGetOr", map, key, fallback } : undefined;
     }
     this.report(node, "?? is lowered only as `map.get(key) ?? fallback`");
@@ -636,6 +761,14 @@ class Lowerer {
       }
       if (t.isNewExpression(callee.expression) && method === "fill") {
         return this.arrayNew(callee.expression, args[0]);
+      }
+      if (t.isRegularExpressionLiteral(callee.expression) && method === "test" && args.length === 1) {
+        const parsed = parseCharClassRegex(callee.expression.text);
+        if (typeof parsed === "string") {
+          return this.fail(node, parsed);
+        }
+        const target = this.stringExpr(args[0] as ts.Expression);
+        return target ? { op: "charClassAll", target, ranges: parsed.ranges, allowEmpty: parsed.allowEmpty } : undefined;
       }
       const receiverType = this.irType(this.checker.getTypeAtLocation(callee.expression), callee.expression, false, true);
       if (receiverType?.kind === "string") {
@@ -687,7 +820,7 @@ class Lowerer {
     const name = t.isIdentifier(node.expression) ? node.expression.text : "";
     if (name === "Map" && (node.arguments?.length ?? 0) === 0) {
       const type = this.irType(this.checker.getTypeAtLocation(node), node);
-      return type?.kind === "map" ? { op: "mapNew" } : undefined;
+      return type?.kind === "map" ? { op: "mapNew", type } : undefined;
     }
     const storage = TYPED_ARRAY_STORAGE[name];
     if (storage && node.arguments?.length === 1) {
@@ -732,6 +865,10 @@ class Lowerer {
     }
     if (values.size !== struct.fields.length || struct.fields.some((field) => !values.has(field.name))) {
       return this.fail(node, `object literal must set exactly the fields of ${struct.name}`);
+    }
+    // Property order is observable in JS objects; backends build fields in declaration order.
+    if ([...values.keys()].some((name, index) => struct.fields[index]?.name !== name)) {
+      return this.fail(node, `object literal must list the fields of ${struct.name} in declaration order`);
     }
     const fields = struct.fields.map((field) => ({ name: field.name, value: this.expr(values.get(field.name) as ts.Expression, field.type) }));
     return fields.every((field) => field.value)
@@ -822,9 +959,11 @@ class Lowerer {
     }
     if (symbolName === "Map" || symbolName === "ReadonlyMap") {
       const [key, value] = this.typeArguments(type);
-      return key && value && key.flags & t.TypeFlags.String && value.flags & t.TypeFlags.Number
-        ? { kind: "map" }
-        : "maps are lowered only as Map<string, number>";
+      if (!key || !value || !(key.flags & t.TypeFlags.String)) {
+        return "maps are lowered only with string keys";
+      }
+      const valueType = this.classifyType(value, false);
+      return typeof valueType === "string" ? `map value ${valueType}` : { kind: "map", value: valueType };
     }
     if (type.getCallSignatures().length > 0) {
       return "functions cannot be lowered as values";
@@ -834,9 +973,14 @@ class Lowerer {
 
   private structType(type: ts.Type): IrType | string {
     const t = this.ts;
-    const name = type.aliasSymbol?.getName() ?? type.getSymbol()?.getName();
-    if (!name || name === "__type" || name === "__object") {
-      return "anonymous object types are not lowered; declare a named interface";
+    const declaredName = type.aliasSymbol?.getName() ?? type.getSymbol()?.getName();
+    const anonymous = !declaredName || declaredName === "__type" || declaredName === "__object";
+    // Anonymous object types are named after their fields (same shape, same struct).
+    const name = anonymous
+      ? `Anon_${this.checker.getPropertiesOfType(type).map((property) => property.getName()).join("_")}`
+      : declaredName;
+    if (anonymous && this.checker.getPropertiesOfType(type).length === 0) {
+      return "empty object types are not lowered";
     }
     if (type.isClass() || (type.getSymbol()?.flags ?? 0) & t.SymbolFlags.Class) {
       return "class instances are not lowered";
@@ -874,6 +1018,49 @@ class Lowerer {
   }
 
   // --- helpers --------------------------------------------------------------------------------
+
+  /** Every identifier in the current function that refers to `symbol`, excluding its declaration. */
+  private references(symbol: ts.Symbol): ts.Identifier[] {
+    const t = this.ts;
+    const found: ts.Identifier[] = [];
+    const visit = (node: ts.Node): void => {
+      if (t.isIdentifier(node) && !(symbol.valueDeclaration && node.parent === symbol.valueDeclaration)
+        && this.checker.getSymbolAtLocation(node) === symbol) {
+        found.push(node);
+      }
+      node.forEachChild(visit);
+    };
+    if (this.current?.body) {
+      visit(this.current.body);
+    }
+    return found;
+  }
+
+  /** Built from literals and const bindings only, so re-evaluating it yields the same value. */
+  private isConstExpression(node: ts.Expression): boolean {
+    const t = this.ts;
+    let constant = true;
+    const visit = (child: ts.Node): void => {
+      if (t.isIdentifier(child) && !(t.isPropertyAccessExpression(child.parent) && child.parent.name === child)) {
+        const declaration = this.checker.getSymbolAtLocation(child)?.valueDeclaration;
+        const list = declaration && t.isVariableDeclaration(declaration) ? declaration.parent : undefined;
+        if (!list || !t.isVariableDeclarationList(list) || !(list.flags & t.NodeFlags.Const)) {
+          constant = false;
+        }
+      }
+      child.forEachChild(visit);
+    };
+    visit(node);
+    return constant;
+  }
+
+  /** Lowers `node` as a value of `type` (numbers, booleans, and strings are type-checked). */
+  private typedTo(node: ts.Expression, type: IrType): IrExpr | undefined {
+    if (type.kind === "f64") return this.numberExpr(node);
+    if (type.kind === "bool") return this.boolExpr(node);
+    if (type.kind === "string") return this.stringExpr(node);
+    return this.expr(node, type);
+  }
 
   /** Identifiers must be parameters or locals of the function being lowered (no captured state). */
   private isLocal(node: ts.Identifier): boolean {
@@ -934,3 +1121,59 @@ class Lowerer {
   }
 }
 
+
+/**
+ * Parses `/^[class]+$/` or `/^[class]*$/` without flags. Supports literal characters, ranges, `\\d`,
+ * `\\w`, and escaped characters; everything else (negation, flags, other syntax) is rejected.
+ */
+export function parseCharClassRegex(literal: string): { readonly ranges: [number, number][]; readonly allowEmpty: boolean } | string {
+  const match = /^\/\^\[(.+)\]([+*])\$\/([a-z]*)$/.exec(literal);
+  if (!match || match[3]) {
+    return `regex ${literal} is lowered only as an anchored character class (/^[...]+$/ without flags)`;
+  }
+  const body = match[1] ?? "";
+  if (body.startsWith("^")) {
+    return `negated character classes are not lowered (${literal})`;
+  }
+  const units: Array<number | [number, number]> = [];
+  for (let index = 0; index < body.length; index += 1) {
+    const char = body[index] as string;
+    if (char === "\\") {
+      const escaped = body[index + 1];
+      index += 1;
+      if (escaped === "d") {
+        units.push([48, 57]);
+      } else if (escaped === "w") {
+        units.push([48, 57], [65, 90], [95, 95], [97, 122]);
+      } else if (escaped !== undefined && /[^A-Za-z0-9]/.test(escaped)) {
+        // A tuple, so an escaped character never becomes a range endpoint by accident.
+        units.push([escaped.charCodeAt(0), escaped.charCodeAt(0)]);
+      } else {
+        return `escape \\${escaped ?? ""} in ${literal} is not lowered`;
+      }
+      continue;
+    }
+    units.push(char.charCodeAt(0));
+  }
+  const ranges: [number, number][] = [];
+  for (let index = 0; index < units.length; index += 1) {
+    const unit = units[index];
+    const dash = units[index + 1];
+    const end = units[index + 2];
+    if (dash === 45 && end !== undefined && (typeof unit !== "number" || typeof end !== "number")) {
+      return `ranges with escaped endpoints are not lowered (${literal})`;
+    }
+    if (typeof unit === "number" && dash === 45 && typeof end === "number") {
+      ranges.push([unit, end]);
+      index += 2;
+    } else if (typeof unit === "number") {
+      ranges.push([unit, unit]);
+    } else if (unit) {
+      ranges.push(unit);
+    }
+  }
+  if (ranges.some(([low, high]) => low > high)) {
+    return `invalid range in ${literal}`;
+  }
+  return { ranges, allowEmpty: match[2] === "*" };
+}

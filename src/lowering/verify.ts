@@ -75,6 +75,10 @@ export function verifyIrModule(module: IrModule): IrVerification {
     const originOf = (expr: IrExpr): Origin => exprOrigin(expr, origins, returnsFresh);
     const typeOf = (expr: IrExpr): IrType | undefined => exprType(expr, types, structFields, functions);
     returnsFresh.set(fn.name, returnExpressions(fn.body).every((expr) => originOf(expr) === "FRESH"));
+    const inout = new Set(fn.params.filter((param) => param.inout).map((param) => param.name));
+    if (inout.size > 0) {
+      checkInoutUses(fn, inout, errors);
+    }
 
     walkStatements(fn.body, (statement) => {
       switch (statement.stmt) {
@@ -105,10 +109,18 @@ export function verifyIrModule(module: IrModule): IrVerification {
           }
           break;
         case "mapSet":
-          if (originOf(statement.map) !== "FRESH") {
-            purity.push(`${fn.name}: mapSet on parameter-derived storage`);
+        case "mapAppend": {
+          // Sets on an in-out map are the kernel's declared effect: the caller replays the set-log.
+          const declaredInout = statement.stmt === "mapSet" && statement.map.op === "local" && inout.has(statement.map.name);
+          if (originOf(statement.map) !== "FRESH" && !declaredInout) {
+            purity.push(`${fn.name}: ${statement.stmt} on parameter-derived storage`);
+          }
+          const valueType = typeOf(statement.value);
+          if (valueType && isReferenceType(valueType) && isCopyOfBinding(statement.value) && originOf(statement.value) === "FRESH") {
+            aliasing.push(`${fn.name}: fresh storage stored into a map while still bound`);
           }
           break;
+        }
         case "let":
         case "assign": {
           const value = statement.stmt === "let" ? statement.init : statement.value;
@@ -125,7 +137,11 @@ export function verifyIrModule(module: IrModule): IrVerification {
           break;
       }
     }, (expr, inReturn) => {
-      if (expr.op === "struct" && !inReturn) {
+      // Only reference-typed fields can alias; strings and numbers are values.
+      if (expr.op === "struct" && !inReturn && expr.fields.some((field) => {
+        const fieldType = typeOf(field.value);
+        return fieldType === undefined || isReferenceType(fieldType);
+      })) {
         aliasing.push(`${fn.name}: struct literal outside return may alias its fields`);
       }
       if (expr.op === "struct" || expr.op === "arrayLiteral") {
@@ -155,7 +171,14 @@ export function verifyIrModule(module: IrModule): IrVerification {
   const recursion = errors.some((error) => error.message.includes("recursion"));
   const obligations: ProofObligation[] = [
     purity.length === 0
-      ? { kind: "PURE", subject, status: "PROVEN", evidence: "Kernel IR: no captured state, no mutation of parameter-derived storage" }
+      ? {
+        kind: "PURE",
+        subject,
+        status: "PROVEN",
+        evidence: module.functions.some((fn) => fn.params.some((param) => param.inout))
+          ? "Kernel IR: no captured state; the only mutation of parameter storage is has/set on in-out maps, replayed by the caller"
+          : "Kernel IR: no captured state, no mutation of parameter-derived storage",
+      }
       : { kind: "PURE", subject, status: "UNPROVEN", evidence: purity.join("; ") },
     aliasing.length === 0
       ? { kind: "NO_ALIASING", subject, status: "PROVEN", evidence: "Kernel IR: fresh storage has a single binding; struct literals move out in return" }
@@ -286,9 +309,35 @@ function exprOrigin(expr: IrExpr, origins: ReadonlyMap<string, Origin>, returnsF
         : "FRESH";
     case "call":
       return returnsFresh.get(expr.callee) === true ? "FRESH" : "PARAM";
+    case "mapGetOr":
+      // A reference-valued lookup aliases the map's storage (the fallback is a fresh literal).
+      return exprOrigin(expr.map, origins, returnsFresh);
     default:
       return "FRESH";
   }
+}
+
+/** In-out maps are copied in by key and replayed by the caller, so only has/set may touch them. */
+function checkInoutUses(fn: IrFunction, inout: ReadonlySet<string>, errors: VerifyDiagnostic[]): void {
+  const allowed = new Set<IrExpr>();
+  walkStatements(fn.body, (statement) => {
+    if (statement.stmt === "mapSet" && statement.map.op === "local" && inout.has(statement.map.name)) {
+      allowed.add(statement.map);
+    }
+  }, (expr) => {
+    if (expr.op === "mapHas" && expr.map.op === "local" && inout.has(expr.map.name)) {
+      allowed.add(expr.map);
+    }
+  });
+  walkStatements(fn.body, (statement) => {
+    if ((statement.stmt === "let" || statement.stmt === "assign") && inout.has(statement.name)) {
+      errors.push({ function: fn.name, message: `in-out map ${statement.name} cannot be rebound` });
+    }
+  }, (expr) => {
+    if (expr.op === "local" && inout.has(expr.name) && !allowed.has(expr)) {
+      errors.push({ function: fn.name, message: `in-out map ${expr.name} supports only has() and set()` });
+    }
+  });
 }
 
 function exprType(
@@ -312,7 +361,11 @@ function exprType(
     case "arrayLiteral":
       return expr.type;
     case "mapNew":
-      return { kind: "map" };
+      return expr.type;
+    case "mapGetOr": {
+      const map = exprType(expr.map, types, structFields, functions);
+      return map?.kind === "map" ? map.value : undefined;
+    }
     case "struct":
       return { kind: "struct", name: expr.name };
     case "call":
@@ -321,13 +374,16 @@ function exprType(
     case "slice":
     case "toLowerAscii":
       return { kind: "string" };
+    case "charClassAll":
+    case "mapHas":
+      return { kind: "bool" };
     default:
       return undefined;
   }
 }
 
 function isCopyOfBinding(expr: IrExpr): boolean {
-  return expr.op === "local" || expr.op === "index" || expr.op === "field" || expr.op === "cond";
+  return expr.op === "local" || expr.op === "index" || expr.op === "field" || expr.op === "cond" || expr.op === "mapGetOr";
 }
 
 function baseLocal(expr: IrExpr): string | undefined {
@@ -378,6 +434,7 @@ function statementExpressions(statement: IrStmt): IrExpr[] {
     case "clear":
       return [statement.target];
     case "mapSet":
+    case "mapAppend":
       return [statement.map, statement.key, statement.value];
     case "sortByKeys":
       return [statement.target, ...statement.keys];
@@ -431,6 +488,7 @@ function childExpressions(expr: IrExpr): readonly IrExpr[] {
       return expr.args;
     case "length":
     case "toLowerAscii":
+    case "charClassAll":
       return [expr.target];
     case "index":
     case "charCodeAt":

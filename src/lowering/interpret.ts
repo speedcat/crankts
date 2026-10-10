@@ -22,7 +22,7 @@ export interface InterpretOptions {
 }
 
 type ArrayValue = unknown[] | Uint8Array | Uint32Array | Int32Array | Float64Array;
-type Value = number | boolean | string | ArrayValue | Map<string, number> | Record<string, unknown> | undefined;
+type Value = number | boolean | string | ArrayValue | Map<string, unknown> | Record<string, unknown> | undefined;
 type Signal =
   | { readonly kind: "normal" }
   | { readonly kind: "break" }
@@ -144,8 +144,21 @@ class Interpreter {
         return NORMAL;
       }
       case "mapSet":
-        this.map(statement.map, scope).set(this.string(statement.key, scope), this.number(statement.value, scope));
+        this.map(statement.map, scope).set(this.string(statement.key, scope), this.expr(statement.value, scope));
         return NORMAL;
+      case "mapAppend": {
+        // const v = m.get(k) ?? []; v.push(x); m.set(k, v);
+        const map = this.map(statement.map, scope);
+        const key = this.string(statement.key, scope);
+        const value = this.expr(statement.value, scope);
+        const existing = map.get(key) as unknown[] | undefined;
+        if (existing) {
+          existing.push(value);
+        } else {
+          map.set(key, [value]);
+        }
+        return NORMAL;
+      }
       case "sortByKeys": {
         const target = this.array(statement.target, scope);
         const keys = statement.keys.map((key) => this.array(key, scope));
@@ -269,12 +282,25 @@ class Interpreter {
       case "mapGetOr": {
         const map = this.map(expr.map, scope);
         const key = this.string(expr.key, scope);
-        return map.has(key) ? map.get(key) : this.number(expr.fallback, scope);
+        return map.has(key) ? map.get(key) as Value : this.expr(expr.fallback, scope);
       }
       case "mapHas":
         return this.map(expr.map, scope).has(this.string(expr.key, scope));
       case "mapNew":
-        return new Map<string, number>();
+        return new Map<string, unknown>();
+      case "charClassAll": {
+        const target = this.string(expr.target, scope);
+        if (target.length === 0) {
+          return expr.allowEmpty;
+        }
+        for (let index = 0; index < target.length; index += 1) {
+          const unit = target.charCodeAt(index);
+          if (!expr.ranges.some(([low, high]) => unit >= low && unit <= high)) {
+            return false;
+          }
+        }
+        return true;
+      }
       case "field":
         return (this.expr(expr.target, scope) as Record<string, Value>)[expr.name];
       case "struct":
@@ -313,8 +339,8 @@ class Interpreter {
     return this.expr(expr, scope) as ArrayValue;
   }
 
-  private map(expr: IrExpr, scope: Scope): Map<string, number> {
-    return this.expr(expr, scope) as Map<string, number>;
+  private map(expr: IrExpr, scope: Scope): Map<string, unknown> {
+    return this.expr(expr, scope) as Map<string, unknown>;
   }
 }
 

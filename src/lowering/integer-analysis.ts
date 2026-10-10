@@ -73,7 +73,7 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
 
   const typeOf = (fn: string, expr: IrExpr): IrType | undefined => exprType(expr, localTypes.get(fn) ?? new Map(), structFields, functions);
   const isNumericCollection = (type: IrType | undefined): boolean => (
-    type?.kind === "map" || (type?.kind === "array" && type.storage === "dynamic" && type.element.kind === "f64")
+    (type?.kind === "map" && type.value.kind === "f64") || (type?.kind === "array" && type.storage === "dynamic" && type.element.kind === "f64")
   );
 
   /** Union-find key of the element/value class an array- or map-typed expression denotes. */
@@ -161,7 +161,9 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
           }
           break;
         case "mapSet":
-          classDefinitions.push({ classKey: classKey(fn.name, statement.map), definition: { fn: fn.name, expr: statement.value } });
+          if (isNumericCollection(typeOf(fn.name, statement.map))) {
+            classDefinitions.push({ classKey: classKey(fn.name, statement.map), definition: { fn: fn.name, expr: statement.value } });
+          }
           break;
         case "return":
           if (statement.value && fn.returnType.kind === "f64") {
@@ -383,7 +385,11 @@ function exprType(
     case "arrayLiteral":
       return expr.type;
     case "mapNew":
-      return { kind: "map" };
+      return expr.type;
+    case "mapGetOr": {
+      const map = exprType(expr.map, types, structFields, functions);
+      return map?.kind === "map" ? map.value : undefined;
+    }
     case "struct":
       return { kind: "struct", name: expr.name };
     case "call":

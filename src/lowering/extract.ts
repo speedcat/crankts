@@ -1,5 +1,5 @@
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import type * as ts from "typescript";
 import { collectFunctions } from "../analysis/functions.js";
 import { createCompilerFacade } from "../compiler/compiler-facade.js";
@@ -10,6 +10,8 @@ import { printIrModule, type IrModule } from "./ir.js";
 import { lowerKernel, type LoweringDiagnostic } from "./lower.js";
 import type { VerifyDiagnostic } from "./verify.js";
 import { emitTypeScriptWrapper } from "./wrapper-ts.js";
+import { planRegionExtraction, type LineRange, type RegionPlan } from "./region.js";
+import { emitRegionIntegration } from "./region-integration.js";
 
 /**
  * `crankts extract` (v0.2.2): explicit selection → lowering → contract derivation → validation →
@@ -26,6 +28,11 @@ export interface ExtractRequest {
   /** GRAPH_BATCH: names of the CSR offsets and neighbors parameters. */
   readonly graph?: { readonly offsets: string; readonly neighbors: string; readonly direction: "directed" | "undirected" };
   readonly crateName?: string;
+  /**
+   * Region extraction from unmodified source (v0.2.5): `target` names the enclosing function or
+   * `Class.method`; the regions are statement-aligned line ranges inside it.
+   */
+  readonly region?: { readonly execute: LineRange; readonly prepare?: LineRange };
 }
 
 export type ExtractResult =
@@ -42,6 +49,9 @@ export type ExtractResult =
   };
 
 export function extractKernel(request: ExtractRequest): ExtractResult {
+  if (request.region) {
+    return extractRegion(request, request.region);
+  }
   const execute = lowerTarget(request.target);
   if (!execute.ok) {
     return execute.result;
@@ -118,6 +128,128 @@ export function extractKernel(request: ExtractRequest): ExtractResult {
     warnings: validation.diagnostics,
     files: [...written.keys()].map((path) => join(outDir, path)),
   };
+}
+
+function extractRegion(request: ExtractRequest, region: NonNullable<ExtractRequest["region"]>): ExtractResult {
+  const separator = request.target.lastIndexOf("#");
+  if (separator <= 0) {
+    return { ok: false, stage: "select", messages: [`expected <file>#<function>, got '${request.target}'`] };
+  }
+  if ((request.shape === "PREPARED_STATE") !== (region.prepare !== undefined)) {
+    return { ok: false, stage: "select", messages: ["PREPARED_STATE needs --prepare-region, and --prepare-region needs PREPARED_STATE"] };
+  }
+  const sourceFile = resolve(request.target.slice(0, separator));
+  const planned = planRegionExtraction({
+    file: sourceFile,
+    function: request.target.slice(separator + 1),
+    execute: region.execute,
+    ...(region.prepare ? { prepare: region.prepare } : {}),
+  });
+  if (!planned.ok) {
+    return { ok: false, stage: "select", messages: planned.diagnostics };
+  }
+  const plan = planned.plan;
+  const outDir = realOutDir(resolve(request.outDir));
+  const tsDirectory = join(outDir, "ts");
+  mkdirSync(tsDirectory, { recursive: true });
+  // The outlined regions are an ordinary TypeScript module: lowered like any kernel, and the fallback.
+  const regionsFile = join(tsDirectory, "regions.ts");
+  writeFileSync(regionsFile, plan.outlinedModule);
+  writeFileSync(join(tsDirectory, "tsconfig.json"), `${JSON.stringify({
+    compilerOptions: { target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", strict: true, skipLibCheck: true, noEmit: true },
+    files: ["regions.ts"],
+  }, null, 2)}\n`);
+
+  const execute = lowerTarget(`${regionsFile}#${plan.executeName}`);
+  if (!execute.ok) {
+    return execute.result;
+  }
+  const prepare = plan.prepareName ? lowerTarget(`${regionsFile}#${plan.prepareName}`) : undefined;
+  if (prepare && !prepare.ok) {
+    return prepare.result;
+  }
+  const crateName = toCrateName(request.crateName ?? `${plan.executeName}-kernel`);
+  const derived = deriveKernelContract({
+    name: crateName,
+    shape: request.shape,
+    execute: execute.module,
+    ...(prepare?.ok ? { prepare: prepare.module } : {}),
+  });
+  if (!derived.ok) {
+    return { ok: false, stage: "verify", messages: derived.errors.map(formatVerifyDiagnostic) };
+  }
+  // The prepare inputs come from caller-owned data (e.g. a mutable Set); the integration revalidates
+  // the native state against a snapshot of them on every call.
+  const contract: KernelContract = derived.contract.state
+    ? { ...derived.contract, source: `${plan.file}#${plan.function}`, state: { ...derived.contract.state, invalidation: "CONTENT_SNAPSHOT" } }
+    : { ...derived.contract, source: `${plan.file}#${plan.function}` };
+  const validation = validateKernelContract(contract);
+  if (!validation.lowerable) {
+    return {
+      ok: false,
+      stage: "contract",
+      messages: validation.diagnostics.map((diagnostic) => `${diagnostic.severity} ${diagnostic.code} at ${diagnostic.path}: ${diagnostic.message}`),
+    };
+  }
+
+  let files: Map<string, string>;
+  try {
+    files = new Map([
+      ...emitRustCrate({ crateName, contract, execute: execute.module, ...(prepare?.ok ? { prepare: prepare.module } : {}) }).files,
+      ...emitRegionIntegration({ plan, crateName, execute: execute.module, ...(prepare?.ok ? { prepare: prepare.module } : {}) }),
+    ]);
+  } catch (error) {
+    if (error instanceof RustBackendError) {
+      return { ok: false, stage: "backend", messages: [error.message] };
+    }
+    throw error;
+  }
+  const patchedName = basename(sourceFile).replace(/\.ts$/, ".crankts.ts");
+  files.set(`ts/${patchedName}`, plan.patchedSource("./integration.js", join(tsDirectory, patchedName)));
+  files.set("contract.json", `${JSON.stringify(contract, null, 2)}\n`);
+  files.set("kernel.ir", [prepare?.ok ? printIrModule(prepare.module) : "", printIrModule(execute.module)].filter(Boolean).join("\n"));
+  files.set("README.md", regionReadme(crateName, plan, patchedName));
+  for (const [path, content] of files) {
+    const file = join(outDir, path);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+  }
+  return {
+    ok: true,
+    contract,
+    warnings: validation.diagnostics,
+    files: [...files.keys(), "ts/regions.ts", "ts/tsconfig.json"].map((path) => join(outDir, path)),
+  };
+}
+
+function regionReadme(crateName: string, plan: RegionPlan, patchedName: string): string {
+  const library = crateName.replace(/-/g, "_");
+  return `# ${crateName}
+
+Generated by \`crankts extract --region\` from \`${plan.file}#${plan.function}\`. Do not edit; regenerate instead.
+The original source file is not modified.
+
+- \`ts/regions.ts\`: the selected regions, outlined verbatim into standalone functions. It is lowered to the
+  Kernel IR and is also the exact TypeScript fallback.
+- \`ts/${patchedName}\`: a patched copy of the source file that calls the integration instead of the regions.
+- \`ts/integration.ts\`: native calls, prepared-state cache (revalidated by a snapshot of the prepare inputs on every
+  call), in-out map replay, and the fallback taxonomy (ADDON_MISSING, CONTRACT_GUARD, CRANKTS_KERNEL_TRAP; any
+  other failure is rethrown as CRANKTS_INTERNAL_ERROR).
+- \`ts/parity.ts\`: region parity (outlined TypeScript vs. integration vs. raw addon + replay).
+- \`contract.json\`, \`kernel.ir\`, \`src/lib.rs\`: contract, IR, and Rust/N-API kernel.
+
+Source edits in the patched copy:
+
+${plan.sourceEdits.map((edit) => `- ${edit}`).join("\n")}
+
+Build (macOS shown; use \`lib${library}.so\` on Linux), then import the patched copy instead of the original:
+
+\`\`\`bash
+cargo build --release
+cp target/release/lib${library}.dylib ${library}.node
+node --import tsx ts/parity.ts --iterations 1000
+\`\`\`
+`;
 }
 
 type Lowered =

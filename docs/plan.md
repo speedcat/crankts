@@ -330,6 +330,17 @@ It adds a generated benchmark with an acceptance gate covering correctness, net 
 
 The `TransformationPlan` sits between the TS semantic model and the Kernel IR. v0.2.5 and v0.2.6 need it to express producer rewrites and call replacement, which do not belong in the Kernel IR.
 
+**v0.2.5 is done.** `crankts extract --region/--prepare-region` derives the KWX `PREPARED_STATE` transformation from the unmodified `HeuristicKeywordExtractor.extractDictionary`, covering:
+
+- checker-based region interfaces
+- slicing of the prepare loop
+- verbatim outlining
+- in-out maps replayed from a set-log
+- `CONTENT_SNAPSHOT` revalidation for the caller-mutable dictionary `Set`
+- a patched copy of the source file
+
+IntentWeave's own tests pass against the patched copy (5/5), 20,331 extractions are identical, and the full extractor is 1.25× faster. About 80% of that gain comes from prepared-state hoisting, which a TypeScript-only patch also achieves (1.19×); the native scan is at parity with V8. See [lowering.md](lowering.md) and [crankts-v025-region-extraction.json](../evaluation/crankts-v025-region-extraction.json). Next is v0.2.6 (the real graph source).
+
 ## Open Points
 
 - **Workload size:** resolved. W1 is too small for any graph-kernel wall gain (0.7%), and MVP-9b replaced W3 with scaled replays of the real graph.

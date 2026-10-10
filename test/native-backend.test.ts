@@ -12,6 +12,8 @@ import { extractKernel, type ExtractRequest } from "../src/lowering/extract.js";
 import { graphBatch } from "./fixtures/lowering/src/graph-kernel.js";
 import { prepareDictionary, scanAsciiTerms } from "./fixtures/lowering/src/kwx-kernel.js";
 import { randomDictionary, randomGraph, shapedGraphs } from "./helpers/kernel-inputs.js";
+import { compareExtractors, type ExtractorClass } from "./helpers/kwx-scenarios.js";
+import { HeuristicKeywordExtractor } from "./fixtures/lowering/src/kwx-real/heuristicExtractor.js";
 
 const fixtures = fileURLToPath(new URL("./fixtures/lowering/src", import.meta.url));
 const generatedRoot = fileURLToPath(new URL("./.generated", import.meta.url));
@@ -98,6 +100,7 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
   let kwx: Built;
   let lowersCase: Built;
   let spins: Built;
+  let region: Built;
 
   beforeAll(() => {
     graph = buildAddon("graph-batch-test", {
@@ -112,6 +115,11 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     });
     lowersCase = buildAddon("lowers-case-test", { target: join(fixtures, "negative.ts#lowersCase"), shape: "PURE_BATCH" });
     spins = buildAddon("spins-test", { target: join(fixtures, "negative.ts#spins"), shape: "PURE_BATCH" });
+    region = buildAddon("kwx-region-test", {
+      target: join(fixtures, "kwx-real/heuristicExtractor.ts#HeuristicKeywordExtractor.extractDictionary"),
+      shape: "PREPARED_STATE",
+      region: { execute: { startLine: 334, endLine: 369 }, prepare: { startLine: 312, endLine: 324 } },
+    });
   }, 600_000);
 
   afterAll(() => {
@@ -226,6 +234,26 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     expect(report.kernelMs.median).toBeLessThanOrEqual(report.nativeCallMs.median);
     // Tiny debug-build inputs prove nothing about speed; the gate verdicts are only shape-checked here.
     expect(["PASS", "FAIL"]).toContain(report.gate.performance);
+  });
+
+  it("runs the real extractDictionary regions natively with identical extractor output", async () => {
+    const patched = await importGenerated<{ HeuristicKeywordExtractor: ExtractorClass }>(region.out, "heuristicExtractor.crankts.ts");
+    const integration = await importGenerated<{
+      nativeStatus: NativeStatus;
+      regionStatus: { preparations: number; cacheHits: number };
+    }>(region.out, "integration.ts");
+    const comparison = compareExtractors(HeuristicKeywordExtractor as unknown as ExtractorClass, patched.HeuristicKeywordExtractor, 60);
+    expect(comparison.mismatches).toEqual([]);
+    expect(integration.nativeStatus).toMatchObject({ loaded: true, traps: 0, contractGuards: 0, internalErrors: 0 });
+    expect(integration.nativeStatus.nativeCalls).toBeGreaterThan(300);
+    expect(integration.regionStatus.cacheHits).toBeGreaterThan(0);
+
+    const parity = await importGenerated<{
+      runRegionParity(options: { iterations: number }): { nativeAvailable: boolean; nativeAgreed: number; mismatches: string[] };
+    }>(region.out, "parity.ts");
+    const report = parity.runRegionParity({ iterations: 1000 });
+    expect(report).toMatchObject({ nativeAvailable: true, mismatches: [] });
+    expect(report.nativeAgreed).toBe(1000);
   });
 
   it("runs the generated parity runner with fuzzed and supplied cases", async () => {

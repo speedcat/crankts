@@ -128,11 +128,13 @@ pub fn last_kernel_nanos() -> f64 {
 
 struct Ctx {
   remaining: u64,
+  /// Reused buffer for allocation-free lowercase lookups (toLowerAscii(slice(...)) map keys).
+  scratch: Vec<u16>,
 }
 
 impl Ctx {
   fn new() -> Self {
-    Ctx { remaining: ITERATION_BUDGET.load(Ordering::Relaxed) }
+    Ctx { remaining: ITERATION_BUDGET.load(Ordering::Relaxed), scratch: Vec::new() }
   }
 
   #[inline]
@@ -288,6 +290,96 @@ fn to_lower_ascii(text: &[u16]) -> R<Str> {
 
 fn str_literal(units: &[u16]) -> Str {
   Rc::from(units)
+}
+
+/// toLowerAscii(slice(text, start, end)) into a reused buffer: the same checks, no allocation.
+fn lower_slice_into<'a>(scratch: &'a mut Vec<u16>, text: &[u16], start: f64, end: f64) -> R<&'a [u16]> {
+  if !(start >= 0.0 && start <= end && end <= text.len() as f64 && start.fract() == 0.0 && end.fract() == 0.0) {
+    return trap("slice bounds");
+  }
+  scratch.clear();
+  for &unit in &text[start as usize..end as usize] {
+    if unit >= 128 {
+      return trap("toLowerAscii on a non-ASCII string");
+    }
+    scratch.push(if (65..=90).contains(&unit) { unit + 32 } else { unit });
+  }
+  Ok(&scratch[..])
+}
+
+/// FxHash (as in rustc): fast on short keys. IR maps are never iterated, so the hasher cannot
+/// influence any result.
+#[derive(Default, Clone, Copy)]
+pub struct FxHasher {
+  hash: u64,
+}
+
+impl FxHasher {
+  #[inline]
+  fn add(&mut self, word: u64) {
+    self.hash = (self.hash.rotate_left(5) ^ word).wrapping_mul(0x51_7c_c1_b7_27_22_0a_95);
+  }
+}
+
+impl std::hash::Hasher for FxHasher {
+  #[inline]
+  fn write(&mut self, bytes: &[u8]) {
+    let mut chunks = bytes.chunks_exact(8);
+    for chunk in &mut chunks {
+      let mut word = [0u8; 8];
+      word.copy_from_slice(chunk);
+      self.add(u64::from_le_bytes(word));
+    }
+    let rest = chunks.remainder();
+    if !rest.is_empty() {
+      let mut word = [0u8; 8];
+      word[..rest.len()].copy_from_slice(rest);
+      self.add(u64::from_le_bytes(word));
+    }
+  }
+
+  #[inline]
+  fn write_usize(&mut self, value: usize) {
+    self.add(value as u64);
+  }
+
+  #[inline]
+  fn finish(&self) -> u64 {
+    self.hash
+  }
+}
+
+type FxBuild = std::hash::BuildHasherDefault<FxHasher>;
+
+/// /^[class]+$/ (allow_empty: *) over UTF-16 code units, as the JS regex without flags.
+fn char_class_all(text: &[u16], ranges: &[(u16, u16)], allow_empty: bool) -> bool {
+  if text.is_empty() {
+    return allow_empty;
+  }
+  text.iter().all(|unit| ranges.iter().any(|&(low, high)| *unit >= low && *unit <= high))
+}
+
+/// An in-out map: its keys are copied in; every set is logged in order so the caller can replay it.
+pub struct InoutMap<V> {
+  keys: std::collections::HashSet<Str, FxBuild>,
+  log: Vec<(Str, V)>,
+}
+
+impl<V> InoutMap<V> {
+  fn new(keys: std::collections::HashSet<Str, FxBuild>) -> Self {
+    InoutMap { keys, log: Vec::new() }
+  }
+
+  #[inline]
+  fn has(&self, key: &[u16]) -> bool {
+    self.keys.contains(key)
+  }
+
+  #[inline]
+  fn set(&mut self, key: Str, value: V) {
+    self.keys.insert(key.clone());
+    self.log.push((key, value));
+  }
 }`;
 
 interface Numeric {
@@ -328,7 +420,9 @@ class RustEmitter {
     this.current = fn;
     this.scopes = [new Map(fn.params.map((param) => [param.name, { type: param.type, ident: `l_${param.name}` }]))];
     this.hoisted = this.findHoistable(fn);
-    const params = ["ctx: &mut Ctx", ...fn.params.map((param) => `l_${param.name}: ${this.paramType(param.type, this.localIntFlag(fn.name, param.name, param.type))}`)];
+    const params = ["ctx: &mut Ctx", ...fn.params.map((param) => (
+      `l_${param.name}: ${this.paramType(param.type, this.localIntFlag(fn.name, param.name, param.type), param.inout === true)}`
+    ))];
     const buffers = [...this.hoisted].map(([statement, ident]) => {
       const type = statement.stmt === "let" ? statement.type : { kind: "void" as const };
       return `  let mut ${ident}: ${this.rustType(type, statement.stmt === "let" && this.localIntFlag(fn.name, statement.name, type))} = Vec::new();`;
@@ -461,9 +555,24 @@ class RustEmitter {
       case "mapSet": {
         const key = this.fresh("key");
         const value = this.fresh("value");
-        const int = this.integers.elementsInt(fn, statement.map);
-        return `${pad}{ let ${key} = ${this.string(statement.key)}; let ${value} = ${int ? this.i64(statement.value) : this.f64(statement.value)}; `
-          + `${this.place(statement.map)}.insert(${key}, ${value}); }`;
+        const mapType = this.typeOf(statement.map);
+        if (mapType.kind !== "map") {
+          throw new RustBackendError("mapSet on a non-map");
+        }
+        const int = mapType.value.kind === "f64" && this.integers.elementsInt(fn, statement.map);
+        const insert = this.isInout(statement.map) ? "set" : "insert";
+        return `${pad}{ let ${key} = ${this.string(statement.key)}; let ${value} = ${this.value(statement.value, mapType.value, int)}; `
+          + `${this.place(statement.map)}.${insert}(${key}, ${value}); }`;
+      }
+      case "mapAppend": {
+        const mapType = this.typeOf(statement.map);
+        if (mapType.kind !== "map" || mapType.value.kind !== "array") {
+          throw new RustBackendError("mapAppend on a map without array values");
+        }
+        const key = this.fresh("key");
+        const value = this.fresh("value");
+        return `${pad}{ let ${key} = ${this.string(statement.key)}; let ${value} = ${this.storeValue(statement.value, mapType.value, statement.map)}; `
+          + `${this.place(statement.map)}.entry(${key}).or_insert_with(Vec::new).push(${value}); }`;
       }
       case "sortByKeys": {
         const keys = statement.keys.map((key) => ({ name: this.fresh("key"), code: this.place(key) }));
@@ -573,7 +682,7 @@ class RustEmitter {
       case "arrayLiteral":
         return `vec![${expr.elements.map((element) => this.storeValue(element, expr.type, expr)).join(", ")}]`;
       case "mapNew":
-        return "HashMap::new()";
+        return "HashMap::default()";
       case "struct":
         return `K_${expr.name} { ${expr.fields.map((field) => {
           const fieldType = this.fieldType(expr.name, field.name);
@@ -618,6 +727,13 @@ class RustEmitter {
       case "struct":
       case "call":
         return `(${this.value(expr, this.typeOf(expr), this.integers.elementsInt(this.fnName(), expr))})`;
+      case "mapGetOr": {
+        // Borrowed lookup; only an empty array literal is supported as the fallback.
+        if (expr.fallback.op !== "arrayLiteral" || expr.fallback.elements.length !== 0) {
+          throw new RustBackendError("reference-valued map lookups need an empty array literal fallback");
+        }
+        return `(match ${this.place(expr.map)}.get(${this.mapKey(expr.key)}) { Some(value) => &value[..], None => &[][..] })`;
+      }
       default:
         throw new RustBackendError(`${expr.op} cannot produce reference-typed storage`);
     }
@@ -644,9 +760,20 @@ class RustEmitter {
       case "field":
       case "index":
         return `${this.place(expr)}.clone()`;
+      case "mapGetOr":
+        return `(match ${this.place(expr.map)}.get(${this.mapKey(expr.key)}) { Some(value) => value.clone(), None => ${this.string(expr.fallback)} })`;
       default:
         throw new RustBackendError(`${expr.op} is not a string expression`);
     }
+  }
+
+  /** A borrowed map key; `toLowerAscii(slice(...))` keys are built in the reusable scratch buffer. */
+  private mapKey(expr: IrExpr): string {
+    if (expr.op === "toLowerAscii" && expr.target.op === "slice") {
+      const slice = expr.target;
+      return `lower_slice_into(&mut ctx.scratch, &${this.stringRef(slice.target)}, ${this.f64(slice.start)}, ${this.f64(slice.end)})?`;
+    }
+    return `&*${this.stringRef(expr)}`;
   }
 
   /** A string expression usable by reference: places are not cloned. */
@@ -686,7 +813,11 @@ class RustEmitter {
       case "field":
         return this.place(expr);
       case "mapHas":
-        return `${this.place(expr.map)}.contains_key(&*${this.stringRef(expr.key)})`;
+        return this.isInout(expr.map)
+          ? `${this.place(expr.map)}.has(${this.mapKey(expr.key)})`
+          : `${this.place(expr.map)}.contains_key(${this.mapKey(expr.key)})`;
+      case "charClassAll":
+        return `char_class_all(&${this.stringRef(expr.target)}, &[${expr.ranges.map(([low, high]) => `(${low}, ${high})`).join(", ")}], ${expr.allowEmpty})`;
       case "call":
         return this.call(expr);
       default:
@@ -772,7 +903,7 @@ class RustEmitter {
       }
       case "mapGetOr": {
         const valuesInt = this.integers.elementsInt(fn, expr.map);
-        const lookup = `${this.place(expr.map)}.get(&*${this.stringRef(expr.key)})`;
+        const lookup = `${this.place(expr.map)}.get(${this.mapKey(expr.key)})`;
         if (int) {
           return { code: `(match ${lookup} { Some(value) => *value, None => ${this.i64(expr.fallback)} })`, int };
         }
@@ -795,6 +926,9 @@ class RustEmitter {
     const args = expr.args.map((arg, index) => {
       const param = callee.params[index];
       const type = param?.type ?? this.typeOf(arg);
+      if (param?.inout) {
+        throw new RustBackendError("in-out maps cannot be passed to other functions");
+      }
       if (isReferenceType(type)) {
         return `&${this.place(arg)}`;
       }
@@ -829,13 +963,20 @@ class RustEmitter {
       case "max":
       case "length":
       case "charCodeAt":
-      case "mapGetOr":
         return { kind: "f64" };
+      case "mapGetOr": {
+        const map = this.typeOf(expr.map);
+        if (map.kind !== "map") {
+          throw new RustBackendError("mapGetOr on a non-map");
+        }
+        return map.value;
+      }
       case "bool":
       case "and":
       case "or":
       case "not":
       case "mapHas":
+      case "charClassAll":
         return { kind: "bool" };
       case "binary":
         return ["add", "sub", "mul", "div", "mod"].includes(expr.operator) ? { kind: "f64" } : { kind: "bool" };
@@ -867,7 +1008,7 @@ class RustEmitter {
       case "arrayLiteral":
         return expr.type;
       case "mapNew":
-        return { kind: "map" };
+        return expr.type;
       case "call": {
         const callee = this.functions.get(expr.callee);
         if (!callee) {
@@ -893,7 +1034,7 @@ class RustEmitter {
         }
         return type.element.kind === "f64" ? `Vec<${int ? "i64" : "f64"}>` : `Vec<${this.rustType(type.element, false)}>`;
       case "map":
-        return `HashMap<Str, ${int ? "i64" : "f64"}>`;
+        return `HashMap<Str, ${this.mapValueType(type.value, int)}, FxBuild>`;
       case "struct":
         return `K_${type.name}`;
       case "void":
@@ -901,7 +1042,14 @@ class RustEmitter {
     }
   }
 
-  paramType(type: IrType, int: boolean): string {
+  private mapValueType(value: IrType, int: boolean): string {
+    return value.kind === "f64" ? (int ? "i64" : "f64") : this.rustType(value, false);
+  }
+
+  paramType(type: IrType, int: boolean, inout = false): string {
+    if (inout && type.kind === "map") {
+      return `&mut InoutMap<${this.mapValueType(type.value, int)}>`;
+    }
     switch (type.kind) {
       case "array":
         if (type.storage !== "dynamic") {
@@ -909,7 +1057,7 @@ class RustEmitter {
         }
         return type.element.kind === "f64" ? `&[${int ? "i64" : "f64"}]` : `&[${this.rustType(type.element, false)}]`;
       case "map":
-        return `&HashMap<Str, ${int ? "i64" : "f64"}>`;
+        return `&HashMap<Str, ${this.mapValueType(type.value, int)}, FxBuild>`;
       case "struct":
         return `&K_${type.name}`;
       default:
@@ -945,6 +1093,19 @@ class RustEmitter {
 
   private fnName(): string {
     return this.current?.name ?? "";
+  }
+
+  private isInout(expr: IrExpr): boolean {
+    return expr.op === "local" && (this.current?.params.some((param) => param.inout && param.name === expr.name) ?? false);
+  }
+
+  /** Rust type of a struct field (exposed for the N-API surface). */
+  fieldRustType(struct: string, field: string): string {
+    return this.rustType(this.fieldType(struct, field), this.integers.fieldInt(struct, field) || this.integers.fieldElementsInt(struct, field));
+  }
+
+  structDefinition(name: string): ReadonlyMap<string, IrType> | undefined {
+    return this.structFields.get(name);
   }
 
   private localOrigin(name: string): "PARAM" | "FRESH" {
@@ -1008,9 +1169,20 @@ function napiFunction(fn: IrFunction, handleState: string | undefined, output: B
   const params: string[] = [];
   const conversions: string[] = [];
   const args: string[] = ["&mut ctx"];
+  const inout = fn.params.filter((param) => param.inout);
+  if (inout.length > 1 || (inout.length === 1 && fn.returnType.kind !== "void")) {
+    throw new RustBackendError(`${fn.name}: only one in-out map and a void return are supported at the N-API boundary`);
+  }
   for (const param of fn.params) {
     const name = `a_${param.name}`;
     const type = param.type;
+    if (param.inout) {
+      // In-out maps cross as their keys; the set-log is returned for replay.
+      params.push(`${name}: Vec<Utf16String>`);
+      conversions.push(`  let mut c_${param.name} = InoutMap::new(${name}.iter().map(|key| Rc::from(&**key)).collect());`);
+      args.push(`&mut c_${param.name}`);
+      continue;
+    }
     if (type.kind === "struct" && type.name === handleState) {
       params.push(`${name}: &H_${handleState}`);
       args.push(`&${name}.inner`);
@@ -1040,7 +1212,16 @@ function napiFunction(fn: IrFunction, handleState: string | undefined, output: B
   const returnInt = result.kind === "f64" ? emitter.integers.returnInt(fn.name) : emitter.integers.returnElementsInt(fn.name);
   let napiReturn: string;
   let convert: string;
-  if (result.kind === "struct" && result.name === handleState) {
+  let logStruct = "";
+  const inoutParam = inout[0];
+  if (inoutParam && inoutParam.type.kind === "map") {
+    const log = setLog(fn, inoutParam.name, inoutParam.type.value, emitter);
+    logStruct = `${log.definition}
+
+`;
+    napiReturn = log.name;
+    convert = log.convert;
+  } else if (result.kind === "struct" && result.name === handleState) {
     napiReturn = `H_${handleState}`;
     convert = `Ok(H_${handleState} { inner: value })`;
   } else if (result.kind === "f64") {
@@ -1082,7 +1263,7 @@ function napiFunction(fn: IrFunction, handleState: string | undefined, output: B
     throw new RustBackendError(`return type of ${fn.name} cannot cross the N-API boundary`);
   }
 
-  return `#[napi(js_name = "${fn.name}")]
+  return `${logStruct}#[napi(js_name = "${fn.name}")]
 pub fn napi_${fn.name}(${params.join(", ")}) -> napi::Result<${napiReturn}> {
 ${conversions.join("\n")}${conversions.length > 0 ? "\n" : ""}  let mut ctx = Ctx::new();
   let started = std::time::Instant::now();
@@ -1091,4 +1272,40 @@ ${conversions.join("\n")}${conversions.length > 0 ? "\n" : ""}  let mut ctx = Ct
   let value = outcome.map_err(internal_error)?.map_err(trap_error)?;
   ${convert}
 }`;
+}
+
+/** The returned set-log of an in-out map: keys plus one array per value field, in set order. */
+function setLog(fn: IrFunction, param: string, value: IrType, emitter: RustEmitter): { name: string; definition: string; convert: string } {
+  const name = `Log_${fn.name}`;
+  const columns: Array<{ js: string; rust: string; type: string; extract: string }> = [];
+  const column = (js: string, type: IrType, rustType: string, access: string): void => {
+    if (type.kind === "string") {
+      columns.push({ js, rust: `f_${js}`, type: "Vec<Utf16String>", extract: `Utf16String::from(${access}.to_vec())` });
+    } else if (type.kind === "f64") {
+      columns.push({ js, rust: `f_${js}`, type: "Vec<f64>", extract: rustType === "i64" ? `${access} as f64` : access });
+    } else if (type.kind === "bool") {
+      columns.push({ js, rust: `f_${js}`, type: "Vec<bool>", extract: access });
+    } else {
+      throw new RustBackendError(`in-out map values of kind ${type.kind} cannot be returned`);
+    }
+  };
+  if (value.kind === "struct") {
+    for (const [field, type] of emitter.structDefinition(value.name) ?? []) {
+      column(field, type, emitter.fieldRustType(value.name, field), `value.f_${field}`);
+    }
+  } else {
+    column("value", value, emitter.rustType(value, false), "value");
+  }
+  const definition = `#[napi(object)]
+pub struct ${name} {
+  pub keys: Vec<Utf16String>,
+${columns.map((entry) => `  #[napi(js_name = "${entry.js}")]\n  pub ${entry.rust}: ${entry.type},`).join("\n")}
+}`;
+  const convert = `let mut log = ${name} { keys: Vec::new(), ${columns.map((entry) => `${entry.rust}: Vec::new()`).join(", ")} };
+  for (key, value) in c_${param}.log.into_iter() {
+    log.keys.push(Utf16String::from(key.to_vec()));
+${columns.map((entry) => `    log.${entry.rust}.push(${entry.extract});`).join("\n")}
+  }
+  Ok(log)`;
+  return { name, definition, convert };
 }

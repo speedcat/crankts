@@ -6,7 +6,8 @@ Status: v0.2.4. This covers:
 - the Kernel IR with lowering, verification, interpreter, and contract derivation (v0.2.1)
 - the Rust/N-API backend with `crankts extract` (v0.2.2)
 - the generated TypeScript wrapper and parity runner (v0.2.3)
-- the backend quality pass with the generated benchmark and acceptance gate (v0.2.4) The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
+- the backend quality pass with the generated benchmark and acceptance gate (v0.2.4)
+- region extraction from unmodified source, validated on IntentWeave's real `extractDictionary` (v0.2.5) The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
 
 ## Kernel Contract
 
@@ -278,9 +279,65 @@ Before v0.2.4 the generated graph call was 0.94, 6.1, and 59 ms (3.6 to 4.3 time
 - **The KWX workload is a stand-in for MVP-8's AX dictionary and chunks.** It uses IntentWeave's function names as the dictionary and paragraphs of its Markdown and `packages/*/src` TypeScript as texts, with no traps, guards, or internal errors in 111,192 native calls.
 - **Each W1 graph run is a single call,** so the 1× numbers are close to timer resolution.
 
+## Region Extraction from Unmodified Source (v0.2.5)
+
+```bash
+crankts extract ../intentweave/packages/analyzer/src/kwg/heuristicExtractor.ts#HeuristicKeywordExtractor.extractDictionary \
+  --region 325-360 --prepare-region 303-315 --shape PREPARED_STATE --name kwx-region --out /tmp/kwx-region
+```
+
+Selection stays explicit: statement-aligned line ranges inside a function or method. [`planRegionExtraction`](../src/lowering/region.ts) does the kernel shaping that v0.2.1–v0.2.4 still needed by hand. Every step fails closed:
+
+- **Interface inference (checker-based).** Outer locals the region reads become parameters. Outer maps it mutates only with `has`/`set` become in-out parameters. The following are rejected: captured module state, `this`, assigning outer variables, locals used after the region, and other container mutations.
+- **Prepared state.** The state consists of containers that the prepare region fills, the execute region reads, and that were created fresh just before the prepare region with no use in between. Here that is `simpleTermsByLower`; its declaration moves into the prepare function.
+- **Slicing.** The prepare loop is split by dependency on the state. State-building statements go to the prepare function; everything else, here the regex-term construction, stays in the source as the complement. Conditions shared by both slices must be pure.
+- **Outlining.** The regions are written verbatim into `ts/regions.ts`, with state fields rebound to their original names. That module is lowered like any kernel and is also the exact TypeScript fallback.
+- **Patched copy.** `ts/<file>.crankts.ts` is the original file with three edits:
+  - the state declaration is removed
+  - the prepare region is replaced by its complement
+  - the execute region is replaced by `__crankts.executeExtractDictionary(this, [terms], stripped, firstMatches)`
+
+  Relative imports are re-pointed to the original directory. The original file is never modified.
+
+Lowering the real code needed four general idioms, plus in-out maps. Each one is checked:
+
+- **Multimap append.** `const v = m.get(k) ?? []; v.push(x); m.set(k, v);` becomes `mapAppend`, provided `v` has no other use and `k` is built from const bindings only.
+- **Single-use optional lookups.** `const v = m.get(k)` whose every use is `v ?? fallback` becomes `mapGetOr`.
+- **Anchored character-class regex literals.** `/^[A-Za-z0-9_]+$/.test(s)` becomes `charClassAll`, compared on code units with no flags. Negation, flags, and escaped range endpoints are rejected.
+- **Anonymous object types as structs.** Object literals must list their fields in declaration order, because JS property order is observable.
+- **In-out maps.** The kernel receives the map's keys and returns its ordered set-log. The integration replays the log only after the kernel succeeded, so the JS map ends identical, including insertion order, and a trap leaves it untouched. `PURE` holds with this declared effect; the contract marks the port `IN_OUT_REPLAYED`.
+
+**Mutation and lifetime.** The prepare input (`terms`) comes from a caller-owned, mutable `Set`. The integration therefore keeps the native state per owner (`this`) and reuses it only while the prepare inputs equal a snapshot, compared by value on every call (`CONTENT_SNAPSHOT`). This is sound for any mutation without wrapping the caller's `Set`. IntentWeave's own test "observes dictionary Set changes between extractions" passes. Contract guards on the prepare inputs run once per preparation, not per call.
+
+**Backend changes found by the gate.** Maps use an inline FxHash instead of SipHash; maps are never iterated, so the hasher cannot affect results. Map keys of the form `toLowerAscii(slice(…))` are built in a reused scratch buffer, so there is no allocation per token.
+
+**Evaluation** ([crankts-v025-region-extraction.json](../evaluation/crankts-v025-region-extraction.json), [run-v025.ts](../evaluation/region/run-v025.ts)) on the committed, unmodified IntentWeave source (`6ad1224`):
+
+| Check | Result |
+| --- | --- |
+| IntentWeave's `kwg-heuristicExtractor.test.ts` | 5/5 against the original, 5/5 against the patched copy (module alias) |
+| Full `extract()` differential (3,231 terms, 18,331 texts, plus 2,000 extractions with `Set` mutation) | 20,331 identical outputs, 19,426 dictionary matches, 0 mismatches |
+| Generated region parity | 2,000/2,000 native results equal the outlined TypeScript |
+| Gate: correctness, performance, backend quality, boundary | PASS / PASS / PASS (0.88× the handwritten MVP-8 scanner) / PASS (share 0.02) |
+
+| Time (median of 5) | Value |
+| --- | ---: |
+| Original per-call region work (prepare slice + scan), all texts | 5,270 ms |
+| Integration (snapshot check, native scan, replay) | 178 ms |
+| Scan only on a state prepared once: V8 vs. Rust kernel compute | 53.6 ms vs. 54.9 ms |
+| Full extractor: original / patched (native) / patched without addon (TypeScript-only) | 14.20 s / 11.39 s (1.25x) / 11.95 s (1.19x) |
+
+The attribution matters more than the headline:
+
+- **The transformation's main effect is algorithmic.** Hoisting the per-call rebuild of `simpleTermsByLower` out of the hot path delivers about 80% of the full-extractor saving. The same patched source achieves it without any native code.
+- **The native scan adds the remaining ~20%.** At kernel level it runs at parity with V8 (0.98×), and the handwritten MVP-8 scanner is slower than both.
+- **This matches the advisor's earlier finding:** optimize the algorithm first. For this workload the advice should therefore be `PREPARED_STATE` hoisting with a TypeScript fallback; native code is optional.
+- **The remaining 11.4 s** is spent in structured regex extraction and in the per-call `terms` and regex-term construction, which this transformation does not touch.
+- **Full-extractor timings must run in fresh processes.** An earlier in-process measurement, with the IntentWeave analysis heap still alive, inflated the TypeScript-only variant to 1.72×.
+
 ## Next Steps (from review.md)
 
-1. **v0.2.5:** real KWX source → `PREPARED_STATE`. This needs callback and fast-path extraction from `extractDictionary`, plus mutation and lifetime handling of the caller's dictionary `Set`.
-2. **v0.2.6:** real graph source → `GRAPH_BATCH`. This needs `FunctionId` interning, CSR packing upstream in the producer, and a producer-aware transformation.
-3. **v0.2.7:** an explicit `TransformationPlan` that unifies both: extraction region, producer changes, preparation site, call replacement, fallback path, and validation plan. It also covers reversible source integration. This is a separate model between the TS semantic model and the Kernel IR; it does not belong in the IR.
+1. **v0.2.6:** real graph source → `GRAPH_BATCH`. This needs `FunctionId` interning, CSR packing upstream in the producer, and a producer-aware transformation.
+2. **v0.2.7:** an explicit `TransformationPlan` that unifies both. v0.2.5's `RegionPlan` (interface, state, slices, source edits) is its first concrete instance; v0.2.6 must add producer changes. It also covers reversible source integration.
+3. **Advisor follow-up from v0.2.5:** separate the gain of a transformation (here prepared-state hoisting) from the gain of native execution, and recommend the TypeScript-only variant when native adds little.
 4. **v0.3:** automatic candidate selection (advisor → qualifier → transformer), enabled only after validation.

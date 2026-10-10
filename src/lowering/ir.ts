@@ -14,8 +14,8 @@ export type IrType =
   | { readonly kind: "string" }
   /** `dynamic`: JS array; typed storages are typed arrays with checked stores. */
   | { readonly kind: "array"; readonly element: IrType; readonly storage: ArrayStorage }
-  /** String-keyed map with f64 values; no iteration operation exists, so order cannot leak. */
-  | { readonly kind: "map" }
+  /** String-keyed map; no iteration operation exists, so order cannot leak. */
+  | { readonly kind: "map"; readonly value: IrType }
   | { readonly kind: "struct"; readonly name: string }
   | { readonly kind: "void" };
 
@@ -52,7 +52,12 @@ export type IrExpr =
   | { readonly op: "toLowerAscii"; readonly target: IrExpr }
   | { readonly op: "mapGetOr"; readonly map: IrExpr; readonly key: IrExpr; readonly fallback: IrExpr }
   | { readonly op: "mapHas"; readonly map: IrExpr; readonly key: IrExpr }
-  | { readonly op: "mapNew" }
+  | { readonly op: "mapNew"; readonly type: IrType & { readonly kind: "map" } }
+  /**
+   * `/^[class]+$/.test(s)` (or `*`): every UTF-16 code unit lies in one of the inclusive ranges.
+   * Equals the JS regex on code units (no flags, so no case folding or Unicode mode).
+   */
+  | { readonly op: "charClassAll"; readonly target: IrExpr; readonly ranges: readonly (readonly [number, number])[]; readonly allowEmpty: boolean }
   | { readonly op: "field"; readonly target: IrExpr; readonly name: string }
   | { readonly op: "struct"; readonly name: string; readonly fields: readonly { readonly name: string; readonly value: IrExpr }[] }
   /** Checked length (integer in [0, 2^28]); every element starts as `fill`. */
@@ -70,6 +75,11 @@ export type IrStmt =
   | { readonly stmt: "pop"; readonly target: IrExpr }
   | { readonly stmt: "clear"; readonly target: IrExpr }
   | { readonly stmt: "mapSet"; readonly map: IrExpr; readonly key: IrExpr; readonly value: IrExpr }
+  /**
+   * Multimap append, the lowering of `const v = m.get(k) ?? []; v.push(x); m.set(k, v);`:
+   * appends to the stored array, or stores `[x]` when `k` is absent (insertion order unchanged).
+   */
+  | { readonly stmt: "mapAppend"; readonly map: IrExpr; readonly key: IrExpr; readonly value: IrExpr }
   /**
    * Stable ascending sort of an index array by integer key arrays (`keys[0][a] - keys[0][b] || ...`).
    * Checked: every element indexes every key array.
@@ -94,7 +104,11 @@ export interface IrFunction {
   readonly name: string;
   /** Where the function was lowered from (`file:line`). */
   readonly source: string;
-  readonly params: readonly { readonly name: string; readonly type: IrType }[];
+  /**
+   * `inout`: a map parameter the kernel mutates with `has`/`set` only. Backends copy its keys in and
+   * return the ordered set-log, which the caller replays; the JS map ends in the same state.
+   */
+  readonly params: readonly { readonly name: string; readonly type: IrType; readonly inout?: boolean }[];
   readonly returnType: IrType;
   readonly body: readonly IrStmt[];
 }
@@ -141,6 +155,8 @@ export function formatIrType(type: IrType): string {
       return type.storage === "dynamic" ? `${formatIrType(type.element)}[]` : `${type.storage}[]`;
     case "struct":
       return type.name;
+    case "map":
+      return `map<string, ${formatIrType(type.value)}>`;
     default:
       return type.kind;
   }
@@ -153,7 +169,7 @@ export function printIrModule(module: IrModule): string {
     lines.push(`struct ${struct.name} { ${struct.fields.map((field) => `${field.name}: ${formatIrType(field.type)}`).join(", ")} }`);
   }
   for (const fn of module.functions) {
-    const params = fn.params.map((param) => `${param.name}: ${formatIrType(param.type)}`).join(", ");
+    const params = fn.params.map((param) => `${param.inout ? "inout " : ""}${param.name}: ${formatIrType(param.type)}`).join(", ");
     lines.push(`fn ${fn.name}(${params}) -> ${formatIrType(fn.returnType)} {`);
     printBlock(fn.body, 1, lines);
     lines.push("}");
@@ -182,7 +198,8 @@ function printBlock(body: readonly IrStmt[], depth: number, lines: string[]): vo
         lines.push(`${indent}${statement.stmt} ${printExpr(statement.target)}`);
         break;
       case "mapSet":
-        lines.push(`${indent}mapSet ${printExpr(statement.map)}, ${printExpr(statement.key)}, ${printExpr(statement.value)}`);
+      case "mapAppend":
+        lines.push(`${indent}${statement.stmt} ${printExpr(statement.map)}, ${printExpr(statement.key)}, ${printExpr(statement.value)}`);
         break;
       case "sortByKeys":
         lines.push(`${indent}sortByKeys ${printExpr(statement.target)} by ${statement.keys.map(printExpr).join(", ")}`);
@@ -269,6 +286,8 @@ export function printExpr(expr: IrExpr): string {
       return `mapHas(${printExpr(expr.map)}, ${printExpr(expr.key)})`;
     case "mapNew":
       return "mapNew()";
+    case "charClassAll":
+      return `charClassAll(${printExpr(expr.target)}, [${expr.ranges.map(([low, high]) => `${low}-${high}`).join(" ")}]${expr.allowEmpty ? ", empty" : ""})`;
     case "field":
       return `${printExpr(expr.target)}.${expr.name}`;
     case "struct":

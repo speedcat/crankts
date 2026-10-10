@@ -65,7 +65,7 @@ describe("Kernel IR lowering", () => {
       name: "PreparedDictionary",
       fields: [
         { name: "termCount", type: { kind: "f64" } },
-        { name: "headByLower", type: { kind: "map" } },
+        { name: "headByLower", type: { kind: "map", value: { kind: "f64" } } },
         { name: "next", type: { kind: "array", element: { kind: "f64" }, storage: "dynamic" } },
       ],
     }]);
@@ -79,7 +79,7 @@ describe("Kernel IR lowering", () => {
     const messages = islands.ok ? [] : islands.diagnostics.map((diagnostic) => diagnostic.message);
     expect(messages).toEqual(expect.arrayContaining([
       expect.stringContaining("sets are not lowered"),
-      expect.stringContaining("maps are lowered only as Map<string, number>"),
+      expect.stringContaining("map value sets are not lowered"),
     ]));
     expect(islands.ok ? [] : islands.diagnostics.every((diagnostic) => diagnostic.file === "src/analysis/islands.ts" && diagnostic.line > 0))
       .toBe(true);

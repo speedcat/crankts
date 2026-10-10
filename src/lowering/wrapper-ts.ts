@@ -80,7 +80,7 @@ function entryOf(module: IrModule): IrFunction {
   return entry;
 }
 
-function inputSpec(type: IrType): InputSpec {
+export function inputSpec(type: IrType): InputSpec {
   switch (type.kind) {
     case "f64":
     case "bool":
@@ -94,7 +94,7 @@ function inputSpec(type: IrType): InputSpec {
 }
 
 /** TypeScript expression checking that `value` is inside the boundary domain of `spec`. */
-function guardExpression(spec: InputSpec, value: string): string {
+export function guardExpression(spec: InputSpec, value: string): string {
   switch (spec.kind) {
     case "f64":
       return `typeof ${value} === "number"`;
@@ -136,7 +136,11 @@ import { fileURLToPath } from "node:url";`;
 }
 
 function runtime(context: Context): string {
-  const { library, envVariable, materialize } = context;
+  return wrapperRuntime(context.library, context.envVariable, context.materialize);
+}
+
+/** Addon loading, status counters, and the fallback taxonomy shared by all generated integrations. */
+export function wrapperRuntime(library: string, envVariable: string, materialize: boolean): string {
   return `const TRAP_PREFIX = "CRANKTS_KERNEL_TRAP";
 
 /** Observable wrapper state, for tests, benchmarks, and diagnostics. */

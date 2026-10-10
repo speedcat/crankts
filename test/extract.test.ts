@@ -209,7 +209,7 @@ describe("crankts extract", () => {
     ]).exitCode).toBe(0);
     const kwxContract = JSON.parse(readFileSync(join(kwx, "contract.json"), "utf8")) as KernelContract;
     expect(kwxContract.outputs[0]).toMatchObject({ type: { kind: "typedArray", element: "f64" } });
-    expect(readFileSync(join(kwx, "src/lib.rs"), "utf8")).toContain("pub f_headByLower: HashMap<Str, i64>,");
+    expect(readFileSync(join(kwx, "src/lib.rs"), "utf8")).toContain("pub f_headByLower: HashMap<Str, i64, FxBuild>,");
   });
 
   it("requires exported targets so the wrapper can fall back to them", () => {

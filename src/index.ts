@@ -31,6 +31,9 @@ export { deriveKernelContract } from "./lowering/derive-contract.js";
 export { emitRustCrate, KERNEL_TRAP_PREFIX } from "./lowering/backend-rust.js";
 export { extractKernel } from "./lowering/extract.js";
 export { emitTypeScriptWrapper } from "./lowering/wrapper-ts.js";
+export { planRegionExtraction } from "./lowering/region.js";
+export type { LineRange, RegionPlan, RegionRequest, RegionResult } from "./lowering/region.js";
+export { emitRegionIntegration } from "./lowering/region-integration.js";
 export type { ExtractRequest, ExtractResult } from "./lowering/extract.js";
 export type { DeriveContractRequest, DerivedContract } from "./lowering/derive-contract.js";
 
@@ -161,7 +164,7 @@ function runExtract(arguments_: readonly string[]): number {
 function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
   let target: string | undefined;
   const values = new Map<string, string>();
-  const valueOptions = new Set(["--shape", "--out", "--prepare", "--graph", "--direction", "--name"]);
+  const valueOptions = new Set(["--shape", "--out", "--prepare", "--graph", "--direction", "--name", "--region", "--prepare-region"]);
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index] ?? "";
     const [flag, inline] = argument.includes("=") ? [argument.slice(0, argument.indexOf("=")), argument.slice(argument.indexOf("=") + 1)] : [argument, undefined];
@@ -203,7 +206,22 @@ function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
   }
   const prepare = values.get("--prepare");
   const name = values.get("--name");
+  const parseRange = (flag: string): { startLine: number; endLine: number } | undefined => {
+    const value = values.get(flag);
+    if (!value) return undefined;
+    const match = /^(\d+)-(\d+)$/.exec(value);
+    if (!match || Number(match[1]) > Number(match[2])) {
+      throw new Error(`${flag} expects <startLine>-<endLine>.`);
+    }
+    return { startLine: Number(match[1]), endLine: Number(match[2]) };
+  };
+  const region = parseRange("--region");
+  const prepareRegion = parseRange("--prepare-region");
+  if (prepareRegion && !region) {
+    throw new Error("--prepare-region requires --region.");
+  }
   return {
+    ...(region ? { region: { execute: region, ...(prepareRegion ? { prepare: prepareRegion } : {}) } } : {}),
     target,
     shape: shape as SupportedKernelShape,
     outDir,
@@ -236,6 +254,8 @@ function printUsage(): void {
   console.log("  --graph <offsets>,<neighbors>  GRAPH_BATCH: the CSR Uint32Array parameters");
   console.log("  --direction <directed|undirected>  GRAPH_BATCH graph direction (default: directed)");
   console.log("  --name <crate>        Crate name (default: <function>-kernel)");
+  console.log("  --region <a>-<b>      Extract statement lines a-b inside <function> or <Class.method> (unmodified source)");
+  console.log("  --prepare-region <a>-<b>  PREPARED_STATE: lines that build the state reused across calls (sliced)");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
