@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="title desc">
+  <title id="title">CrankTS brush wordmark</title>
+  <desc id="desc">Hand-painted CrankTS lettering with cream Crank, electric-blue TS, black brush contours, and a yellow acceleration swipe.</desc>
+
+  <g id="yellow-brush-swipe" fill="#FFC13D">
+    <path d="M105 218 L839 194 L817 211 L871 218 L826 228 L850 240 L786 236 L140 263 L153 249 L88 244 L126 231 L74 226 Z"/>
+    <path d="M144 267 L742 245 L703 260 L188 279 Z" opacity=".75"/>
+  </g>
+
+  <g id="wordmark" transform="translate(16 2) skewX(-8) rotate(-2 480 145)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g id="crank-lettering">
+      <g id="letter-c">
+        <path d="M185 77 C151 49 93 53 65 96 C35 143 54 197 103 204 C136 209 166 191 181 166" stroke="#07090D" stroke-width="52"/>
+        <path d="M185 77 C151 49 93 53 65 96 C35 143 54 197 103 204 C136 209 166 191 181 166" stroke="#FFF7E8" stroke-width="32"/>
+      </g>
+      <g id="letter-r">
+        <path d="M194 191 L215 105 M209 141 C226 110 247 103 264 110" stroke="#07090D" stroke-width="52"/>
+        <path d="M194 191 L215 105 M209 141 C226 110 247 103 264 110" stroke="#FFF7E8" stroke-width="32"/>
+      </g>
+      <g id="letter-a" transform="translate(8 0)">
+        <path d="M271 160 C274 126 297 109 321 116 C342 123 338 155 328 187 M278 164 C295 175 318 165 331 140" stroke="#07090D" stroke-width="52"/>
+        <path d="M271 160 C274 126 297 109 321 116 C342 123 338 155 328 187 M278 164 C295 175 318 165 331 140" stroke="#FFF7E8" stroke-width="32"/>
+      </g>
+      <g id="letter-n" transform="translate(22 0)">
+        <path d="M351 185 L367 116 M365 148 C385 115 412 106 408 140 L402 180" stroke="#07090D" stroke-width="52"/>
+        <path d="M351 185 L367 116 M365 148 C385 115 412 106 408 140 L402 180" stroke="#FFF7E8" stroke-width="32"/>
+      </g>
+      <g id="letter-k" transform="translate(44 0)">
+        <path d="M441 61 L421 181 M427 150 L481 106 M448 134 L482 177" stroke="#07090D" stroke-width="52"/>
+        <path d="M441 61 L421 181 M427 150 L481 106 M448 134 L482 177" stroke="#FFF7E8" stroke-width="32"/>
+      </g>
+    </g>
+
+    <g id="ts-lettering">
+      <g id="letter-t" transform="translate(68 0)">
+        <path d="M500 87 L603 65 M553 75 L529 177" stroke="#07090D" stroke-width="54"/>
+        <path d="M500 87 L603 65 M553 75 L529 177" stroke="#18B9F2" stroke-width="34"/>
+      </g>
+      <g id="letter-s" transform="translate(78 0)">
+        <path d="M663 82 C630 65 596 76 590 100 C583 127 650 120 646 149 C643 176 603 187 571 169" stroke="#07090D" stroke-width="54"/>
+        <path d="M663 82 C630 65 596 76 590 100 C583 127 650 120 646 149 C643 176 603 187 571 169" stroke="#18B9F2" stroke-width="34"/>
+      </g>
+    </g>
+
+    <g id="dry-brush-cuts" stroke="#07090D" stroke-width="7" opacity=".58">
+      <path d="M83 74 L110 69 M59 119 L87 112 M102 204 L126 194"/>
+      <path d="M592 80 L617 74 M694 80 L717 77 M661 169 L685 162"/>
+    </g>
+  </g>
+
+  <g id="speed-flecks" fill="#FFC13D">
+    <path d="M846 61 L903 43 L867 71 Z"/>
+    <path d="M852 88 L932 82 L875 101 Z"/>
+    <path d="M82 202 L35 218 L72 222 Z"/>
+  </g>
+</svg>

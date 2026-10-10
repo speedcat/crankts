@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "experiment": "MVP-7a KWX chunk worker first pass",
+  "capturedAt": "2026-10-10",
+  "groundTruth": false,
+  "workloadLabel": "iw-index-build-full-depth-typescript",
+  "environment": {
+    "node": "22.19.0",
+    "depth": "full",
+    "backend": "TypeScript",
+    "sourceTree": "same dirty workspace snapshot for all four runs",
+    "outputDirectory": "/tmp/iw-kwx-workers-7wQMWz",
+    "warmupRuns": 0,
+    "repetitionsPerConfiguration": 1,
+    "peakRssCaptured": false
+  },
+  "runs": [
+    {
+      "workers": 1,
+      "wallSeconds": 19.4,
+      "kwgSeconds": 6.6,
+      "processUserSeconds": 17.6,
+      "processSystemSeconds": 1.8,
+      "processCpuPercent": 100,
+      "annotations": 56667,
+      "coOccurrences": 16250,
+      "symbolsTableRows": 7343,
+      "files": 718,
+      "imports": 756,
+      "defUseChains": 18322
+    },
+    {
+      "workers": 2,
+      "wallSeconds": 16.85,
+      "kwgSeconds": 3.8,
+      "processUserSeconds": 18.06,
+      "processSystemSeconds": 1.91,
+      "processCpuPercent": 118,
+      "annotations": 56667,
+      "coOccurrences": 16250,
+      "symbolsTableRows": 7343,
+      "files": 718,
+      "imports": 756,
+      "defUseChains": 18370
+    },
+    {
+      "workers": 4,
+      "wallSeconds": 14.115,
+      "kwgSeconds": 2.3,
+      "processUserSeconds": 19.13,
+      "processSystemSeconds": 1.89,
+      "processCpuPercent": 148,
+      "annotations": 56667,
+      "coOccurrences": 16250,
+      "symbolsTableRows": 7343,
+      "files": 718,
+      "imports": 756,
+      "defUseChains": 18344
+    },
+    {
+      "workers": 8,
+      "wallSeconds": 14.161,
+      "kwgSeconds": 2.2,
+      "processUserSeconds": 21.83,
+      "processSystemSeconds": 2.46,
+      "processCpuPercent": 171,
+      "annotations": 56667,
+      "coOccurrences": 16250,
+      "symbolsTableRows": 7343,
+      "files": 718,
+      "imports": 756,
+      "defUseChains": 18280
+    }
+  ],
+  "derived": {
+    "wallSpeedupVsSerial": {
+      "2": 1.15,
+      "4": 1.37,
+      "8": 1.37
+    },
+    "kwgSpeedupVsSerial": {
+      "2": 1.74,
+      "4": 2.87,
+      "8": 3.0
+    },
+    "observedScaling": "KWG time improved through eight workers; end-to-end wall time saturated at four workers."
+  },
+  "semanticParity": {
+    "exactRowMultisetTablesAcrossAllWorkerCounts": [
+      "annotations",
+      "co_occurrences",
+      "symbols",
+      "files",
+      "imports",
+      "todos",
+      "rationale",
+      "symbol_calls",
+      "property_accesses",
+      "type_assertions",
+      "variable_assignments"
+    ],
+    "coChanges": "same row count; recency is time-dependent and was not used as an exact-value gate",
+    "defUseChains": "row counts varied across separate runs (18,322 / 18,370 / 18,344 / 18,280); full-index parity is not established"
+  },
+  "limitations": [
+    "Single run per worker count, no warm-up, no peak RSS, and no queue/worker-startup instrumentation; results are directional only.",
+    "KWX worker pool parallelizes chunks within each file; the outer document and source-comment loops remain serial.",
+    "The current worker-count thresholds require repeated runs on the same host before selecting a default or claiming stable scaling.",
+    "Exact KWX-relevant output rows match, but ancillary def-use rows varied; investigate that baseline variance before a full-database parity claim.",
+    "The SQLite sink was not instrumented in this experiment."
+  ]
+}
