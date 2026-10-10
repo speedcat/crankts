@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "comparisonType": "mvp8-workspace-kwx-native-scanner-poc",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "typescript": "5.9.3",
+    "rust": "1.95.0",
+    "napi": "3.14.2",
+    "host": "darwin-arm64",
+    "nativeIntegration": "manual Node preload only; no IntentWeave production source changes"
+  },
+  "workspaceAnalysis": {
+    "projectConfigsLoaded": 13,
+    "skippedReferences": [
+      "apps/server/tsconfig.json",
+      "packages/plugin-kg-lite/tsconfig.json",
+      "packages/plugin-kg/tsconfig.json",
+      "packages/profiles/tsconfig.json",
+      "packages/server-core/tsconfig.json",
+      "packages/server-open/tsconfig.json"
+    ],
+    "functions": 3352,
+    "candidateIslands": 874,
+    "cpuProfile": {
+      "sampleCount": 12712,
+      "matchedSampleCount": 9781,
+      "matchedSamplePercent": 76.87,
+      "confidence": "MEDIUM"
+    }
+  },
+  "candidate": {
+    "name": "ASCII full-depth dictionary scanner inside HeuristicKeywordExtractor.extractDictionary",
+    "profiledSelfCpuMs": 3233.3,
+    "profiledSelfCpuPercent": 20.63,
+    "staticEligibility": "CONDITIONAL",
+    "staticSuitability": 55,
+    "directEffects": [
+      "ALLOCATES",
+      "READS_EXTERNAL_STATE",
+      "MUTATES_LOCAL_STATE",
+      "UNKNOWN_SIDE_EFFECT"
+    ],
+    "boundary": "Simple ASCII token scan only; regex terms, structured extraction, seen/addMatch, and KWX aggregation remain TypeScript."
+  },
+  "corpus": {
+    "discoveredDocuments": 30,
+    "indexedDocumentRows": 37,
+    "staleIndexedDocumentPaths": 8,
+    "axFiles": 224,
+    "axSymbols": 5825,
+    "oversizedAxSkips": 4,
+    "sourceCommentFiles": 221,
+    "inputGroups": 251,
+    "documentChunks": 1223,
+    "sourceCommentChunks": 9787,
+    "totalChunks": 11010,
+    "dictionaryTerms": 3463,
+    "simpleAsciiTerms": 3441,
+    "scanTextUtf16Characters": 1361664
+  },
+  "parity": {
+    "syntheticUnicodeAndWordBoundaryCases": "PASS",
+    "nativeScannerChunks": 11010,
+    "completeKeywordMatchChunks": 11010,
+    "completeKeywordMatchesCompared": 49002,
+    "completeKeywordMatchFields": "name, originalText, UTF-16 offset, length, source",
+    "databasePairsCompared": 5,
+    "baseTablesComparedPerPair": 20,
+    "allDifferencesConfinedTo": "def_use_chains",
+    "normalizedForComparison": [
+      "Generated _meta and conformance snapshot rows excluded",
+      "FTS index tables excluded as derived data",
+      "co_changes.recency excluded as time-dependent",
+      "def_use_chains.id excluded as a surrogate row id"
+    ],
+    "defUseRowsAcrossTypeScriptRuns": [14476, 14370, 14325, 14379, 14341],
+    "defUseRowsAcrossNativePreloadRuns": [14333, 14379, 14341, 14476, 14457]
+  },
+  "scannerBenchmark": {
+    "warmupRounds": 1,
+    "measuredRounds": 5,
+    "typescriptKernelMedianMs": 3822.0,
+    "preparedNativeKernelMedianMs": 214.546,
+    "preparedNativeKernelSpeedup": 17.814,
+    "typescriptFullExtractorMedianMs": 4902.665,
+    "preparedNativeFullExtractorMedianMs": 1972.347,
+    "preparedNativeFullExtractorSpeedup": 2.486,
+    "typescriptDocumentKernelMedianMs": 442.534,
+    "coldNativeDocumentKernelMedianMs": 849.615,
+    "coldNativeSpeedup": 0.521,
+    "dictionaryPreparation": "One N-API object per document/comment input group; one text scan call per chunk"
+  },
+  "fullBuildMatrix": {
+    "typescriptWallSeconds": [15.27, 15.53, 14.64, 15.07, 14.86],
+    "nativePreloadWallSeconds": [12.30, 12.92, 12.09, 13.02, 11.94],
+    "typescriptWallMedianSeconds": 15.07,
+    "nativePreloadWallMedianSeconds": 12.30,
+    "medianEndToEndSpeedup": 1.225,
+    "medianWallReductionPercent": 18.4,
+    "typescriptKwgSeconds": [5.0, 5.0, 4.7, 4.7, 4.7],
+    "nativePreloadKwgSeconds": [2.3, 2.3, 2.3, 2.3, 2.3],
+    "typescriptKwgMedianSeconds": 4.7,
+    "nativePreloadKwgMedianSeconds": 2.3,
+    "fullBuildCountsStable": {
+      "symbols": 5825,
+      "annotations": 49002,
+      "coOccurrences": 13895,
+      "coChanges": 907,
+      "files": 703
+    }
+  },
+  "limitations": [
+    "This is a manual runtime preload, not a production feature or automatic transformation.",
+    "The prepared native dictionary assumes the per-build Set is unchanged; the public extractor API permits callers to mutate that Set, so production integration must preserve that contract.",
+    "No peak RSS, allocation, or GC measurements were captured.",
+    "The full build matrix is one macOS arm64 host and one current workspace snapshot; repeat on a stable snapshot and another host before making a general speedup claim.",
+    "def_use_chains differs across TypeScript-only runs as well as native-preload runs; its current nondeterminism remains unresolved.",
+    "The CARI DB contained eight stale document rows; the benchmark used current files from IntentWeave's official discovery routine."
+  ],
+  "decision": "Promising real offload kernel: exact full KeywordMatch parity and a 1.225x five-run full-build median exceed the provisional 1.2x gate narrowly. Proceed to an opt-in integration design only after RSS/GC measurement and a safe strategy for mutable dictionaries; do not enable by default or generalize to the full extractor."
+}

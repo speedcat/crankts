@@ -40,6 +40,13 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
       "  Values are sampled allocated bytes, not retained heap or RSS.",
     );
   }
+  if (result.workspace) {
+    lines.push(`Project-reference configs: ${result.workspace.projectConfigsLoaded}`);
+    if (result.workspace.skippedReferences.length > 0) {
+      lines.push("Skipped missing project references:");
+      result.workspace.skippedReferences.forEach((reference) => lines.push(`  ${reference}`));
+    }
+  }
 
   if (candidateIslands.length === 0) {
     lines.push("", options.minScore ? `No candidate islands meet minimum score ${options.minScore}.` : "Candidate islands: none");

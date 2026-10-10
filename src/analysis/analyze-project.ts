@@ -14,6 +14,7 @@ import { analyzePipeline, loadPipelineDescriptor } from "./pipeline.js";
 import type { AnalysisResult, FunctionAnalysis, FunctionId } from "./model.js";
 
 export interface AnalyzeProjectOptions {
+  readonly workspaceReferences?: boolean;
   readonly profilePath?: string;
   readonly heapProfilePath?: string;
   readonly pipelinePath?: string;
@@ -21,13 +22,14 @@ export interface AnalyzeProjectOptions {
 }
 
 export function analyzeProject(target: string, options: AnalyzeProjectOptions = {}): AnalysisResult {
-  const facade = createCompilerFacade(target);
+  const facade = createCompilerFacade(target, { workspaceReferences: options.workspaceReferences === true });
   const functionIndex = collectFunctions(facade);
   const callsByFunction = buildCallGraph(facade, functionIndex);
   const directFunctions: FunctionAnalysis[] = functionIndex.definitions.map((definition) => {
+    const projectFacade = definition.compilerFacade;
     const calls = callsByFunction.get(definition.id) ?? [];
-    const eligibility = evaluateEligibility(definition, calls, facade);
-    const directEffects = inferDirectEffects(definition, calls, facade);
+    const eligibility = evaluateEligibility(definition, calls, projectFacade);
+    const directEffects = inferDirectEffects(definition, calls, projectFacade);
     return {
       id: definition.id,
       name: definition.name,
@@ -50,11 +52,18 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     if (!definition) {
       return functionAnalysis;
     }
-    const opportunities = scoreOpportunities(definition, functionAnalysis.effects, facade);
+    const projectFacade = definition.compilerFacade;
+    const opportunities = scoreOpportunities(definition, functionAnalysis.effects, projectFacade);
     return {
       ...functionAnalysis,
       opportunities,
-      parallelism: analyzeParallelism(definition, functionAnalysis.calls, functionAnalysis.effects, facade, effectsByFunction),
+      parallelism: analyzeParallelism(
+        definition,
+        functionAnalysis.calls,
+        functionAnalysis.effects,
+        projectFacade,
+        effectsByFunction,
+      ),
       nativePriority: calculateNativePriority(functionAnalysis.suitability, opportunities),
     };
   });
@@ -106,6 +115,14 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
   return {
     projectName: basename(facade.projectRoot),
     projectRoot: facade.projectRoot,
+    ...(options.workspaceReferences
+      ? {
+        workspace: {
+          projectConfigsLoaded: facade.projectFacades?.length ?? 1,
+          skippedReferences: facade.skippedProjectReferences ?? [],
+        },
+      }
+      : {}),
     typescript: {
       version: facade.version,
       source: facade.source,

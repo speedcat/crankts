@@ -12,6 +12,7 @@ export interface FunctionDefinition {
   readonly line: number;
   readonly node: ts.FunctionLikeDeclaration;
   readonly sourceFile: ts.SourceFile;
+  readonly compilerFacade: CompilerFacade;
   readonly isSeed: boolean;
 }
 
@@ -21,6 +22,9 @@ export interface FunctionIndex {
   readonly byNode: WeakMap<ts.Node, FunctionId>;
   readonly symbolToFunction: ReadonlyMap<ts.Symbol, FunctionId>;
   readonly classSymbolToConstructor: ReadonlyMap<ts.Symbol, FunctionId>;
+  readonly declarationKeyToFunction: ReadonlyMap<string, FunctionId>;
+  readonly classDeclarationKeyToConstructor: ReadonlyMap<string, FunctionId>;
+  readonly projectFacadeByFile: ReadonlyMap<string, CompilerFacade>;
 }
 
 export function collectFunctions(facade: CompilerFacade): FunctionIndex {
@@ -29,51 +33,65 @@ export function collectFunctions(facade: CompilerFacade): FunctionIndex {
   const byNode = new WeakMap<ts.Node, FunctionId>();
   const symbolToFunction = new Map<ts.Symbol, FunctionId>();
   const classSymbolToConstructor = new Map<ts.Symbol, FunctionId>();
+  const declarationKeyToFunction = new Map<string, FunctionId>();
+  const classDeclarationKeyToConstructor = new Map<string, FunctionId>();
+  const projectFacadeByFile = new Map<string, CompilerFacade>();
 
-  for (const sourceFile of facade.program.getSourceFiles()) {
-    const absoluteFile = resolve(sourceFile.fileName);
-    if (!isProjectSourceFile(absoluteFile, sourceFile, facade.projectRoot)) {
-      continue;
-    }
+  for (const projectFacade of facade.projectFacades ?? [facade]) {
+    for (const sourceFile of projectFacade.program.getSourceFiles()) {
+      const absoluteFile = resolve(sourceFile.fileName);
+      if (!isProjectSourceFile(absoluteFile, sourceFile, projectFacade.projectRoot)) {
+        continue;
+      }
+      projectFacadeByFile.set(absoluteFile, projectFacade);
 
-    const file = relative(facade.projectRoot, absoluteFile).split(sep).join("/");
-    const visit = (node: ts.Node): void => {
-      if (isFunctionBoundary(node, facade.typescript) && hasBody(node)) {
-        const start = node.getStart(sourceFile);
-        const line = sourceFile.getLineAndCharacterOfPosition(start).line + 1;
-        const definition: FunctionDefinition = {
-          id: `${file}:${start}`,
-          name: getFunctionName(node, line, facade.typescript),
-          file,
-          absoluteFile,
-          line,
-          node,
-          sourceFile,
-          isSeed: isTargetFile(facade, absoluteFile),
-        };
+      const file = relative(facade.projectRoot, absoluteFile).split(sep).join("/");
+      const workspaceFile = relative(facade.workspaceRoot, absoluteFile).split(sep).join("/");
+      const visit = (node: ts.Node): void => {
+        if (isFunctionBoundary(node, projectFacade.typescript) && hasBody(node)) {
+          const start = node.getStart(sourceFile);
+          const line = sourceFile.getLineAndCharacterOfPosition(start).line + 1;
+          const definition: FunctionDefinition = {
+            id: `${workspaceFile}:${start}`,
+            name: getFunctionName(node, line, projectFacade.typescript),
+            file,
+            absoluteFile,
+            line,
+            node,
+            sourceFile,
+            compilerFacade: projectFacade,
+            isSeed: isTargetFile(facade, absoluteFile),
+          };
 
-        definitions.push(definition);
-        byId.set(definition.id, definition);
-        byNode.set(node, definition.id);
+          definitions.push(definition);
+          byId.set(definition.id, definition);
+          byNode.set(node, definition.id);
 
-        for (const symbol of getFunctionSymbols(node, facade.checker, facade.typescript)) {
-          symbolToFunction.set(symbol, definition.id);
-        }
+          for (const symbol of getFunctionSymbols(node, projectFacade.checker, projectFacade.typescript)) {
+            symbolToFunction.set(symbol, definition.id);
+            for (const key of getDeclarationKeys(symbol)) {
+              declarationKeyToFunction.set(key, definition.id);
+            }
+          }
 
-        if (facade.typescript.isConstructorDeclaration(node)
-          && facade.typescript.isClassLike(node.parent)
+          if (projectFacade.typescript.isConstructorDeclaration(node)
+          && projectFacade.typescript.isClassLike(node.parent)
           && node.parent.name) {
-          const classSymbol = facade.checker.getSymbolAtLocation(node.parent.name);
+            const classSymbol = projectFacade.checker.getSymbolAtLocation(node.parent.name);
           if (classSymbol) {
             classSymbolToConstructor.set(classSymbol, definition.id);
+              for (const key of getDeclarationKeys(classSymbol)) {
+                classDeclarationKeyToConstructor.set(key, definition.id);
+              }
+            }
           }
         }
-      }
 
-      facade.typescript.forEachChild(node, visit);
-    };
+        projectFacade.typescript.forEachChild(node, visit);
+      };
 
-    visit(sourceFile);
+      visit(sourceFile);
+    }
   }
 
   definitions.sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
@@ -84,7 +102,18 @@ export function collectFunctions(facade: CompilerFacade): FunctionIndex {
     byNode,
     symbolToFunction,
     classSymbolToConstructor,
+    declarationKeyToFunction,
+    classDeclarationKeyToConstructor,
+    projectFacadeByFile,
   };
+}
+
+function getDeclarationKeys(symbol: ts.Symbol): string[] {
+  const declarations = symbol.declarations ?? (symbol.valueDeclaration ? [symbol.valueDeclaration] : []);
+  return declarations.map((declaration) => {
+    const sourceFile = declaration.getSourceFile();
+    return `${resolve(sourceFile.fileName)}:${declaration.getStart(sourceFile)}`;
+  });
 }
 
 export function isFunctionBoundary(node: ts.Node, typescript: typeof import("typescript")): node is ts.FunctionLikeDeclaration {

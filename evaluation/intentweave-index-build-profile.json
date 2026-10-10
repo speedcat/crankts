@@ -4,9 +4,9 @@
   "comparisonType": "full-workspace-index-build-profile",
   "capturedAt": "2026-10-10",
   "groundTruth": false,
-  "workspaceRoot": "/Users/benjaminbecker/Workspace/intentweave",
+  "workspaceRoot": "<workspace>/intentweave",
   "artifacts": {
-    "directory": "/tmp/crankts-iw-profile-6D0a7W",
+    "directory": "<tmp>/crankts-iw-profile",
     "typescriptDatabase": "index-ts.db",
     "rustDatabase": "index-rust.db",
     "typescriptCpuProfile": "iw-index-ts.22710.cpuprofile"

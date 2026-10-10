@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "experiment": "MVP-7b measurement-only SQLite writer instrumentation",
+  "capturedAt": "2026-10-10",
+  "groundTruth": false,
+  "workspaceState": "dirty working tree; this run is not directly comparable to earlier 33-document baselines",
+  "workload": {
+    "label": "iw-index-build-full-depth-typescript",
+    "node": "22.19.0",
+    "depth": "full",
+    "backend": "TypeScript",
+    "documentFiles": 30,
+    "axFiles": 224,
+    "axSymbols": 5825,
+    "annotations": 49002,
+    "groundedAnnotations": 37289,
+    "coOccurrences": 13895,
+    "filesWritten": 702
+  },
+  "command": "node --max-old-space-size=4096 --import tsx packages/cli/src/cli.ts index build --depth full --sink-metrics <tmp>/sink.json --output <tmp>/index.db --verbose .",
+  "artifacts": {
+    "directory": "/tmp/iw-sink-measure-9FL9Zl",
+    "database": "/tmp/iw-sink-measure-9FL9Zl/index.db",
+    "metrics": "/tmp/iw-sink-measure-9FL9Zl/sink.json"
+  },
+  "pipelineStageSeconds": {
+    "AX": 6.3,
+    "KWG_IN": 4.8,
+    "TCG": 2.5,
+    "Annotate": 0.0,
+    "Write": 0.8,
+    "observedProcessWallApprox": 15.0
+  },
+  "writer": {
+    "writerDurationMs": 796.8778750000001,
+    "tableWrites": [
+      { "table": "symbols", "rowCount": 5825, "durationMs": 107.14108400000077, "rowsPerSecond": 54367.56641364538 },
+      { "table": "annotations", "rowCount": 49002, "durationMs": 366.150916999999, "rowsPerSecond": 133830.06220902113 },
+      { "table": "co_occurrences", "rowCount": 13895, "durationMs": 37.90558400000009, "rowsPerSecond": 366568.68286213366 },
+      { "table": "co_changes", "rowCount": 909, "durationMs": 12.438207999999577, "rowsPerSecond": 73081.2670120994 },
+      { "table": "files", "rowCount": 702, "durationMs": 2.102708000000348, "rowsPerSecond": 333855.2000562531 },
+      { "table": "imports", "rowCount": 619, "durationMs": 12.872165999999197, "rowsPerSecond": 48088.25492151349 },
+      { "table": "todos", "rowCount": 5, "durationMs": 0.30516700000043784, "rowsPerSecond": 16384.47145331188 },
+      { "table": "rationale", "rowCount": 19, "durationMs": 0.8192079999989801, "rowsPerSecond": 23193.132879590597 },
+      { "table": "symbol_calls", "rowCount": 12882, "durationMs": 68.27754199999981, "rowsPerSecond": 188671.11531343695 },
+      { "table": "property_accesses", "rowCount": 1861, "durationMs": 18.24304099999972, "rowsPerSecond": 102011.50126231852 },
+      { "table": "type_assertions", "rowCount": 524, "durationMs": 6.887375000000247, "rowsPerSecond": 76081.23559410969 },
+      { "table": "test_descriptions", "rowCount": 0, "durationMs": 0.19245799999953306, "rowsPerSecond": 0 },
+      { "table": "variable_assignments", "rowCount": 6288, "durationMs": 45.66299999999865, "rowsPerSecond": 137704.4872216058 },
+      { "table": "def_use_chains", "rowCount": 14475, "durationMs": 77.3057090000002, "rowsPerSecond": 187243.6096537186 }
+    ]
+  },
+  "sqliteApiMetrics": {
+    "statementRunCount": 107011,
+    "statementRunMs": 343.2976090002485,
+    "statementReadCount": 5,
+    "statementReadMs": 0.4871659999989788,
+    "execCallCount": 3,
+    "execCallMs": 38.810207999998966,
+    "transactionCount": 1140,
+    "transactionBodyMs": 366.37662099999034,
+    "beginCount": 1140,
+    "beginMs": 0.719615999940288,
+    "commitCount": 1140,
+    "commitMs": 386.16952599999786,
+    "rollbackCount": 0,
+    "rollbackMs": 0,
+    "closeCount": 1,
+    "closeMs": 0.8464999999996508
+  },
+  "interpretation": {
+    "writerShareOfObservedProcessWallApproxPercent": 5.31,
+    "largestTableSpan": "annotations",
+    "structuralSingleWriterRisk": "HIGH",
+    "observedSinkBottleneck": "LOW in this workload snapshot; not the dominant measured stage",
+    "busyTimeMeasured": false,
+    "producerQueuePresent": false,
+    "multiwriterRecommendation": "not justified by this measurement"
+  },
+  "caveats": [
+    "Single measurement run; no repeated distribution or confidence interval.",
+    "statementRunMs is contained within transactionBodyMs; timing fields overlap and must not be summed.",
+    "Synchronous SQLite API wall time is not lock-wait attribution or a database busy percentage.",
+    "There is no producer queue in the current serial writer, so queue depth and producer wait are not measured.",
+    "The workspace snapshot had 30 documents and 224 AX files; do not compare directly with earlier 33-document baselines.",
+    "No application behavior or SQLite transaction ordering was changed by measurement mode."
+  ]
+}

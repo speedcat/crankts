@@ -6,6 +6,9 @@
 
 <p align="center"><strong>Crank up your TS.</strong></p>
 
+> [!IMPORTANT]
+> **CrankTS v0.1 is an experimental analyzer preview.** It produces evidence and recommendations, but does not rewrite source code or generate native implementations. Report formats and heuristics may change before v1.0.
+
 <p align="center">
   <img src="ressources/crankts-illustration2.png" alt="CrankTS analyzes TypeScript, measures workload behavior, and recommends acceleration opportunities" width="960" />
 </p>
@@ -47,7 +50,12 @@ pnpm dev analyze src/ --min-score 70
 pnpm dev analyze src/ --profile ingest.cpuprofile
 pnpm dev analyze src/ --heap-profile allocations.heapprofile --workload "request replay"
 pnpm dev analyze ../intentweave/packages/analyzer --pipeline evaluation/intentweave-pipeline.json
+
+# Include transitive TypeScript project references (opt-in)
+pnpm dev analyze . --workspace-references
 ```
+
+Project-reference analysis creates a separate TypeScript program and checker per referenced project, then joins source-resolved calls using stable workspace-relative IDs. The default remains single-project analysis. Imports whose implementation is available only through declaration files remain external boundaries.
 
 ## How It Works
 
@@ -96,6 +104,16 @@ IntentWeave is the first real-world validation target. Two experiments show why 
 
 - **Optimize the algorithm first:** profiling exposed KWX dictionary matching as a hotspot that static ranking missed. A TypeScript matcher rewrite reduced a single full-depth build from about 35 s to roughly 19 s; low post-change profile coverage makes this directional evidence, not a calibrated speedup claim.
 - **Test parallel scaling:** an explicit IntentWeave worker experiment measured 19.4 s with one worker and 14.1 s with four; eight did not improve end-to-end time. Selected tables matched exactly, but full-database parity was not established. This was one run per configuration, not an automatic CrankTS transformation.
+- **Measure the sink:** one instrumented 30-document build measured a 797 ms SQLite writer stage in an approximately 15 s run (~5%). Annotations took 366 ms, with 1,140 transactions and 386 ms in COMMIT calls. This does not isolate lock-wait or show that SQLite is the current bottleneck; the run had no producer queue and was not repeated.
+- **Validate a native candidate:** a manual napi-rs scanner replaced only the ASCII dictionary scan during five full-depth builds. All 49,002 `KeywordMatch` objects matched across 11,010 document/comment chunks; median full build was 15.07 s TypeScript vs. 12.30 s with the preload (1.225x). The full extractor microbenchmark was 2.49x faster, but cold per-chunk dictionary transfer was slower. This remains a manual PoC with no RSS/GC data or production integration; `def_use_chains` also varies between TypeScript-only runs. Details: [MVP-8 native candidate evidence](evaluation/intentweave-mvp8-native-poc.json).
+
+Run a separate measurement-only TS build with:
+
+```bash
+iw index build --depth full --sink-metrics /tmp/iw-sink-metrics.json --output /tmp/iw-index.db
+```
+
+The metrics option bypasses the native backend and writes a JSON report outside the index database. Full details and caveats are in [the evaluation history](docs/analysis-and-evaluation.md#mvp-7b-sqlite-sink-measurement).
 
 These experiments support an evidence-led workflow, not blind TypeScript-to-Rust translation. When native offload is justified, CrankTS is intended to perform the qualified transformation itself.
 
@@ -105,7 +123,7 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 
 | Milestone | Deliverable |
 | --- | --- |
-| Analysis and validation | Repeat worker benchmarks with warm-ups and CPU/RSS measurements; measure SQLite writer costs; add opt-in project-reference analysis; validate one measured candidate with a manual native harness. |
+| Analysis and validation | Measure native KWX RSS/GC and preserve mutable-dictionary semantics before integration; extend workspace-reference coverage for package methods/constructors; keep worker and sink claims tied to repeated parity-tested runs. |
 | **v0.2: Deterministic Extraction** | Explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
 | **v0.3: Automatic Offload** | Introduce a stable Native IR and Rust/N-API backend; gate automatic region selection on proof, workload evidence, and boundary costs; integrate builds and reversible call-path replacement with validation and rollback. |
 

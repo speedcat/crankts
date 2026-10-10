@@ -5,8 +5,8 @@
   "capturedAt": "2026-10-10",
   "groundTruth": false,
   "workloadLabel": "iw-full-depth-ts-post-matcher",
-  "workspaceRoot": "/Users/benjaminbecker/Workspace/intentweave",
-  "artifactDirectory": "/tmp/crankts-iw-mvp6-NhJwqP",
+  "workspaceRoot": "<workspace>/intentweave",
+  "artifactDirectory": "<tmp>/crankts-iw-mvp6",
   "environment": {
     "node": "22.19.0",
     "typescript": "5.9.3",
@@ -62,7 +62,7 @@
     }
   },
   "cpuProfile": {
-    "file": "/tmp/crankts-iw-mvp6-NhJwqP/cpu/iw-mvp6-cpu.23358.cpuprofile",
+    "file": "<tmp>/crankts-iw-mvp6/cpu/iw-mvp6-cpu.cpuprofile",
     "totalSampleMicros": 23089625,
     "matchedSamplePercentInAnalyzerPackage": 37.02,
     "confidence": "LOW",
@@ -94,7 +94,7 @@
     ]
   },
   "allocationProfile": {
-    "file": "/tmp/crankts-iw-mvp6-NhJwqP/heap/iw-mvp6-heap.${pid}.heapprofile",
+    "file": "<tmp>/crankts-iw-mvp6/heap/iw-mvp6-heap.<pid>.heapprofile",
     "totalSampledBytes": 18496648,
     "matchedSampledBytes": 1048672,
     "matchedSampledPercentInAnalyzerPackage": 5.67,

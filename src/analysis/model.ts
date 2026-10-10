@@ -394,9 +394,15 @@ export interface AllocationProfileSummary {
   readonly confidence: EvidenceConfidence;
 }
 
+export interface WorkspaceAnalysisSummary {
+  readonly projectConfigsLoaded: number;
+  readonly skippedReferences: readonly string[];
+}
+
 export interface AnalysisResult {
   readonly projectName: string;
   readonly projectRoot: string;
+  readonly workspace?: WorkspaceAnalysisSummary;
   readonly typescript: {
     readonly version: string;
     readonly source: CompilerSource;

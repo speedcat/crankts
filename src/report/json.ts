@@ -13,6 +13,7 @@ export interface JsonAnalysisReport {
     readonly name: string;
     readonly typescript: AnalysisResult["typescript"];
   };
+  readonly workspace?: NonNullable<AnalysisResult["workspace"]>;
   readonly workloadLabel?: string;
   readonly acceleration: NonNullable<AnalysisResult["acceleration"]>;
   readonly summary: {
@@ -50,6 +51,7 @@ export function renderJsonReport(
       name: result.projectName,
       typescript: result.typescript,
     },
+    ...(result.workspace ? { workspace: result.workspace } : {}),
     ...(result.workloadLabel ? { workloadLabel: result.workloadLabel } : {}),
     acceleration: result.acceleration,
     summary: {

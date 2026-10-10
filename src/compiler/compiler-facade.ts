@@ -12,9 +12,16 @@ export interface CompilerFacade {
   readonly program: ts.Program;
   readonly checker: ts.TypeChecker;
   readonly projectRoot: string;
+  readonly workspaceRoot: string;
+  readonly projectFacades?: readonly CompilerFacade[];
+  readonly skippedProjectReferences?: readonly string[];
   readonly targetPath: string;
   readonly targetIsDirectory: boolean;
   readonly configPath: string;
+}
+
+export interface CompilerFacadeOptions {
+  readonly workspaceReferences?: boolean;
 }
 
 interface LoadedCompiler {
@@ -32,7 +39,7 @@ const bundledRequire = createRequire(import.meta.url);
 const bundledTypescript = bundledRequire("typescript") as typeof ts;
 const bundledTypescriptPath = bundledRequire.resolve("typescript");
 
-export function createCompilerFacade(target: string): CompilerFacade {
+export function createCompilerFacade(target: string, options: CompilerFacadeOptions = {}): CompilerFacade {
   const targetPath = resolve(target);
   if (!existsSync(targetPath)) {
     throw new Error(`Target does not exist: ${targetPath}`);
@@ -45,6 +52,33 @@ export function createCompilerFacade(target: string): CompilerFacade {
     throw new Error(`No tsconfig.json found from ${configSearchDirectory} or its parent directories.`);
   }
 
+  const rootFacade = createFacadeFromConfig(
+    targetPath,
+    targetIsDirectory,
+    configPath,
+    !options.workspaceReferences,
+  );
+  if (!options.workspaceReferences) {
+    return { ...rootFacade, workspaceRoot: rootFacade.projectRoot };
+  }
+
+  const skippedProjectReferences: string[] = [];
+  const projectFacades = collectReferencedFacades(rootFacade, skippedProjectReferences);
+  const workspaceRoot = findCommonDirectory(projectFacades.map((facade) => facade.projectRoot));
+  return {
+    ...rootFacade,
+    workspaceRoot,
+    projectFacades,
+    skippedProjectReferences: [...new Set(skippedProjectReferences)].sort(),
+  };
+}
+
+function createFacadeFromConfig(
+  targetPath: string,
+  targetIsDirectory: boolean,
+  configPath: string,
+  includeProjectReferences = true,
+): CompilerFacade {
   const projectRoot = dirname(configPath);
   const compiler = loadProjectCompiler(projectRoot);
   const configDiagnostics: ts.Diagnostic[] = [];
@@ -65,7 +99,9 @@ export function createCompilerFacade(target: string): CompilerFacade {
   const program = compiler.typescript.createProgram({
     rootNames: parsedConfig.fileNames,
     options: parsedConfig.options,
-    ...(parsedConfig.projectReferences ? { projectReferences: parsedConfig.projectReferences } : {}),
+    ...(includeProjectReferences && parsedConfig.projectReferences
+      ? { projectReferences: parsedConfig.projectReferences }
+      : {}),
   });
 
   return {
@@ -75,10 +111,84 @@ export function createCompilerFacade(target: string): CompilerFacade {
     program,
     checker: program.getTypeChecker(),
     projectRoot,
+    workspaceRoot: projectRoot,
     targetPath,
     targetIsDirectory,
     configPath,
   };
+}
+
+function collectReferencedFacades(
+  rootFacade: CompilerFacade,
+  skippedReferences: string[],
+): CompilerFacade[] {
+  const facades = [rootFacade];
+  const visitedConfigs = new Set([resolve(rootFacade.configPath)]);
+  let currentIndex = 0;
+
+  while (currentIndex < facades.length) {
+    const currentFacade = facades[currentIndex];
+    currentIndex += 1;
+    if (!currentFacade) {
+      continue;
+    }
+
+    const configDiagnostics: ts.Diagnostic[] = [];
+    const configHost: ts.ParseConfigFileHost = {
+      ...currentFacade.typescript.sys,
+      onUnRecoverableConfigFileDiagnostic: (diagnostic) => configDiagnostics.push(diagnostic),
+    };
+    const parsedConfig = currentFacade.typescript.getParsedCommandLineOfConfigFile(
+      currentFacade.configPath,
+      {},
+      configHost,
+    );
+    const diagnostics = [...configDiagnostics, ...(parsedConfig?.errors ?? [])];
+    if (!parsedConfig || diagnostics.length > 0) {
+      throw new Error(formatDiagnostics(currentFacade.typescript, diagnostics));
+    }
+
+    for (const reference of parsedConfig.projectReferences ?? []) {
+      const referencePath = resolve(dirname(currentFacade.configPath), reference.path);
+      const referenceConfigPath = reference.path.toLowerCase().endsWith(".json")
+        ? referencePath
+        : join(referencePath, "tsconfig.json");
+      if (!existsSync(referenceConfigPath) || !statSync(referenceConfigPath).isFile()) {
+        skippedReferences.push(relative(rootFacade.projectRoot, referenceConfigPath).split(sep).join("/"));
+        continue;
+      }
+      const canonicalConfigPath = resolve(referenceConfigPath);
+      if (visitedConfigs.has(canonicalConfigPath)) {
+        continue;
+      }
+      visitedConfigs.add(canonicalConfigPath);
+      facades.push(createFacadeFromConfig(
+        rootFacade.targetPath,
+        rootFacade.targetIsDirectory,
+        canonicalConfigPath,
+        false,
+      ));
+    }
+  }
+
+  return facades;
+}
+
+function findCommonDirectory(paths: readonly string[]): string {
+  const [firstPath, ...remainingPaths] = paths;
+  if (!firstPath) {
+    throw new Error("Cannot determine a workspace root without project references.");
+  }
+
+  let commonDirectory = resolve(firstPath);
+  while (!remainingPaths.every((path) => isPathWithin(commonDirectory, path))) {
+    const parentDirectory = dirname(commonDirectory);
+    if (parentDirectory === commonDirectory) {
+      return commonDirectory;
+    }
+    commonDirectory = parentDirectory;
+  }
+  return commonDirectory;
 }
 
 function findTsconfig(startDirectory: string): string | undefined {

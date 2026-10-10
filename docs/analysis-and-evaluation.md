@@ -18,11 +18,11 @@ scriptc is prior art for ahead-of-time compilation, not an architectural depende
 
 ## Analysis Scope and Reports
 
-The CLI loads the nearest `tsconfig.json`, resolves the project, and reports selected functions plus transitively resolved local callees. It prefers the project's declared and installed TypeScript compiler, falling back to its bundled compiler. It never executes the analyzed target application or modifies its source.
+The CLI loads the nearest `tsconfig.json`, resolves the project, and reports selected functions plus transitively resolved local callees. It prefers the project's declared and installed TypeScript compiler, falling back to its bundled compiler. It never executes the analyzed target application or modifies its source. `--workspace-references` opts into transitive project-reference traversal with one Program/checker per project; function IDs use common-workspace-relative source paths and declaration offsets, while reported file paths remain relative to `projectRoot`. The default remains single-project analysis. Source-resolved cross-project calls join by canonical declaration keys; targets available only as `.d.ts` remain external and are not treated as implementation evidence.
 
 Eligibility and effects propagate through resolved in-project call edges, including recursive components. External and unresolved calls retain direct diagnostics. Effects use conservative syntax and common Node.js API heuristics; transitive effects are unions across resolved calls.
 
-Candidate islands are weakly connected components over supported and conditional functions. They remain unsplit. Package-only analysis does not follow source-level calls across project references; opt-in workspace/project-reference resolution is planned.
+Candidate islands are weakly connected components over supported and conditional functions. They remain unsplit. Package-only analysis does not follow calls across project references; the opt-in mode follows references and resolves calls only when a referenced implementation source is available to the importing Program.
 
 The JSON report uses schema version 2. Existing function, island, and `nativePriority` fields remain; v2 adds `workloadLabel`, optional `allocationProfile` and `pipeline` evidence, and `acceleration` assessments. `--min-score` filters reported islands, not the complete selected function summaries. `--verbose` includes typed call edges and region-level parallelism evidence.
 
@@ -166,6 +166,23 @@ Exact row-multiset matches held for `annotations`, `co_occurrences`, `symbols`, 
 
 There was one run per configuration, no warm-up/repeated distributions, and no peak RSS measurement. Eight workers did not beat four end-to-end. SQLite was not instrumented; its earlier ~1.1 s stage was about 5% of the 21.6 s baseline, not evidence of a dominant sink. Details: [intentweave-mvp7-kwx-workers.json](../evaluation/intentweave-mvp7-kwx-workers.json).
 
+### MVP-7b SQLite Sink Measurement
+
+The measurement-only `--sink-metrics <path>` option forces the TypeScript writer and emits sink metrics separately from the index database. One full-depth run against the then-current dirty workspace snapshot processed 30 document files and 224 AX files (4 oversized source files skipped). The CLI reported a 0.8 s Write stage and `buildIndex` measured 796.9 ms writer duration; the observed process took about 15 s. This snapshot is smaller/different from the earlier 33-document, 258-file baseline and is not directly comparable.
+
+| Writer table | Rows | Table span |
+| --- | ---: | ---: |
+| annotations | 49,002 | 366.2 ms |
+| symbols | 5,825 | 107.1 ms |
+| def-use chains | 14,475 | 77.3 ms |
+| symbol calls | 12,882 | 68.3 ms |
+| variable assignments | 6,288 | 45.7 ms |
+| co-occurrences | 13,895 | 37.9 ms |
+
+The adapter recorded 107,011 `Statement.run` calls / 343.3 ms, 5 read calls / 0.5 ms, 3 `exec` calls / 38.8 ms, 1,140 transactions / 366.4 ms transaction-body time, 1,140 COMMIT calls / 386.2 ms, and one database close / 0.8 ms. Statement time is included in transaction-body time, so these values overlap and must not be summed. Table spans also include JavaScript work around SQLite calls.
+
+Interpretation: the structural single-writer risk is real, but this one run attributes only about 5–6% of process time to the write phase. That is **not evidence of high observed contention** and does not justify `sqlite-multiwriter`. The adapter measures synchronous SQLite API wall time, not lock-wait/busy time; the current writer has no producer queue, so queue depth and producer wait do not exist. Repeated runs and instrumentation on a workload with concurrent producers are required before making a sink-scaling claim. The raw report is [evaluation/intentweave-mvp7b-sink.json](../evaluation/intentweave-mvp7b-sink.json).
+
 ### Top-16 Source Review
 
 All 16 index islands above the priority-70 cutoff scored exactly 70. Manual labels were 1 `GOOD_NATIVE_CANDIDATE`, 7 `MAYBE`, and 8 `BAD_CANDIDATE`, not profiler-backed ground truth. Full region metrics, labels, and reason tokens are in [intentweave-index-top16.json](../evaluation/intentweave-index-top16.json).
@@ -176,10 +193,28 @@ The set had 1,142 raw exits and 439 effective exits: 24 `LOCAL_DIRECT`, 650 `STD
 
 This selected sample exposed false positives but was too small and unmeasured to fit coefficients. Raw boundary ratio would penalize the promising graph region, while callbacks/stdlib calls do not necessarily represent runtime crossings. No score weights or component membership were changed from these results.
 
+### MVP-8 Native KWX Candidate Validation
+
+The transitive-reference analyzer covered 13 existing project configs and reported six stale/missing references. Its fresh 1 ms V8 profile matched 76.87% of samples (`MEDIUM` confidence). `HeuristicKeywordExtractor.extractDictionary` accounted for 3.23 s self CPU (20.63%); its whole-method static status remains `CONDITIONAL` (suitability 55, including `UNKNOWN_SIDE_EFFECT`). The experiment therefore isolated only the pure ASCII dictionary scan and left regex fallback, structured extraction, `seen`/`addMatch`, KWX aggregation, and persistence in TypeScript.
+
+The N-API kernel used the real AX dictionary (3,463 terms, 3,441 simple ASCII terms), 30 discovered documents, and 221 source-comment files: 11,010 IN chunks and 49,002 complete `KeywordMatch` values. The prepared native dictionary was created once per 251 document/comment input groups. Exact scanner and full-extractor output parity passed on every chunk, including UTF-16 offsets after astral Unicode. The cold mode that transferred/rebuilt the dictionary per document chunk was slower, confirming that preparation amortization is required.
+
+| Measurement | TypeScript | Prepared N-API | Ratio |
+| --- | ---: | ---: | ---: |
+| ASCII scanner, all chunks (median of 5) | 3,822 ms | 214.5 ms | 17.81x |
+| Full extractor, all chunks (median of 5) | 4,903 ms | 1,972 ms | 2.49x |
+| Cold scanner, document chunks only | 442.5 ms | 849.6 ms | 0.52x |
+| Full-depth build wall (median of 5) | 15.07 s | 12.30 s | 1.225x |
+| KWG stage (median of 5) | 4.7 s | 2.3 s | 2.04x |
+
+The five-run matrix was on one macOS arm64 host (Node 22.19, TypeScript 5.9.3). All compared base tables matched across five TS/native pairs except `def_use_chains`; TS-only runs varied from 14,325 to 14,476 rows, so that known nondeterministic AX output prevents claiming full database parity. The other compared semantic tables, including symbols, annotations, co-occurrences, imports, calls, and assignments, were exact after excluding generated metadata and time-dependent `co_changes.recency`.
+
+This manual runtime preload clears the provisional 1.2x end-to-end gate narrowly, but it is not production integration. No peak RSS, allocation, or GC data was measured. The extractor accepts a mutable dictionary `Set`; the prepared native cache assumes it stays unchanged during a build, so an integration must preserve the existing mutation contract. Full measurements and caveats are in [intentweave-mvp8-native-poc.json](../evaluation/intentweave-mvp8-native-poc.json); the reproducible harness is in [kwx-native-poc](../evaluation/kwx-native-poc/README.md).
+
 ## Follow-up Validation Gates
 
 1. **Worker validation:** warm up, then collect at least five measured serial/2/4/8 runs; capture peak RSS, startup/clone costs, and file/chunk variants. Require normalized semantic parity.
-2. **Sink measurements:** instrument statement, transaction, commit, checkpoint, and writer-stage time. Measure queue depth/producer wait only after a real producer queue exists; distinguish structural risk from observed contention.
-3. **Workspace analysis:** opt-in project-reference resolution, preserving package-only behavior; verify unique cross-project IDs and call resolution in a solution-tsconfig fixture.
-4. **Native validation:** choose a measured, algorithmically reasonable in-memory candidate with acceptable boundaries. Validate a manual napi-rs harness using parity and repeated CPU/RSS/GC/scaling measurements before automatic generation.
+2. **Sink measurements:** repeat the initial statement/transaction/commit/writer-stage measurements; separate structural risk from observed contention. Measure queue depth/producer wait only after a real producer queue exists, and add lock-wait attribution only if the selected SQLite adapter exposes it.
+3. **Workspace analysis:** extend the passing solution-tsconfig fixture to cover package export subpaths, methods/constructors, and external/unreferenced boundaries; keep missing reference configs visible.
+4. **Native validation:** the KWX scanner PoC passes exact extractor parity and the provisional 1.2x full-build median gate; next measure peak RSS/GC and design an immutable or mutation-aware dictionary handoff before any opt-in production integration.
 5. **Transformation:** keep evidence, advice, optional agent assistance, and deterministic lowering separate. v0.2 requires explicit selection, a supported end-to-end implementation, wrapper/boundary, TS fallback, parity tests, and benchmarks. v0.3 adds gated automatic selection, Native IR/backend integration, reversible replacement, and rollback. Unsupported semantics remain in TypeScript.

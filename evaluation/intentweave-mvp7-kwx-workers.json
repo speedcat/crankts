@@ -10,7 +10,7 @@
     "depth": "full",
     "backend": "TypeScript",
     "sourceTree": "same dirty workspace snapshot for all four runs",
-    "outputDirectory": "/tmp/iw-kwx-workers-7wQMWz",
+    "outputDirectory": "<tmp>/iw-kwx-workers",
     "warmupRuns": 0,
     "repetitionsPerConfiguration": 1,
     "peakRssCaptured": false

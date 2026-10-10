@@ -1,9 +1,30 @@
+import { resolve } from "node:path";
 import type * as ts from "typescript";
 import { isPathWithin } from "../compiler/compiler-facade.js";
 import type { CompilerFacade } from "../compiler/compiler-facade.js";
 import type { CallEdge, CallEdgeKind, FunctionId, RuntimeBoundaryKind } from "./model.js";
 import { isFunctionBoundary } from "./functions.js";
 import type { FunctionDefinition, FunctionIndex } from "./functions.js";
+
+interface SourceMapLocation {
+  readonly fileName: string;
+  readonly pos: number;
+}
+
+interface SourceMapMapper {
+  tryGetSourcePosition(location: SourceMapLocation): SourceMapLocation | undefined;
+}
+
+interface SourceMapHost {
+  readonly getCurrentDirectory: () => string;
+  readonly useCaseSensitiveFileNames: () => boolean;
+  readonly getProgram: () => ts.Program;
+  readonly readFile: (fileName: string) => string | undefined;
+  readonly fileExists: (fileName: string) => boolean;
+  readonly log: (message: string) => void;
+}
+
+const sourceMappers = new WeakMap<CompilerFacade, SourceMapMapper | null>();
 
 export function buildCallGraph(
   facade: CompilerFacade,
@@ -12,22 +33,23 @@ export function buildCallGraph(
   const callsByFunction = new Map<FunctionId, CallEdge[]>();
 
   for (const definition of index.definitions) {
+    const projectFacade = definition.compilerFacade;
     const calls: CallEdge[] = [];
     const body = definition.node.body;
 
     if (body) {
       const visit = (node: ts.Node): void => {
-        if (node !== body && isFunctionBoundary(node, facade.typescript)) {
+        if (node !== body && isFunctionBoundary(node, projectFacade.typescript)) {
           return;
         }
 
-        if (facade.typescript.isCallExpression(node)) {
-          addCallEdges(node, "call", definition, calls, facade, index);
-        } else if (facade.typescript.isNewExpression(node)) {
-          addCallEdges(node, "constructor", definition, calls, facade, index);
+        if (projectFacade.typescript.isCallExpression(node)) {
+          addCallEdges(node, "call", definition, calls, projectFacade, index);
+        } else if (projectFacade.typescript.isNewExpression(node)) {
+          addCallEdges(node, "constructor", definition, calls, projectFacade, index);
         }
 
-        facade.typescript.forEachChild(node, visit);
+        projectFacade.typescript.forEachChild(node, visit);
       };
 
       visit(body);
@@ -342,20 +364,136 @@ function resolveTarget(
   }
 
   for (const symbol of getSymbolsForExpression(unwrapped, facade)) {
-    const functionId = index.symbolToFunction.get(symbol);
+    const functionId = getFunctionIdForSymbol(symbol, callType, index);
     if (functionId) {
       return functionId;
     }
-
-    if (callType === "constructor") {
-      const constructorId = index.classSymbolToConstructor.get(symbol);
-      if (constructorId) {
-        return constructorId;
-      }
+    const mappedFunctionId = resolveMappedDeclaration(symbol, callType, facade, index);
+    if (mappedFunctionId) {
+      return mappedFunctionId;
     }
   }
 
   return undefined;
+}
+
+function getFunctionIdForSymbol(
+  symbol: ts.Symbol,
+  callType: "call" | "constructor",
+  index: FunctionIndex,
+): FunctionId | undefined {
+  const functionId = index.symbolToFunction.get(symbol)
+    ?? getSymbolDeclarationKeys(symbol)
+      .map((key) => index.declarationKeyToFunction.get(key))
+      .find((id): id is FunctionId => id !== undefined);
+  if (functionId || callType !== "constructor") {
+    return functionId;
+  }
+
+  return index.classSymbolToConstructor.get(symbol)
+    ?? getSymbolDeclarationKeys(symbol)
+      .map((key) => index.classDeclarationKeyToConstructor.get(key))
+      .find((id): id is FunctionId => id !== undefined);
+}
+
+function resolveMappedDeclaration(
+  symbol: ts.Symbol,
+  callType: "call" | "constructor",
+  facade: CompilerFacade,
+  index: FunctionIndex,
+): FunctionId | undefined {
+  for (const declaration of symbol.declarations ?? []) {
+    const declarationFile = declaration.getSourceFile();
+    if (!declarationFile.isDeclarationFile) {
+      continue;
+    }
+
+    const declarationName = "name" in declaration
+      ? declaration.name as ts.Node | undefined
+      : undefined;
+    const sourceLocation = getSourceMapper(facade)?.tryGetSourcePosition({
+      fileName: declarationFile.fileName,
+      pos: declarationName
+        ? declarationName.getStart(declarationFile)
+        : declaration.getStart(declarationFile),
+    });
+    if (!sourceLocation) {
+      continue;
+    }
+
+    const sourcePath = resolve(sourceLocation.fileName);
+    const projectFacade = index.projectFacadeByFile.get(sourcePath);
+    const sourceFile = projectFacade?.program.getSourceFile(sourcePath);
+    if (!projectFacade || !sourceFile) {
+      continue;
+    }
+
+    const position = Math.max(0, Math.min(sourceLocation.pos, sourceFile.end));
+    const sourceTypescript = projectFacade.typescript as typeof projectFacade.typescript & {
+      getTokenAtPosition: (file: ts.SourceFile, position: number) => ts.Node;
+    };
+    let node: ts.Node | undefined = sourceTypescript.getTokenAtPosition(sourceFile, position);
+    while (node) {
+      const mappedSymbol = projectFacade.checker.getSymbolAtLocation(node);
+      if (mappedSymbol) {
+        const functionId = getFunctionIdForSymbol(mappedSymbol, callType, index);
+        if (functionId) {
+          return functionId;
+        }
+      }
+
+      if (callType === "constructor"
+        && projectFacade.typescript.isConstructorDeclaration(node)
+        && projectFacade.typescript.isClassLike(node.parent)
+        && node.parent.name) {
+        const classSymbol = projectFacade.checker.getSymbolAtLocation(node.parent.name);
+        if (classSymbol) {
+          const constructorId = getFunctionIdForSymbol(classSymbol, callType, index);
+          if (constructorId) {
+            return constructorId;
+          }
+        }
+      }
+
+      node = node.parent;
+    }
+  }
+
+  return undefined;
+}
+
+function getSourceMapper(facade: CompilerFacade): SourceMapMapper | undefined {
+  if (sourceMappers.has(facade)) {
+    return sourceMappers.get(facade) ?? undefined;
+  }
+
+  const typescript = facade.typescript as typeof facade.typescript & {
+    getSourceMapper?: (host: SourceMapHost) => SourceMapMapper;
+  };
+  if (!typescript.getSourceMapper) {
+    sourceMappers.set(facade, null);
+    return undefined;
+  }
+
+  const system = facade.typescript.sys;
+  const mapper = typescript.getSourceMapper({
+    getCurrentDirectory: () => system.getCurrentDirectory(),
+    useCaseSensitiveFileNames: () => system.useCaseSensitiveFileNames,
+    getProgram: () => facade.program,
+    readFile: (fileName) => system.readFile(fileName),
+    fileExists: (fileName) => system.fileExists(fileName),
+    log: () => undefined,
+  });
+  sourceMappers.set(facade, mapper);
+  return mapper;
+}
+
+function getSymbolDeclarationKeys(symbol: ts.Symbol): string[] {
+  const declarations = symbol.declarations ?? (symbol.valueDeclaration ? [symbol.valueDeclaration] : []);
+  return declarations.map((declaration) => {
+    const sourceFile = declaration.getSourceFile();
+    return `${resolve(sourceFile.fileName)}:${declaration.getStart(sourceFile)}`;
+  });
 }
 
 function getSymbolsForExpression(expression: ts.Expression, facade: CompilerFacade): ts.Symbol[] {

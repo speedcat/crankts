@@ -1,0 +1,17 @@
+[package]
+name = "kwx-native-poc"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3.14.2", default-features = false, features = ["napi8", "dyn-symbols"] }
+napi-derive = "3.6.12"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

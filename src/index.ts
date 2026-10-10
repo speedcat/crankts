@@ -11,6 +11,7 @@ export type * from "./analysis/model.js";
 type OutputFormat = "text" | "json";
 
 interface AnalyzeOptions {
+  readonly workspaceReferences: boolean;
   readonly format: OutputFormat;
   readonly minScore: number;
   readonly profilePath?: string;
@@ -54,6 +55,7 @@ export function runCli(arguments_: readonly string[]): number {
       ...(options.heapProfilePath ? { heapProfilePath: options.heapProfilePath } : {}),
       ...(options.pipelinePath ? { pipelinePath: options.pipelinePath } : {}),
       ...(options.workloadLabel ? { workloadLabel: options.workloadLabel } : {}),
+      ...(options.workspaceReferences ? { workspaceReferences: true } : {}),
     });
     const reportOptions = { verbose: options.verbose, minScore: options.minScore };
     const report = options.format === "json"
@@ -79,10 +81,12 @@ function printUsage(): void {
   console.log("  --heap-profile <file> Attach a Node/V8 .heapprofile of sampled allocated bytes");
   console.log("  --pipeline <file>     Add a versioned pipeline/sink evidence descriptor");
   console.log("  --workload <label>    Label the workload represented by attached profiles");
+  console.log("  --workspace-references Analyze transitive TypeScript project references");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
   let target: string | undefined;
+  let workspaceReferences = false;
   let format: OutputFormat = "text";
   let verbose = false;
   let minScore = 0;
@@ -93,6 +97,10 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
 
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index];
+    if (argument === "--workspace-references") {
+      workspaceReferences = true;
+      continue;
+    }
     if (argument === "--verbose") {
       verbose = true;
       continue;
@@ -175,6 +183,7 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
 
   return {
     target: target ?? ".",
+    workspaceReferences,
     format,
     verbose,
     minScore,

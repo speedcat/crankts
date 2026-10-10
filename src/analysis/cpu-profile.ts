@@ -275,13 +275,14 @@ function getSourceFileCandidates(profileUrl: string, projectRoot: string): strin
   }
 
   const candidates = new Set([relativePath]);
-  if (relativePath.startsWith("dist/")) {
-    candidates.add(`src/${relativePath.slice("dist/".length)}`);
-    relativePath = relativePath.slice("dist/".length);
-  }
-  if (relativePath.startsWith("build/")) {
-    candidates.add(`src/${relativePath.slice("build/".length)}`);
-    relativePath = relativePath.slice("build/".length);
+  const outputDirectory = /(^|\/)(?:dist|build)\//.exec(relativePath);
+  const mappedOutputDirectory = Boolean(outputDirectory);
+  if (outputDirectory) {
+    const matchStart = outputDirectory.index ?? 0;
+    const matchLength = outputDirectory[0].length;
+    const pathSeparator = outputDirectory[1];
+    relativePath = `${relativePath.slice(0, matchStart)}${pathSeparator}src/${relativePath.slice(matchStart + matchLength)}`;
+    candidates.add(relativePath);
   }
 
   const extension = extname(relativePath);
@@ -295,7 +296,9 @@ function getSourceFileCandidates(profileUrl: string, projectRoot: string): strin
   if (sourceExtension) {
     const sourcePath = relativePath.slice(0, -extension.length) + sourceExtension;
     candidates.add(sourcePath);
-    candidates.add(`src/${sourcePath}`);
+    if (!mappedOutputDirectory) {
+      candidates.add(`src/${sourcePath}`);
+    }
   }
   return [...candidates];
 }
