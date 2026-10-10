@@ -34,6 +34,13 @@ export { emitTypeScriptWrapper } from "./lowering/wrapper-ts.js";
 export { planRegionExtraction } from "./lowering/region.js";
 export type { LineRange, RegionPlan, RegionRequest, RegionResult } from "./lowering/region.js";
 export { emitRegionIntegration } from "./lowering/region-integration.js";
+export { planInterning } from "./lowering/interning.js";
+export type { InternPlan, InternRequest, InternResult } from "./lowering/interning.js";
+export { emitInternIntegration } from "./lowering/intern-integration.js";
+export { planBatchInterning } from "./lowering/interning-batch.js";
+export type { BatchInternPlan, BatchInternRequest, BatchInternResult, BatchOutputField } from "./lowering/interning-batch.js";
+export { emitBatchIntegration } from "./lowering/batch-integration.js";
+export { sealedGraphRuntime } from "./lowering/sealed-graph.js";
 export type { ExtractRequest, ExtractResult } from "./lowering/extract.js";
 export type { DeriveContractRequest, DerivedContract } from "./lowering/derive-contract.js";
 
@@ -164,7 +171,8 @@ function runExtract(arguments_: readonly string[]): number {
 function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
   let target: string | undefined;
   const values = new Map<string, string>();
-  const valueOptions = new Set(["--shape", "--out", "--prepare", "--graph", "--direction", "--name", "--region", "--prepare-region"]);
+  let batch = false;
+  const valueOptions = new Set(["--shape", "--out", "--prepare", "--graph", "--direction", "--name", "--region", "--prepare-region", "--intern"]);
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index] ?? "";
     const [flag, inline] = argument.includes("=") ? [argument.slice(0, argument.indexOf("=")), argument.slice(argument.indexOf("=") + 1)] : [argument, undefined];
@@ -177,6 +185,10 @@ function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
         throw new Error(`${flag} requires a value.`);
       }
       values.set(flag, value);
+      continue;
+    }
+    if (argument === "--batch") {
+      batch = true;
       continue;
     }
     if (argument.startsWith("-")) {
@@ -220,8 +232,13 @@ function parseExtractOptions(arguments_: readonly string[]): ExtractRequest {
   if (prepareRegion && !region) {
     throw new Error("--prepare-region requires --region.");
   }
+  if (batch && !values.get("--intern")) {
+    throw new Error("--batch requires --intern.");
+  }
   return {
     ...(region ? { region: { execute: region, ...(prepareRegion ? { prepare: prepareRegion } : {}) } } : {}),
+    ...(values.get("--intern") ? { intern: values.get("--intern") as string } : {}),
+    ...(batch ? { batch: true } : {}),
     target,
     shape: shape as SupportedKernelShape,
     outDir,
@@ -256,6 +273,9 @@ function printUsage(): void {
   console.log("  --name <crate>        Crate name (default: <function>-kernel)");
   console.log("  --region <a>-<b>      Extract statement lines a-b inside <function> or <Class.method> (unmodified source)");
   console.log("  --prepare-region <a>-<b>  PREPARED_STATE: lines that build the state reused across calls (sliced)");
+  console.log("  --intern <IdAlias>    Intern string ids of this type alias into indices (CSR graphs, bitmaps, ranks)");
+  console.log("  --batch               With --intern: batch the per-group calls of f(group, graph) into one kernel call");
+  console.log("                        and seal the graph after its producer (upstream packing)");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "v0.2.6b-batched-articulation-sealed-graph",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "build": "cargo --release",
+    "loadAverage": [
+      9.872,
+      8.277,
+      6.891
+    ]
+  },
+  "source": "src/analysis/islands.ts#findArticulationPoints and #findWeaklyConnectedComponents (unmodified)",
+  "contract": {
+    "shape": "GRAPH_BATCH",
+    "obligations": [
+      "PURE:PROVEN",
+      "NO_ALIASING:PROVEN",
+      "DETERMINISTIC_ORDER:PROVEN",
+      "TERMINATION:GUARDED",
+      "INTEGER_RANGE:GUARDED",
+      "STRING_SEMANTICS:PROVEN"
+    ]
+  },
+  "parity": {
+    "cases": 3000,
+    "packedAgreed": 2835,
+    "nativeAgreed": 2835,
+    "packingGuards": 165,
+    "mismatches": 0
+  },
+  "kernelLevel": [
+    {
+      "scale": 1,
+      "nodes": 3679,
+      "groups": 928,
+      "callsBefore": 928,
+      "callsAfter": 1,
+      "medianMs": {
+        "A": 2.276,
+        "B": 1.33,
+        "C": 1.216,
+        "seal": 0.565,
+        "Bsealed": 1.13,
+        "Csealed": 0.617,
+        "packGroups": 0.124,
+        "packedKernel": 0.998,
+        "nativeCall": 0.554,
+        "kernel": 0.521,
+        "unpack": 0.038
+      },
+      "perCallPacking": {
+        "speedupTypeScript": 1.711,
+        "speedupNative": 1.872,
+        "attribution": {
+          "representationAndBatching": 0.892,
+          "nativeExecution": 0.108
+        }
+      },
+      "sealedUpstream": {
+        "note": "graph sealed by the producer (the seal is paid once per producer call and shared by WCC and articulation)",
+        "speedupTypeScript": 2.014,
+        "speedupNative": 3.689,
+        "attribution": {
+          "representationAndBatching": 0.691,
+          "nativeExecution": 0.309
+        }
+      }
+    },
+    {
+      "scale": 10,
+      "nodes": 36790,
+      "groups": 9280,
+      "callsBefore": 9280,
+      "callsAfter": 1,
+      "medianMs": {
+        "A": 21.393,
+        "B": 19.619,
+        "C": 10.122,
+        "seal": 5.379,
+        "Bsealed": 16.122,
+        "Csealed": 7.1,
+        "packGroups": 1.951,
+        "packedKernel": 14.335,
+        "nativeCall": 4.767,
+        "kernel": 4.728,
+        "unpack": 0.233
+      },
+      "perCallPacking": {
+        "speedupTypeScript": 1.09,
+        "speedupNative": 2.114,
+        "attribution": {
+          "representationAndBatching": 0.157,
+          "nativeExecution": 0.843
+        }
+      },
+      "sealedUpstream": {
+        "note": "graph sealed by the producer (the seal is paid once per producer call and shared by WCC and articulation)",
+        "speedupTypeScript": 1.327,
+        "speedupNative": 3.013,
+        "attribution": {
+          "representationAndBatching": 0.369,
+          "nativeExecution": 0.631
+        }
+      }
+    },
+    {
+      "scale": 100,
+      "nodes": 367900,
+      "groups": 92800,
+      "callsBefore": 92800,
+      "callsAfter": 1,
+      "medianMs": {
+        "A": 289.409,
+        "B": 372.871,
+        "C": 152.244,
+        "seal": 96.27,
+        "Bsealed": 225.19,
+        "Csealed": 81.145,
+        "packGroups": 38.366,
+        "packedKernel": 219.402,
+        "nativeCall": 50.143,
+        "kernel": 50.094,
+        "unpack": 3.31
+      },
+      "perCallPacking": {
+        "speedupTypeScript": 0.776,
+        "speedupNative": 1.901,
+        "attribution": {
+          "representationAndBatching": -0.608,
+          "nativeExecution": 1.608
+        }
+      },
+      "sealedUpstream": {
+        "note": "graph sealed by the producer (the seal is paid once per producer call and shared by WCC and articulation)",
+        "speedupTypeScript": 1.285,
+        "speedupNative": 3.567,
+        "attribution": {
+          "representationAndBatching": 0.308,
+          "nativeExecution": 0.692
+        }
+      }
+    }
+  ],
+  "endToEnd": {
+    "workload": "findCandidateIslands on the W1 analysis (4335 functions); median of 3 fresh processes x 15 runs per variant",
+    "identicalOutput": true,
+    "medianMs": {
+      "original": 21.073,
+      "articulationBatchedTypeScript": 16.703,
+      "articulationBatchedNative": 15.044,
+      "bothTypeScript": 15.164,
+      "bothNative": 13.888
+    },
+    "speedup": {
+      "original": 1,
+      "articulationBatchedTypeScript": 1.262,
+      "articulationBatchedNative": 1.401,
+      "bothTypeScript": 1.39,
+      "bothNative": 1.517
+    },
+    "graphWorkMs": {
+      "original": 7.093,
+      "articulationBatchedTypeScript": 5.093,
+      "articulationBatchedNative": 4.628,
+      "bothTypeScript": 3.932,
+      "bothNative": 3.411
+    },
+    "graphWorkSpeedup": {
+      "original": 1,
+      "articulationBatchedTypeScript": 1.393,
+      "articulationBatchedNative": 1.533,
+      "bothTypeScript": 1.804,
+      "bothNative": 2.079
+    }
+  }
+}

@@ -341,6 +341,45 @@ The `TransformationPlan` sits between the TS semantic model and the Kernel IR. v
 
 IntentWeave's own tests pass against the patched copy (5/5), 20,331 extractions are identical, and the full extractor is 1.25× faster. About 80% of that gain comes from prepared-state hoisting, which a TypeScript-only patch also achieves (1.19×); the native scan is at parity with V8. See [lowering.md](lowering.md) and [crankts-v025-region-extraction.json](../evaluation/crankts-v025-region-extraction.json). Next is v0.2.6 (the real graph source).
 
+**v0.2.6 (part a) is done.** `crankts extract --intern FunctionId` packs CrankTS's unmodified `findWeaklyConnectedComponents` with an id-domain representation pass:
+
+- interned indices
+- a CSR graph
+- a `Set` bitmap
+- a comparator turned into a precomputed rank
+- flat output
+
+The packed function is itself the transformed-TypeScript variant, and it lowers to native. The integration and a patched `islands.ts` are generated as well. On W1, with packing on every call, the variants are A 2.30 ms, B 1.62 ms, and C 1.44 ms; 75–83% of the gain comes from the representation. With packing excluded, the packed TS kernel is 8–13× faster than the original and native another 3.3–5×. `findArticulationPoints` fails closed with explicit missing rules, which define v0.2.6b. See [lowering.md](lowering.md) and [crankts-v026-packed-graph.json](../evaluation/crankts-v026-packed-graph.json).
+
+**v0.2.6b is done.** `crankts extract --intern FunctionId --batch` covers CrankTS's unmodified `findArticulationPoints`:
+
+- id-keyed maps become hoisted presence and value arrays, reset per group
+- the frame stack becomes a struct of arrays over the CSR
+- sort-then-first becomes a streaming argmin, with id ties resolved by the verbatim comparator
+- its 928 per-component calls are batched into one kernel call
+- `findCandidateIslands` seals the adjacency once (immutability is checked), and the chained WCC kernel reuses it
+
+Output is byte-identical; parity is 2,835 agreeing cases plus 165 guarded, with no mismatches. At kernel level on W1 with the graph sealed, the batched TypeScript is 2.0× faster and native 3.7× (3.0–3.6× at 10× and 100×, where native carries 63–69% of the gain). End to end, the graph work in `findCandidateIslands` drops from 7.1 to 3.4 ms (2.1× native, 1.8× TypeScript only). One lesson: a full `localeCompare` id rank cost more than the kernel itself, so id comparisons are now deferred to ties. See [lowering.md](lowering.md) and [crankts-v026b-batched-graph.json](../evaluation/crankts-v026b-batched-graph.json). Next is the external evaluation (Knip) and the advisor refactor.
+
+### Adjustments from the third review round
+
+- **Optimization model:**
+  1. remove repeated work
+  2. improve representation and lifetime
+  3. parallelize
+  4. only then choose the execution backend
+
+  Native is the last mile.
+- **Recommendation taxonomy:** split into transformation (`HOIST_INVARIANT_WORK`, `PREPARE_STATE`, `CHANGE_DATA_LAYOUT`, `BATCH`, `PARALLELIZE`) and execution (`KEEP_TS`, `MOVE_OFF_EVENT_LOOP`, `NATIVE_OFFLOAD`). Reports state transformation gain and native incremental gain separately.
+- **No further KWX work:** the remaining 11.4 s is structured regex extraction, a separate problem.
+- **Knip:** after v0.2.6b (now due).
+
+### Open point: a faster TypeScript checker
+
+TypeScript itself dominates CrankTS's own runtime: 95% of W1 wall time is spent in compiler-bound stages (MVP-9a). TypeScript 7 (the Go port, stable since July 2026) would be the lever for that. CrankTS, however, depends on the full checker API (`getTypeAtLocation`, symbols, signatures), and it is not confirmed that TypeScript 7 exposes it to JavaScript. Rust checkers (stc, Ezno) do not implement full TypeScript semantics.
+
+Decision: keep the TypeScript 5.x API behind `CompilerFacade` and re-evaluate TypeScript 7 once its programmatic checker API is available. Analysis speed affects how quickly CrankTS itself runs, not the results it produces.
+
 ## Open Points
 
 - **Workload size:** resolved. W1 is too small for any graph-kernel wall gain (0.7%), and MVP-9b replaced W3 with scaled replays of the real graph.

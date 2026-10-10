@@ -7,7 +7,8 @@ Status: v0.2.4. This covers:
 - the Rust/N-API backend with `crankts extract` (v0.2.2)
 - the generated TypeScript wrapper and parity runner (v0.2.3)
 - the backend quality pass with the generated benchmark and acceptance gate (v0.2.4)
-- region extraction from unmodified source, validated on IntentWeave's real `extractDictionary` (v0.2.5) The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
+- region extraction from unmodified source, validated on IntentWeave's real `extractDictionary` (v0.2.5)
+- the id-domain representation pass, applied to CrankTS's real `findWeaklyConnectedComponents` (v0.2.6) The design follows [review.md](review.md) and comes from two manual PoCs: KWX (`PREPARED_STATE`, [MVP-8](../evaluation/intentweave-mvp8-native-poc.json)) and the CrankTS graph kernel (`GRAPH_BATCH`, [MVP-9b](../evaluation/crankts-mvp9b-graph-crossover.json)).
 
 ## Kernel Contract
 
@@ -335,9 +336,136 @@ The attribution matters more than the headline:
 - **The remaining 11.4 s** is spent in structured regex extraction and in the per-call `terms` and regex-term construction, which this transformation does not touch.
 - **Full-extractor timings must run in fresh processes.** An earlier in-process measurement, with the IntentWeave analysis heap still alive, inflated the TypeScript-only variant to 1.72×.
 
+## Id-Domain Representation Pass (v0.2.6)
+
+```bash
+crankts extract src/analysis/islands.ts#findWeaklyConnectedComponents --intern FunctionId --shape GRAPH_BATCH --out /tmp/wcc
+```
+
+[`planInterning`](../src/lowering/interning.ts) rewrites a function over string ids (a type alias such as `FunctionId`) into a function over dense indices, as TypeScript source. Each rule has checked preconditions. Any id use that no rule covers, or any leftover mention of the alias, is a diagnostic, and the pass fails closed.
+
+| Original | Packed | Precondition |
+| --- | --- | --- |
+| universe `readonly T[]` with `id: Id` | its length; ids are interned in this order | only `.id` of the elements is read |
+| `ReadonlyMap<Id, ReadonlySet<Id>>` | CSR `offsets`/`neighbors`, in `Set` insertion order | used only as `for (const x of g.get(id) ?? [])` |
+| `new Set<Id>()` | `boolean[]` of universe size | only `has`/`add` |
+| `Id[]` locals, `const x = a.pop()` | `number[]`; `a[a.length - 1]` followed by `a.pop()` | pop is the first statement of `while (a.length > 0)` |
+| `!x` on such a pop | `false` | ids are guarded non-empty |
+| sort with an entity-lookup comparator | sort by a precomputed dense `rank` | the comparator is a lexicographic chain of `localeCompare`/numeric keys, i.e. a total preorder |
+| `Id[][]` result built with `push` | flat `[count, (length, indices…)*]` | |
+
+The packed function is the **transformed TypeScript** variant and lowers through the existing pipeline to the native variant. [`emitInternIntegration`](../src/lowering/intern-integration.ts) generates the following:
+
+- **Pack/unpack adapters.** They intern the ids and build the CSR. They compute ranks with the original comparator, copied verbatim. They also guard every assumption: ids unique and non-empty, graph closed over the universe, every id has an entity, finite numeric sort keys. A failed guard runs the original function.
+- **An integration.** It runs the native kernel when the addon is loaded, and the packed TypeScript otherwise.
+- **A parity runner.**
+- **A patched copy of `islands.ts`.** Its calls of the function go through the integration.
+
+**Results** ([crankts-v026-packed-graph.json](../evaluation/crankts-v026-packed-graph.json), [run-v026.ts](../evaluation/packing/run-v026.ts)), on the unmodified `findWeaklyConnectedComponents`:
+
+- **Parity:** 3,000 generated cases. The packed TypeScript and the native kernel equal the original in 2,717. In the other 283, a packing guard fires on the injected out-of-universe edges and missing entities, and the original runs.
+- **End to end:** `findCandidateIslands` on the W1 analysis gives byte-identical output in all variants.
+
+| W1 graph (median of 5) | A original | B packed TS | C native | pack | packed TS kernel | native call | unpack |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1× (3,679 nodes) | 2.30 ms | 1.62 ms (1.42x) | 1.44 ms (1.60x) | 1.26 | 0.26 | 0.08 | 0.02 |
+| 10× | 24.6 ms | 17.1 ms (1.44x) | 15.5 ms (1.58x) | 14.6 | 2.55 | 0.53 | 0.15 |
+| 100× (367,900 nodes) | 356 ms | 292 ms (1.22x) | 270 ms (1.32x) | 265 | 26.0 | 5.2 | 1.6 |
+
+What the numbers say:
+
+- **Gain attribution with packing on every call.** About 75–83% of the saving comes from the representation (A→B) and 17–25% from native execution (B→C).
+- **Packing dominates both transformed variants:** 78–98% of their time, as MVP-9b predicted.
+- **If the producer built the packed graph,** the packed TypeScript kernel would be 8–13× faster than the original, and native another 3.3–5× faster on top. That is the opposite of KWX at kernel level, where native was at parity with V8. In absolute time the representation change still delivers more than 90% of the saving.
+- **Upstream packing does not pay yet.** `findArticulationPoints` still consumes the `Map` form, so the producer would have to build both. It only pays once both consumers are packed.
+- **End to end:** `findCandidateIslands` on W1 drops from 14.1 ms to 13.1 ms with the packed TS and 10.4 ms with native, one call per fresh process. The packed TS is JIT-cold there, which is realistic for CrankTS, but the absolute differences are milliseconds.
+
+**`findArticulationPoints` fails closed.** The pass reports what it still lacks:
+
+- an id-array parameter (`members`)
+- a spread copy of a graph neighbor set
+- no universe parameter
+
+Beyond those diagnostics, the function also needs:
+
+- id-keyed maps with presence and reset (`discovery`, `low`, `parent`, …)
+- struct-of-arrays for the mutated frame objects
+- `reduce` and spread in `getNonRootParts`
+- call-site batching across the per-component calls
+
+That is v0.2.6b.
+
+## Batching and Upstream Packing (v0.2.6b)
+
+```bash
+crankts extract src/analysis/islands.ts#findArticulationPoints --intern FunctionId --batch --shape GRAPH_BATCH --out /tmp/ap
+# chained: pack WCC on the batched copy, so both consumers share one packed graph
+crankts extract /tmp/ap/ts/islands.crankts.ts#findWeaklyConnectedComponents --intern FunctionId --shape GRAPH_BATCH --out /tmp/wcc
+```
+
+[`planBatchInterning`](../src/lowering/interning-batch.ts) turns a per-group function `f(group: readonly Id[], graph)` into one packed kernel over all groups. `findCandidateIslands` called `findArticulationPoints` once per component, 928 calls on W1. Now it makes one call. As in v0.2.6, each rule has checked preconditions, and anything uncovered is a diagnostic.
+
+| Original | Batched and packed | Precondition |
+| --- | --- | --- |
+| `f(members, G)` per group | `f__batch(G offsets, G neighbors, group offsets, group nodes)` | single exit `return { ... }` (early returns are rejected) |
+| `new Map<Id, number>()`, `new Map<Id, Id \| undefined>()`, `new Map<Id, number[]>()` | presence and value arrays hoisted out of the group loop and reset per group through a touched list. `undefined` ids are encoded as `-1`. | `get` only as `?? fallback`, or as `const v = m.get(k); if (v === undefined) A else B` with `v` used only in `B` |
+| `new Set(members)` | a hoisted bitmap, set and cleared per group | only `has` |
+| frame objects `{ node, neighbors: [...(G.get(node) ?? [])], next }` on a stack | struct of arrays. The neighbor snapshot reads the CSR slice of `node`. Immutable fields are captured when the frame is bound, so they stay readable after `pop()`. | `const frame = stack[stack.length - 1]` directly in `while (stack.length > 0)`. The snapshot is keyed by the frame's node. Mutable fields are not read after the pop. |
+| objects pushed, sorted, then only `.length` and `[0] ?? null` | streaming argmin over the comparator's numeric prefix. Candidates tied on that prefix are output, and the adapter applies the original comparator verbatim to the ties only. | the comparator is a chain of numeric field differences followed by id `localeCompare` terms |
+| `reduce`, `[...a]`, read-only array locals bound by conditionals (also in same-file helpers) | loops and explicit copies | the local is not mutated and does not escape |
+
+**Call-site batching** ([`patchCallSites`](../src/lowering/interning-batch.ts)) rewrites every `GROUPS.map((group, i) => ... f(group, G) ...)`:
+
+- one `const batch = f__Batch(f, GROUPS, G)` is inserted before the statement
+- the call becomes `batch[i]`
+
+Wrappers in between, such as `accumulateStage`, are fine because the call is pure. Hoisting requires all of the following:
+
+- `GROUPS` and `G` are bound before the statement
+- the callback does not reference `GROUPS`
+- inside the statement, `G` appears only as a `ReadonlyMap` argument
+- the group is used only non-mutatingly before it escapes into the result
+
+**Upstream packing** ([`sealed-graph.ts`](../src/lowering/sealed-graph.ts)) inserts `sealGraph(G)` right after the producer's statement. G must satisfy:
+
+- it is a `const`
+- every later reference is a `ReadonlyMap<_, ReadonlySet<_>>` argument or the batched call
+- inside its initializer, graph-typed locals are only built (`new Map`, `.get(k)?.add(v)`) and returned
+
+If any of these fails, the graph stays unsealed (per-call packing) with a diagnostic. The fixture [`countsMutatedLater`](../test/fixtures/lowering/src/batch-kernels.ts) is such a case. Sealed graphs live in a `WeakMap` under a registered `globalThis` symbol, so packed consumers from different generated crates share them. The v0.2.6 WCC adapter now reuses a sealed graph when its universe order matches. Passes can be chained: the second extraction runs on the first one's patched copy.
+
+**Results** ([crankts-v026b-batched-graph.json](../evaluation/crankts-v026b-batched-graph.json), [run-v026b.ts](../evaluation/packing/run-v026b.ts)), on the unmodified `findArticulationPoints`. The machine was under load (load average about 10): absolute times are inflated, and the ratios are the signal. The end-to-end variants run round-robin across fresh processes, so load drift affects all of them alike.
+
+- **Parity:** 3,000 generated cases with overlapping groups, duplicates, `f`/`F` id ties, and ids outside the graph. The packed TypeScript and native batches equal `groups.map(original)` in 2,835 cases; in the other 165, a packing guard fires and the original runs per group.
+- **End to end:** `findCandidateIslands` on CrankTS's own `src/` and on W1 gives byte-identical output in every variant.
+
+| W1 components (median of 15) | A original | B batched TS | C batched native | B, graph sealed | C, graph sealed | seal | pack groups | TS kernel | native call |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1× (928 groups) | 2.28 ms | 1.33 (1.71x) | 1.22 (1.87x) | 1.13 (2.01x) | 0.62 (3.69x) | 0.57 | 0.12 | 1.00 | 0.55 |
+| 10× | 21.4 ms | 19.6 (1.09x) | 10.1 (2.11x) | 16.1 (1.33x) | 7.10 (3.01x) | 5.38 | 1.95 | 14.3 | 4.77 |
+| 100× (92,800 groups) | 289 ms | 373 (0.78x) | 152 (1.90x) | 225 (1.29x) | 81.1 (3.57x) | 96.3 | 38.4 | 219 | 50.1 |
+
+| `findCandidateIslands` on W1 (median of 3 processes × 15 runs) | total | graph work |
+| --- | ---: | ---: |
+| original | 21.1 ms | 7.09 ms |
+| articulation batched, TypeScript | 16.7 ms | 5.09 ms (1.39x) |
+| articulation batched, native | 15.0 ms | 4.63 ms (1.53x) |
+| articulation + WCC on the sealed graph, TypeScript | 15.2 ms | 3.93 ms (1.80x) |
+| articulation + WCC on the sealed graph, native | 13.9 ms | 3.41 ms (2.08x) |
+
+"Graph work" is the total minus the stages no variant changes: adjacency construction, boundaries, per-component metrics without articulation, and sort. It covers WCC, articulation, sealing, batching, and lookups.
+
+What the numbers say:
+
+- **The id rank cost more than the work it ordered.** The first version passed a `localeCompare` rank of every id. Ranking 3,679 ids took 1.77 ms of a 2.28 ms baseline, and B and C were slower than A. The original compares ids only between numerically tied candidates, which is rare. Deferring id terms to the ties, and applying the verbatim comparator there, removed that cost. General rule: a transformation must not add O(n) work where the original only did that work on rare paths.
+- **Per-call graph packing does not amortize for one consumer at scale.** At 100×, B with per-call packing is slower than A, because sealing 368k nodes takes 96 ms. Sealed upstream, the cost is paid once per `findCandidateIslands` and shared with WCC, whose own packing it replaces. This is where upstream packing pays, as v0.2.6 predicted.
+- **Native matters more here than for WCC and KWX.** For this DFS-heavy kernel, native is 1.8–4.4× faster than the batched TypeScript at kernel level (1.8× at 1×, growing with size). With the graph sealed, gain attribution moves from 69% representation and batching at 1× to 63–69% native execution at 10× and 100×. At W1 size, the transformation still delivers most of it.
+- **End to end, the two kernels on one sealed graph halve the graph work** (2.08× native, 1.80× TypeScript only). These are milliseconds: graph passes are about 0.7% of CrankTS's W1 wall time (MVP-9a), so this does not change CrankTS's own recommendation (`KEEP_TS` for the whole analysis). It shows the transformation chain (representation, then batching, then upstream packing, then native) on unmodified real code, with each step's gain reported separately.
+- **Backend fix:** `a[i].push(v)` on nested dynamic arrays now binds the index before the mutable borrow. Rust rejected the old form.
+
 ## Next Steps (from review.md)
 
-1. **v0.2.6:** real graph source → `GRAPH_BATCH`. This needs `FunctionId` interning, CSR packing upstream in the producer, and a producer-aware transformation.
-2. **v0.2.7:** an explicit `TransformationPlan` that unifies both. v0.2.5's `RegionPlan` (interface, state, slices, source edits) is its first concrete instance; v0.2.6 must add producer changes. It also covers reversible source integration.
-3. **Advisor follow-up from v0.2.5:** separate the gain of a transformation (here prepared-state hoisting) from the gain of native execution, and recommend the TypeScript-only variant when native adds little.
-4. **v0.3:** automatic candidate selection (advisor → qualifier → transformer), enabled only after validation.
+1. **Advisor refactor:** separate transformation potential (hoist invariant work, prepared state, data layout, batching, parallelism) from the execution backend (keep TypeScript, move off the event loop, native). Report transformation gain and native incremental gain separately, as the v0.2.5, v0.2.6, and v0.2.6b evaluations do.
+2. **v0.2.7:** an explicit `TransformationPlan` that unifies `RegionPlan`, `InternPlan`, and `BatchInternPlan` (interface, state, slices, packing, call-site rewrites, batching, sealing, guards, validation). It should replace today's chaining of patched copies with one plan over several functions, and cover reversible source integration.
+3. **External evaluation (Knip):** now due. The advisor has to find its recommendation without a known answer, and `KEEP_TS` is an allowed outcome.
+4. **v0.3:** automatic candidate selection, enabled only after validation.

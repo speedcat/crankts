@@ -536,21 +536,24 @@ class RustEmitter {
           return `${pad}return trap("push on a typed array");`;
         }
         const value = this.fresh("value");
-        return `${pad}{ let ${value} = ${this.storeValue(statement.value, type, statement.target)}; ${this.place(statement.target)}.push(${value}); }`;
+        const target = this.mutablePlace(statement.target);
+        return `${pad}{ let ${value} = ${this.storeValue(statement.value, type, statement.target)}; ${target.prelude.join(" ")}${target.place}.push(${value}); }`;
       }
       case "pop": {
         const type = this.typeOf(statement.target);
         if (type.kind !== "array" || type.storage !== "dynamic") {
           return `${pad}return trap("pop on a typed array");`;
         }
-        return `${pad}if ${this.place(statement.target)}.pop().is_none() { return trap("pop on an empty array"); }`;
+        const target = this.mutablePlace(statement.target);
+        return `${pad}{ ${target.prelude.join(" ")}if ${target.place}.pop().is_none() { return trap("pop on an empty array"); } }`;
       }
       case "clear": {
         const type = this.typeOf(statement.target);
         if (type.kind !== "array" || type.storage !== "dynamic") {
           return `${pad}return trap("clear on a typed array");`;
         }
-        return `${pad}${this.place(statement.target)}.clear();`;
+        const target = this.mutablePlace(statement.target);
+        return `${pad}{ ${target.prelude.join(" ")}${target.place}.clear(); }`;
       }
       case "mapSet": {
         const key = this.fresh("key");
@@ -708,6 +711,24 @@ class RustEmitter {
       return this.call(expr as Extract<IrExpr, { op: "call" }>);
     }
     return this.value(expr, type, false);
+  }
+
+  /**
+   * A place for a mutating method call: nested index computations are bound first, since
+   * `a[idx(i, a.len())].push(v)` would borrow `a` immutably inside its own mutable borrow.
+   */
+  private mutablePlace(expr: IrExpr): { prelude: string[]; place: string } {
+    if (expr.op === "index") {
+      const inner = this.mutablePlace(expr.target);
+      const slot = this.fresh("slot");
+      inner.prelude.push(`let ${slot} = ${this.index(expr.index, `${inner.place}.len()`, "index")};`);
+      return { prelude: inner.prelude, place: `${inner.place}[${slot}]` };
+    }
+    if (expr.op === "field") {
+      const inner = this.mutablePlace(expr.target);
+      return { prelude: inner.prelude, place: `${inner.place}.f_${expr.name}` };
+    }
+    return { prelude: [], place: this.place(expr) };
   }
 
   /** A place expression for reference-typed storage (borrowable and, for fresh storage, mutable). */

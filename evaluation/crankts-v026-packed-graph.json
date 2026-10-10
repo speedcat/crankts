@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "v0.2.6-id-packed-graph-kernel",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "build": "cargo --release"
+  },
+  "source": "src/analysis/islands.ts#findWeaklyConnectedComponents (unmodified)",
+  "contract": {
+    "shape": "GRAPH_BATCH",
+    "obligations": [
+      "PURE:PROVEN",
+      "NO_ALIASING:PROVEN",
+      "DETERMINISTIC_ORDER:PROVEN",
+      "TERMINATION:GUARDED",
+      "INTEGER_RANGE:GUARDED",
+      "STRING_SEMANTICS:PROVEN"
+    ]
+  },
+  "parity": {
+    "cases": 3000,
+    "packedAgreed": 2717,
+    "nativeAgreed": 2717,
+    "packingGuards": 283,
+    "mismatches": 0
+  },
+  "kernelLevel": [
+    {
+      "scale": 1,
+      "nodes": 3679,
+      "medianMs": {
+        "A": 2.303,
+        "B": 1.617,
+        "C": 1.443,
+        "pack": 1.262,
+        "packedKernel": 0.261,
+        "nativeCall": 0.08,
+        "kernel": 0.073,
+        "unpack": 0.018
+      },
+      "speedup": {
+        "transformedTypeScript": 1.424,
+        "transformedNative": 1.596
+      },
+      "attribution": {
+        "representation": 0.798,
+        "nativeExecution": 0.202
+      },
+      "upstreamPacking": {
+        "note": "if the producer built the packed graph (pack excluded)",
+        "transformedTypeScriptMs": 0.279,
+        "transformedNativeMs": 0.098,
+        "speedupTypeScript": 8.254,
+        "speedupNative": 23.5
+      }
+    },
+    {
+      "scale": 10,
+      "nodes": 36790,
+      "medianMs": {
+        "A": 24.627,
+        "B": 17.078,
+        "C": 15.547,
+        "pack": 14.57,
+        "packedKernel": 2.552,
+        "nativeCall": 0.528,
+        "kernel": 0.497,
+        "unpack": 0.146
+      },
+      "speedup": {
+        "transformedTypeScript": 1.442,
+        "transformedNative": 1.584
+      },
+      "attribution": {
+        "representation": 0.831,
+        "nativeExecution": 0.169
+      },
+      "upstreamPacking": {
+        "note": "if the producer built the packed graph (pack excluded)",
+        "transformedTypeScriptMs": 2.698,
+        "transformedNativeMs": 0.674,
+        "speedupTypeScript": 9.128,
+        "speedupNative": 36.539
+      }
+    },
+    {
+      "scale": 100,
+      "nodes": 367900,
+      "medianMs": {
+        "A": 355.692,
+        "B": 291.748,
+        "C": 270.111,
+        "pack": 265.293,
+        "packedKernel": 26.047,
+        "nativeCall": 5.205,
+        "kernel": 4.989,
+        "unpack": 1.568
+      },
+      "speedup": {
+        "transformedTypeScript": 1.219,
+        "transformedNative": 1.317
+      },
+      "attribution": {
+        "representation": 0.747,
+        "nativeExecution": 0.253
+      },
+      "upstreamPacking": {
+        "note": "if the producer built the packed graph (pack excluded)",
+        "transformedTypeScriptMs": 27.615,
+        "transformedNativeMs": 6.773,
+        "speedupTypeScript": 12.88,
+        "speedupNative": 52.516
+      }
+    }
+  ],
+  "endToEnd": {
+    "workload": "findCandidateIslands on the W1 analysis (4208 functions), fresh process per variant",
+    "identicalOutput": true,
+    "originalMs": 14.081,
+    "transformedTypeScriptMs": 13.061,
+    "transformedNativeMs": 10.392
+  }
+}

@@ -9,6 +9,8 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { extractKernel, type ExtractRequest } from "../src/lowering/extract.js";
+import { analyzeProject } from "../src/analysis/analyze-project.js";
+import { findArticulationPoints, findCandidateIslands, findWeaklyConnectedComponents } from "../src/analysis/islands.js";
 import { graphBatch } from "./fixtures/lowering/src/graph-kernel.js";
 import { prepareDictionary, scanAsciiTerms } from "./fixtures/lowering/src/kwx-kernel.js";
 import { randomDictionary, randomGraph, shapedGraphs } from "./helpers/kernel-inputs.js";
@@ -101,6 +103,9 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
   let lowersCase: Built;
   let spins: Built;
   let region: Built;
+  let packedWcc: Built;
+  let batchedArticulation: Built;
+  let sealedWcc: Built;
 
   beforeAll(() => {
     graph = buildAddon("graph-batch-test", {
@@ -119,6 +124,23 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
       target: join(fixtures, "kwx-real/heuristicExtractor.ts#HeuristicKeywordExtractor.extractDictionary"),
       shape: "PREPARED_STATE",
       region: { execute: { startLine: 334, endLine: 369 }, prepare: { startLine: 312, endLine: 324 } },
+    });
+    packedWcc = buildAddon("wcc-packed-test", {
+      target: join(fileURLToPath(new URL("../src/analysis/islands.ts", import.meta.url))) + "#findWeaklyConnectedComponents",
+      shape: "GRAPH_BATCH",
+      intern: "FunctionId",
+    });
+    batchedArticulation = buildAddon("ap-batch-test", {
+      target: join(fileURLToPath(new URL("../src/analysis/islands.ts", import.meta.url))) + "#findArticulationPoints",
+      shape: "GRAPH_BATCH",
+      intern: "FunctionId",
+      batch: true,
+    });
+    // Chained on the batched copy: WCC and articulation share the graph sealed by findCandidateIslands.
+    sealedWcc = buildAddon("wcc-sealed-test", {
+      target: `${join(batchedArticulation.out, "ts/islands.crankts.ts")}#findWeaklyConnectedComponents`,
+      shape: "GRAPH_BATCH",
+      intern: "FunctionId",
     });
   }, 600_000);
 
@@ -254,6 +276,46 @@ describe.skipIf(!enabled)("generated Rust/N-API kernels", () => {
     const report = parity.runRegionParity({ iterations: 1000 });
     expect(report).toMatchObject({ nativeAvailable: true, mismatches: [] });
     expect(report.nativeAgreed).toBe(1000);
+  });
+
+  it("runs CrankTS's real findWeaklyConnectedComponents as a packed native kernel", async () => {
+    const parity = await importGenerated<{
+      runPackedParity(original: unknown, options: { iterations: number }): { packedAgreed: number; nativeAgreed: number; packingGuards: number; mismatches: string[] };
+    }>(packedWcc.out, "parity.ts");
+    const report = parity.runPackedParity(findWeaklyConnectedComponents, { iterations: 1000 });
+    expect(report.mismatches).toEqual([]);
+    expect(report.nativeAgreed).toBe(report.packedAgreed);
+    expect(report.nativeAgreed + report.packingGuards).toBe(1000);
+
+    const patched = await importGenerated<{ findCandidateIslands: typeof findCandidateIslands }>(packedWcc.out, "islands.crankts.ts");
+    const integration = await importGenerated<{ nativeStatus: NativeStatus }>(packedWcc.out, "integration.ts");
+    const analysis = analyzeProject(fileURLToPath(new URL("../src", import.meta.url)));
+    const scoped = new Set(analysis.functions.map((fn) => fn.id));
+    expect(JSON.stringify(patched.findCandidateIslands(analysis.functions, scoped))).toBe(JSON.stringify(findCandidateIslands(analysis.functions, scoped)));
+    expect(integration.nativeStatus).toMatchObject({ loaded: true, nativeCalls: 1, traps: 0, internalErrors: 0 });
+  });
+
+  it("runs CrankTS's real findArticulationPoints batched and natively on a sealed graph shared with WCC", async () => {
+    const parity = await importGenerated<{
+      runBatchParity(original: unknown, options: { iterations: number }): { packedAgreed: number; nativeAgreed: number; packingGuards: number; mismatches: string[] };
+    }>(batchedArticulation.out, "parity.ts");
+    const report = parity.runBatchParity(findArticulationPoints, { iterations: 1000 });
+    expect(report.mismatches).toEqual([]);
+    expect(report.nativeAgreed).toBe(report.packedAgreed);
+    expect(report.nativeAgreed + report.packingGuards).toBe(1000);
+
+    type Status = { nativeStatus: NativeStatus; sealedGraphStats: { sealed: number; reused: number } };
+    const patched = await importGenerated<{ findCandidateIslands: typeof findCandidateIslands }>(sealedWcc.out, "islands.crankts.ts");
+    const articulation = await importGenerated<Status>(batchedArticulation.out, "integration.ts");
+    const wcc = await importGenerated<Status>(sealedWcc.out, "integration.ts");
+    const sealedBefore = articulation.sealedGraphStats.sealed;
+    const analysis = analyzeProject(fileURLToPath(new URL("../src", import.meta.url)));
+    const scoped = new Set(analysis.functions.map((fn) => fn.id));
+    expect(JSON.stringify(patched.findCandidateIslands(analysis.functions, scoped))).toBe(JSON.stringify(findCandidateIslands(analysis.functions, scoped)));
+    expect(articulation.nativeStatus).toMatchObject({ loaded: true, nativeCalls: 1, traps: 0, internalErrors: 0 });
+    expect(wcc.nativeStatus).toMatchObject({ loaded: true, nativeCalls: 1, traps: 0, internalErrors: 0 });
+    expect(articulation.sealedGraphStats.sealed - sealedBefore).toBe(1);
+    expect(wcc.sealedGraphStats.reused).toBe(1);
   });
 
   it("runs the generated parity runner with fuzzed and supplied cases", async () => {

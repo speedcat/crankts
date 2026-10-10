@@ -67,7 +67,7 @@ const ALLOWED_TYPE_NAMES = new Set([
 const PURE_STRING_METHODS = new Set(["toLowerCase", "toUpperCase", "slice", "charCodeAt", "includes", "startsWith", "endsWith", "indexOf", "trim"]);
 const MUTATING_METHODS = new Set(["set", "delete", "clear", "add", "push", "pop", "shift", "unshift", "splice", "sort", "reverse", "fill", "copyWithin"]);
 
-interface Edit {
+export interface Edit {
   readonly start: number;
   readonly end: number;
   readonly text: string;
@@ -585,7 +585,7 @@ function typeText(symbol: ts.Symbol, context: Context): string {
 }
 
 /** Relative module specifiers of the original file, re-pointed from the patched file's directory. */
-function relativeImportEdits(sourceFile: ts.SourceFile, originalDirectory: string, patchedDirectory: string, context: Context): Edit[] {
+export function relativeImportEdits(sourceFile: ts.SourceFile, originalDirectory: string, patchedDirectory: string, context: Pick<Context, "t">): Edit[] {
   const { t } = context;
   const edits: Edit[] = [];
   for (const statement of sourceFile.statements) {
@@ -599,7 +599,7 @@ function relativeImportEdits(sourceFile: ts.SourceFile, originalDirectory: strin
   return edits;
 }
 
-function applyEdits(text: string, edits: readonly Edit[]): string {
+export function applyEdits(text: string, edits: readonly Edit[]): string {
   let result = text;
   for (const edit of [...edits].sort((left, right) => right.start - left.start)) {
     result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);

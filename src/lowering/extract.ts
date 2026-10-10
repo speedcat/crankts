@@ -12,6 +12,10 @@ import type { VerifyDiagnostic } from "./verify.js";
 import { emitTypeScriptWrapper } from "./wrapper-ts.js";
 import { planRegionExtraction, type LineRange, type RegionPlan } from "./region.js";
 import { emitRegionIntegration } from "./region-integration.js";
+import { emitBatchIntegration } from "./batch-integration.js";
+import { planBatchInterning } from "./interning-batch.js";
+import { planInterning } from "./interning.js";
+import { emitInternIntegration } from "./intern-integration.js";
 
 /**
  * `crankts extract` (v0.2.2): explicit selection → lowering → contract derivation → validation →
@@ -33,6 +37,16 @@ export interface ExtractRequest {
    * `Class.method`; the regions are statement-aligned line ranges inside it.
    */
   readonly region?: { readonly execute: LineRange; readonly prepare?: LineRange };
+  /**
+   * Id-domain representation pass (v0.2.6): the id type alias (e.g. `FunctionId`) whose string values
+   * are interned into dense indices; graphs, id sets, and comparators are packed accordingly.
+   */
+  readonly intern?: string;
+  /**
+   * With `intern` (v0.2.6b): `target` is a per-group function `f(group: readonly Id[], graph)`; its
+   * `GROUPS.map(...)` call sites are batched into one packed kernel call, and the graph is sealed upstream.
+   */
+  readonly batch?: boolean;
 }
 
 export type ExtractResult =
@@ -51,6 +65,9 @@ export type ExtractResult =
 export function extractKernel(request: ExtractRequest): ExtractResult {
   if (request.region) {
     return extractRegion(request, request.region);
+  }
+  if (request.intern) {
+    return extractInterned(request, request.intern);
   }
   const execute = lowerTarget(request.target);
   if (!execute.ok) {
@@ -204,7 +221,7 @@ function extractRegion(request: ExtractRequest, region: NonNullable<ExtractReque
     }
     throw error;
   }
-  const patchedName = basename(sourceFile).replace(/\.ts$/, ".crankts.ts");
+  const patchedName = basename(sourceFile).replace(/(\.crankts)?\.ts$/, ".crankts.ts");
   files.set(`ts/${patchedName}`, plan.patchedSource("./integration.js", join(tsDirectory, patchedName)));
   files.set("contract.json", `${JSON.stringify(contract, null, 2)}\n`);
   files.set("kernel.ir", [prepare?.ok ? printIrModule(prepare.module) : "", printIrModule(execute.module)].filter(Boolean).join("\n"));
@@ -250,6 +267,188 @@ cp target/release/lib${library}.dylib ${library}.node
 node --import tsx ts/parity.ts --iterations 1000
 \`\`\`
 `;
+}
+
+function extractInterned(request: ExtractRequest, alias: string): ExtractResult {
+  if (request.batch) {
+    return extractBatched(request, alias);
+  }
+  const separator = request.target.lastIndexOf("#");
+  if (separator <= 0) {
+    return { ok: false, stage: "select", messages: [`expected <file>#<function>, got '${request.target}'`] };
+  }
+  const sourceFile = resolve(request.target.slice(0, separator));
+  const planned = planInterning({ file: sourceFile, function: request.target.slice(separator + 1), alias });
+  if (!planned.ok) {
+    return { ok: false, stage: "select", messages: planned.diagnostics };
+  }
+  const plan = planned.plan;
+  if (request.shape === "GRAPH_BATCH" && !plan.graph) {
+    return { ok: false, stage: "select", messages: ["GRAPH_BATCH needs a graph parameter (Map<Id, Set<Id>>)"] };
+  }
+  const outDir = realOutDir(resolve(request.outDir));
+  const tsDirectory = join(outDir, "ts");
+  mkdirSync(tsDirectory, { recursive: true });
+  const crateName = toCrateName(request.crateName ?? `${plan.function}-packed`);
+  const generated = emitInternIntegration({ plan, crateName, tsDirectory });
+  const packedFile = join(tsDirectory, "packed.ts");
+  writeFileSync(packedFile, generated.get("ts/packed.ts") ?? "");
+  writeFileSync(join(tsDirectory, "tsconfig.json"), `${JSON.stringify({
+    compilerOptions: { target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", strict: true, skipLibCheck: true, noEmit: true },
+    files: ["packed.ts"],
+  }, null, 2)}\n`);
+
+  const execute = lowerTarget(`${packedFile}#${plan.packedName}`);
+  if (!execute.ok) {
+    return execute.result;
+  }
+  const derived = deriveKernelContract({
+    name: crateName,
+    shape: request.shape,
+    execute: execute.module,
+    ...(request.shape === "GRAPH_BATCH" && plan.graph ? { graph: { ...plan.graph, direction: "directed" as const } } : {}),
+  });
+  if (!derived.ok) {
+    return { ok: false, stage: "verify", messages: derived.errors.map(formatVerifyDiagnostic) };
+  }
+  const contract: KernelContract = { ...derived.contract, source: `${sourceFile}#${plan.function}` };
+  const validation = validateKernelContract(contract);
+  if (!validation.lowerable) {
+    return {
+      ok: false,
+      stage: "contract",
+      messages: validation.diagnostics.map((diagnostic) => `${diagnostic.severity} ${diagnostic.code} at ${diagnostic.path}: ${diagnostic.message}`),
+    };
+  }
+  let files: Map<string, string>;
+  try {
+    files = new Map([...emitRustCrate({ crateName, contract, execute: execute.module }).files, ...generated]);
+  } catch (error) {
+    if (error instanceof RustBackendError) {
+      return { ok: false, stage: "backend", messages: [error.message] };
+    }
+    throw error;
+  }
+  const patchedName = basename(sourceFile).replace(/(\.crankts)?\.ts$/, ".crankts.ts");
+  files.set(`ts/${patchedName}`, plan.patchedSource("./integration.js", join(tsDirectory, patchedName)));
+  files.set("contract.json", `${JSON.stringify(contract, null, 2)}\n`);
+  files.set("kernel.ir", printIrModule(execute.module));
+  files.set("README.md", `# ${crateName}
+
+Generated by \`crankts extract --intern ${alias}\` from \`${sourceFile}#${plan.function}\`. Do not edit; regenerate instead.
+The original source file is not modified.
+
+- \`ts/packed.ts\`: the function over interned indices (CSR graph, bitmaps, ranks): the transformed TypeScript
+  variant, lowered to \`kernel.ir\` and \`src/lib.rs\`.
+- \`ts/adapters.ts\`: pack/unpack with guards (${plan.guards.concat(["unique, non-empty ids", "graph closed over the universe"]).join("; ")}).
+- \`ts/integration.ts\`: pack → native (or packed TypeScript without the addon) → unpack; guard or trap → original.
+- \`ts/${patchedName}\`: patched copy whose calls of ${plan.function}() go through the integration.
+- \`ts/parity.ts\`: original vs. packed TypeScript vs. native on generated inputs.
+`);
+  for (const [path, content] of files) {
+    const file = join(outDir, path);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+  }
+  return {
+    ok: true,
+    contract,
+    warnings: validation.diagnostics,
+    files: [...files.keys(), "ts/tsconfig.json"].map((path) => join(outDir, path)),
+  };
+}
+
+function extractBatched(request: ExtractRequest, alias: string): ExtractResult {
+  const separator = request.target.lastIndexOf("#");
+  if (separator <= 0) {
+    return { ok: false, stage: "select", messages: [`expected <file>#<function>, got '${request.target}'`] };
+  }
+  if (request.shape !== "GRAPH_BATCH") {
+    return { ok: false, stage: "select", messages: ["--batch produces a GRAPH_BATCH kernel"] };
+  }
+  const sourceFile = resolve(request.target.slice(0, separator));
+  const planned = planBatchInterning({ file: sourceFile, function: request.target.slice(separator + 1), alias });
+  if (!planned.ok) {
+    return { ok: false, stage: "select", messages: planned.diagnostics };
+  }
+  const plan = planned.plan;
+  const outDir = realOutDir(resolve(request.outDir));
+  const tsDirectory = join(outDir, "ts");
+  mkdirSync(tsDirectory, { recursive: true });
+  const patchedName = basename(sourceFile).replace(/(\.crankts)?\.ts$/, ".crankts.ts");
+  const patched = plan.patchedSource("./integration.js", join(tsDirectory, patchedName));
+  if (patched.text === "" || patched.diagnostics.some((message) => message.startsWith("call at") || message.startsWith("no batchable"))) {
+    return { ok: false, stage: "select", messages: [...patched.diagnostics] };
+  }
+  const crateName = toCrateName(request.crateName ?? `${plan.function}-batch`);
+  const generated = emitBatchIntegration({ plan, crateName, tsDirectory });
+  const packedFile = join(tsDirectory, "packed.ts");
+  writeFileSync(packedFile, generated.get("ts/packed.ts") ?? "");
+  // The patched copy is part of the project too, so later passes (e.g. --intern on another function) can
+  // run on it: passes can be chained, each patching the previous copy.
+  writeFileSync(join(tsDirectory, patchedName), patched.text);
+  writeFileSync(join(tsDirectory, "tsconfig.json"), `${JSON.stringify({
+    compilerOptions: { target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", strict: true, skipLibCheck: true, noEmit: true },
+    files: ["packed.ts", patchedName],
+  }, null, 2)}\n`);
+
+  const execute = lowerTarget(`${packedFile}#${plan.batchName}`);
+  if (!execute.ok) {
+    return execute.result;
+  }
+  const derived = deriveKernelContract({
+    name: crateName,
+    shape: "GRAPH_BATCH",
+    execute: execute.module,
+    graph: { offsets: `${plan.graph}__offsets`, neighbors: `${plan.graph}__neighbors`, direction: "directed" },
+  });
+  if (!derived.ok) {
+    return { ok: false, stage: "verify", messages: derived.errors.map(formatVerifyDiagnostic) };
+  }
+  const contract: KernelContract = { ...derived.contract, source: `${sourceFile}#${plan.function}` };
+  const validation = validateKernelContract(contract);
+  if (!validation.lowerable) {
+    return {
+      ok: false,
+      stage: "contract",
+      messages: validation.diagnostics.map((diagnostic) => `${diagnostic.severity} ${diagnostic.code} at ${diagnostic.path}: ${diagnostic.message}`),
+    };
+  }
+  let files: Map<string, string>;
+  try {
+    files = new Map([...emitRustCrate({ crateName, contract, execute: execute.module }).files, ...generated]);
+  } catch (error) {
+    if (error instanceof RustBackendError) {
+      return { ok: false, stage: "backend", messages: [error.message] };
+    }
+    throw error;
+  }
+  files.set(`ts/${patchedName}`, patched.text);
+  files.set("contract.json", `${JSON.stringify(contract, null, 2)}\n`);
+  files.set("kernel.ir", printIrModule(execute.module));
+  files.set("README.md", `# ${crateName}
+
+Generated by \`crankts extract --intern ${alias} --batch\` from \`${sourceFile}#${plan.function}\`. Do not edit; regenerate instead.
+The original source file is not modified.
+
+- \`ts/packed.ts\`: all groups in one call over interned indices (CSR graph, hoisted id maps reset per group,
+  struct-of-arrays frames, streaming argmin): the transformed TypeScript variant, lowered to \`kernel.ir\` and \`src/lib.rs\`.
+- \`ts/adapters.ts\`: graph sealing (upstream packing), group packing and unpacking with guards (${plan.guards.join("; ")}).
+- \`ts/integration.ts\`: \`${plan.function}Batch(original, groups, graph)\`: pack → native (or packed TypeScript) → unpack; guard or trap → original per group.
+- \`ts/${patchedName}\`: patched copy: ${plan.function}() call sites batched, the graph sealed after its producer.${patched.diagnostics.length > 0 ? `\n  Notes: ${patched.diagnostics.join("; ")}` : ""}
+- \`ts/parity.ts\`: original per group vs. packed TypeScript vs. native batch on generated inputs.
+`);
+  for (const [path, content] of files) {
+    const file = join(outDir, path);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+  }
+  return {
+    ok: true,
+    contract,
+    warnings: validation.diagnostics,
+    files: [...files.keys(), "ts/tsconfig.json"].map((path) => join(outDir, path)),
+  };
 }
 
 type Lowered =
