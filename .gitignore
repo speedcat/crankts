@@ -148,3 +148,4 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+.DS_Store

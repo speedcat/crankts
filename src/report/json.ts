@@ -4,7 +4,7 @@ import { getVisibleCandidateIslands } from "./options.js";
 import type { ReportOptions } from "./options.js";
 
 export interface JsonAnalysisReport {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly tool: {
     readonly name: "CrankTS";
     readonly version: string;
@@ -13,6 +13,8 @@ export interface JsonAnalysisReport {
     readonly name: string;
     readonly typescript: AnalysisResult["typescript"];
   };
+  readonly workloadLabel?: string;
+  readonly acceleration: NonNullable<AnalysisResult["acceleration"]>;
   readonly summary: {
     readonly candidateOrdering: "native-priority" | "observed-cpu-self";
     readonly functions: {
@@ -29,6 +31,8 @@ export interface JsonAnalysisReport {
   readonly functions: readonly FunctionAnalysis[];
   readonly candidateIslands: AnalysisResult["candidateIslands"];
   readonly cpuProfile?: NonNullable<AnalysisResult["cpuProfile"]>;
+  readonly allocationProfile?: NonNullable<AnalysisResult["allocationProfile"]>;
+  readonly pipeline?: NonNullable<AnalysisResult["pipeline"]>;
 }
 
 export function renderJsonReport(
@@ -37,7 +41,7 @@ export function renderJsonReport(
 ): string {
   const candidateIslands = getVisibleCandidateIslands(result, options);
   const report: JsonAnalysisReport = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     tool: {
       name: "CrankTS",
       version: CRANKTS_VERSION,
@@ -46,6 +50,8 @@ export function renderJsonReport(
       name: result.projectName,
       typescript: result.typescript,
     },
+    ...(result.workloadLabel ? { workloadLabel: result.workloadLabel } : {}),
+    acceleration: result.acceleration,
     summary: {
       candidateOrdering: result.cpuProfile ? "observed-cpu-self" : "native-priority",
       functions: {
@@ -62,6 +68,8 @@ export function renderJsonReport(
     functions: result.functions,
     candidateIslands,
     ...(result.cpuProfile ? { cpuProfile: result.cpuProfile } : {}),
+    ...(result.allocationProfile ? { allocationProfile: result.allocationProfile } : {}),
+    ...(result.pipeline ? { pipeline: result.pipeline } : {}),
   };
 
   return `${JSON.stringify(report, null, 2)}\n`;

@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "workloadLabel": "intentweave-index-build-full-depth-ts",
+  "stages": [
+    {
+      "id": "ax",
+      "entry": { "file": "src/stages/ax.ts", "name": "runAxStage" },
+      "workUnit": "FILE",
+      "scheduling": "UNKNOWN",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "PER_UNIT",
+      "dependsOn": []
+    },
+    {
+      "id": "in-documents",
+      "entry": { "file": "src/stages/in.ts", "name": "runInStage" },
+      "workUnit": "FILE",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "PER_UNIT",
+      "dependsOn": ["ax"]
+    },
+    {
+      "id": "kwx-dictionary-chunks",
+      "entry": {
+        "file": "src/kwg/heuristicExtractor.ts",
+        "name": "HeuristicKeywordExtractor.extractDictionary"
+      },
+      "workUnit": "CHUNK",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "PER_UNIT",
+      "dependsOn": ["in-documents"],
+      "optimizationHints": [
+        {
+          "category": "ALGORITHMIC",
+          "level": "MEDIUM",
+          "evidence": "The current matcher scans simple ASCII terms in one pass; non-word and multi-word terms still use one full-text regex scan each. Profile fallback-term share before further algorithm work."
+        }
+      ]
+    },
+    {
+      "id": "kwx-documents",
+      "entry": { "file": "src/kwg/kwxStage.ts", "name": "runKwxStage" },
+      "workUnit": "FILE",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "ORDERED",
+      "dependsOn": ["kwx-dictionary-chunks"]
+    },
+    {
+      "id": "in-source-comments",
+      "entry": { "file": "src/stages/in.ts", "name": "runInStage" },
+      "workUnit": "FILE",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "PER_UNIT",
+      "dependsOn": ["ax"]
+    },
+    {
+      "id": "kwx-source-comments",
+      "entry": { "file": "src/kwg/kwxStage.ts", "name": "runKwxStage" },
+      "workUnit": "FILE",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "ORDERED",
+      "dependsOn": ["in-source-comments"]
+    },
+    {
+      "id": "cox",
+      "entry": { "file": "src/kwg/coxStage.ts", "name": "runCoxStage" },
+      "workUnit": "FILE",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "REDUCTION",
+      "dependsOn": ["kwx-documents", "kwx-source-comments"]
+    },
+    {
+      "id": "tcg",
+      "entry": { "file": "src/tcg/tcxStage.ts", "name": "runTcxStage" },
+      "workUnit": "BATCH",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "REDUCTION",
+      "dependsOn": ["cox"]
+    },
+    {
+      "id": "annotate",
+      "entry": { "file": "../index/src/annotator.ts", "name": "annotate" },
+      "workUnit": "RECORD",
+      "scheduling": "SERIAL",
+      "inputSharing": "READ_ONLY",
+      "aggregation": "ORDERED",
+      "dependsOn": ["tcg"]
+    },
+    {
+      "id": "sqlite-write",
+      "entry": { "file": "../index/src/writer.ts", "name": "buildIndex" },
+      "workUnit": "RECORD",
+      "scheduling": "SERIAL",
+      "inputSharing": "SHARED_MUTABLE",
+      "aggregation": "ORDERED",
+      "dependsOn": ["annotate"],
+      "sinkIds": ["cari-index"]
+    }
+  ],
+  "sinks": [
+    {
+      "id": "cari-index",
+      "adapter": "SQLITE",
+      "transactional": true,
+      "orderedCommit": true
+    }
+  ]
+}

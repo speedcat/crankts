@@ -32,6 +32,14 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
       "  Candidate order: observed self CPU; Native Priority unchanged.",
     );
   }
+  if (result.allocationProfile) {
+    lines.push(
+      `Allocation profile: ${result.allocationProfile.file}`,
+      `  Matched sampled bytes: ${result.allocationProfile.matchedSampledBytes} / ${result.allocationProfile.totalSampledBytes} (${result.allocationProfile.matchedSampledPercent.toFixed(1)}%)`,
+      `  Allocation profile confidence: ${result.allocationProfile.confidence}`,
+      "  Values are sampled allocated bytes, not retained heap or RSS.",
+    );
+  }
 
   if (candidateIslands.length === 0) {
     lines.push("", options.minScore ? `No candidate islands meet minimum score ${options.minScore}.` : "Candidate islands: none");
@@ -86,13 +94,103 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
     });
   }
 
+  const parallelismFunctions = result.functions.filter((functionAnalysis) => functionAnalysis.parallelism.regions.length > 0);
+  lines.push("", "Parallelism:");
+  if (parallelismFunctions.length === 0) {
+    lines.push("  no loop or async-batch regions detected");
+  } else {
+    for (const functionAnalysis of parallelismFunctions) {
+      lines.push(`  ${functionAnalysis.name}(): ${functionAnalysis.parallelism.classification}`);
+      if (!options.verbose) continue;
+      for (const region of functionAnalysis.parallelism.regions) {
+        lines.push(`    ${region.kind} line ${region.line}: ${region.classification} - ${region.explanation}`);
+        lines.push(`      Reads: ${formatMemoryAccesses(region.reads)}`);
+        lines.push(`      Writes: ${formatMemoryAccesses(region.writes)}`);
+        lines.push(`      Shared writes: ${region.sharedWrites.join(", ") || "none"}`);
+        lines.push(`      Dependences: ${formatDependences(region.dependences)}`);
+        if (region.externalEffects.length > 0) {
+          lines.push(`      Effects: ${region.externalEffects.join(", ")}`);
+        }
+      }
+    }
+  }
+
+  if (result.pipeline) {
+    lines.push(
+      "",
+      `Pipeline${result.pipeline.workloadLabel ? ` (${result.pipeline.workloadLabel})` : ""}:`,
+      `  Parallel work candidates: ${result.pipeline.parallelCandidateStageCount} stage(s)`,
+      `  Serialized sinks: ${result.pipeline.serializedSinkCount}`,
+      `  Serialization risk: ${result.pipeline.serializationRisk}`,
+    );
+    for (const stage of result.pipeline.stages) {
+      lines.push(
+        `  ${stage.id}: ${stage.workUnit} / ${stage.scheduling}; independent work ${stage.independentWork}; entry ${stage.entryStatus}`,
+      );
+      if (stage.sinkIds?.length) {
+        lines.push(`    Sinks: ${stage.sinkIds.join(", ")}`);
+      }
+      if (options.verbose) {
+        lines.push(`    ${stage.explanation}`);
+        if (stage.dependsOn.length > 0) lines.push(`    Depends on: ${stage.dependsOn.join(", ")}`);
+      }
+    }
+    for (const sink of result.pipeline.sinks) {
+      lines.push(
+        `  Sink ${sink.id}: ${sink.adapter}, serialized ${sink.serialized === null ? "unknown" : sink.serialized ? "yes" : "no"}, `
+          + `writers ${sink.writerStageCount}, scaling risk ${sink.scalingRisk}`,
+      );
+      if (options.verbose) {
+        lines.push(`    Resource effects: ${sink.resourceEffects.join(", ") || "none"}`);
+        lines.push(`    Candidate upstream stages: ${sink.candidateUpstreamStageIds.join(", ") || "none"}`);
+      }
+    }
+  }
+
+  const assessedFunctions = result.acceleration.functions.filter((assessment) => (
+    assessment.observedWorkload.hotness !== "UNKNOWN" || assessment.recommendations.length > 0
+  ));
+  lines.push("", `Acceleration Assessment${result.acceleration.workloadLabel ? ` (${result.acceleration.workloadLabel})` : ""}:`);
+  if (assessedFunctions.length === 0 && result.acceleration.pipelineRecommendations.length === 0) {
+    lines.push("  no profile-backed or pipeline-declared recommendations");
+  } else {
+    for (const assessment of assessedFunctions) {
+      const observed = assessment.observedWorkload;
+      lines.push(
+        `  ${assessment.name}(): hotness ${observed.hotness}, native suitability ${assessment.feasibility.nativeSuitability}, `
+          + `parallel ${assessment.optimizationPotential.parallel}, algorithmic ${assessment.optimizationPotential.algorithmic}, `
+          + `native ${assessment.optimizationPotential.nativeExecution}, memory/layout ${assessment.optimizationPotential.memoryLayout}`,
+      );
+      if (options.verbose) {
+        lines.push(`    Feasibility: ${assessment.feasibility.eligibility}; boundary risk ${assessment.feasibility.boundaryRisk}; Native Priority ${assessment.feasibility.nativePriority}`);
+        if (observed.selfCpuMicros !== undefined) {
+          lines.push(`    CPU: self ${observed.selfCpuMicros} microseconds, inclusive ${observed.inclusiveCpuMicros} microseconds, profile confidence ${observed.cpuProfileConfidence ?? "UNKNOWN"}`);
+        }
+        if (observed.sampledAllocationBytesSelf !== undefined) {
+          lines.push(`    Allocation: self ${observed.sampledAllocationBytesSelf} sampled bytes, inclusive ${observed.sampledAllocationBytesTotal} sampled bytes, profile confidence ${observed.allocationProfileConfidence ?? "UNKNOWN"}`);
+        }
+      }
+      for (const recommendation of assessment.recommendations) {
+        lines.push(`    Recommendation ${recommendation.action}: ${recommendation.level} (${recommendation.confidence})`);
+        if (options.verbose) lines.push(`      ${recommendation.explanation} Evidence: ${recommendation.evidence.join(", ")}`);
+      }
+    }
+    for (const recommendation of result.acceleration.pipelineRecommendations) {
+      lines.push(`  Pipeline recommendation ${recommendation.action} for ${recommendation.targetId}: ${recommendation.level} (${recommendation.confidence})`);
+      if (options.verbose) lines.push(`    ${recommendation.explanation} Evidence: ${recommendation.evidence.join(", ")}`);
+    }
+  }
+
   if (options.verbose) {
     lines.push("", "Call edges:");
     for (const functionAnalysis of result.functions) {
       const observedCpu = functionAnalysis.observedCpu
         ? `, self CPU ${functionAnalysis.observedCpu.selfCpuMicros} microseconds, total CPU ${functionAnalysis.observedCpu.totalCpuMicros} microseconds`
         : "";
-      lines.push(`  ${functionAnalysis.name}() [${functionAnalysis.eligibility.kind}, suitability ${functionAnalysis.suitability}, priority ${functionAnalysis.nativePriority}${observedCpu}]`);
+      const observedAllocation = functionAnalysis.observedAllocation
+        ? `, sampled allocation ${functionAnalysis.observedAllocation.sampledBytesSelf} bytes self, ${functionAnalysis.observedAllocation.sampledBytesTotal} bytes inclusive`
+        : "";
+      lines.push(`  ${functionAnalysis.name}() [${functionAnalysis.eligibility.kind}, suitability ${functionAnalysis.suitability}, priority ${functionAnalysis.nativePriority}${observedCpu}${observedAllocation}]`);
       if (functionAnalysis.calls.length === 0) {
         lines.push("    none");
         continue;
@@ -152,6 +250,18 @@ function getBlockers(functionAnalysis: FunctionAnalysis): readonly Blocker[] {
 
 function formatEligibilityMix(mix: AnalysisResult["candidateIslands"][number]["eligibilityMix"]): string {
   return `supported ${mix.supported}, conditional ${mix.conditional}, blocked ${mix.blocked}`;
+}
+
+function formatMemoryAccesses(accesses: FunctionAnalysis["parallelism"]["regions"][number]["reads"]): string {
+  if (accesses.length === 0) return "none";
+  return accesses.map((access) => `${access.target} (${access.mode.toLowerCase()}, ${access.scope.toLowerCase()})`).join(", ");
+}
+
+function formatDependences(dependences: FunctionAnalysis["parallelism"]["dependences"]): string {
+  if (dependences.length === 0) return "none";
+  return dependences.map((dependence) => (
+    `${dependence.kind} ${dependence.target}${dependence.loopCarried ? " (loop-carried)" : ""}`
+  )).join(", ");
 }
 
 function formatBoundaryKinds(boundaryKinds: AnalysisResult["candidateIslands"][number]["boundaryKinds"]): string {

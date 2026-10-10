@@ -140,12 +140,17 @@ describe("analyzeProject", () => {
       schemaVersion: number;
       summary: { candidateIslands: { total: number; reported: number } };
       candidateIslands: Array<{ score: number }>;
+      functions: Array<{ name: string; parallelism: { classification: string; regions: unknown[] } }>;
     };
 
-    expect(report.schemaVersion).toBe(1);
+    expect(report.schemaVersion).toBe(2);
     expect(report.summary.candidateIslands.total).toBe(result.candidateIslands.length);
     expect(report.summary.candidateIslands.reported).toBeLessThan(report.summary.candidateIslands.total);
     expect(report.candidateIslands.every((island) => island.score >= 100)).toBe(true);
+    expect(report.functions.find((functionAnalysis) => functionAnalysis.name === "parseFiles")?.parallelism).toMatchObject({
+      classification: "PARALLEL_DOALL",
+      regions: expect.any(Array),
+    });
   });
   it("includes typed call details in verbose text output", () => {
     const result = analyzeProject(fixtureRoot);
@@ -178,7 +183,7 @@ describe("analyzeProject", () => {
         summary: { candidateIslands: { total: number; reported: number } };
         candidateIslands: Array<{ score: number }>;
       };
-      expect(report.schemaVersion).toBe(1);
+      expect(report.schemaVersion).toBe(2);
       expect(report.summary.candidateIslands.reported).toBeLessThan(report.summary.candidateIslands.total);
       expect(report.candidateIslands.every((island) => island.score >= 100)).toBe(true);
       expect(runCli(["analyze", fixtureRoot, "--min-score", "101"])).toBe(2);
@@ -267,6 +272,67 @@ describe("analyzeProject", () => {
     expect(loopAroundPlugin?.effects).toContain("UNKNOWN_SIDE_EFFECT");
     expect(loopAroundPlugin?.opportunities.parallel).toBe(30);
     expect(loopAroundPlugin?.nativePriority).toBe(26);
+    expect(loopAroundPlugin?.parallelism.classification).toBe("UNKNOWN");
+  });
+
+  it("classifies loop dependence explicitly without changing the static priority", () => {
+    const result = analyzeProject(fixtureRoot);
+    const functionByName = new Map(result.functions.map((functionAnalysis) => [functionAnalysis.name, functionAnalysis]));
+    const parseFiles = functionByName.get("parseFiles");
+    const sumValues = functionByName.get("sumValues");
+    const countDegrees = functionByName.get("countDegrees");
+    const indexNodes = functionByName.get("indexNodesById");
+    const enqueueNodes = functionByName.get("enqueueNodes");
+    const prefixSums = functionByName.get("prefixSums");
+    const readAhead = functionByName.get("readAheadAndWrite");
+    const parseConcurrently = functionByName.get("parseFilesConcurrently");
+    const queueConcurrently = functionByName.get("parseAndQueueConcurrently");
+
+    expect(parseFiles?.parallelism.classification).toBe("PARALLEL_DOALL");
+    expect(parseFiles?.parallelism.regions[0]).toMatchObject({
+      reads: expect.arrayContaining([expect.objectContaining({ target: "files[*]", mode: "READ" })]),
+      writes: expect.arrayContaining([expect.objectContaining({ target: "output[index]", mode: "WRITE", scope: "PARTITIONED" })]),
+      sharedWrites: [],
+      dependences: [],
+    });
+    expect(parseFiles?.parallelism.regions[0]?.explanation).toContain("independent");
+
+    expect(sumValues?.parallelism.classification).toBe("PARALLEL_MAP_REDUCE");
+    expect(sumValues?.parallelism.regions[0]?.dependences).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "RAW", target: "total", loopCarried: true }),
+      expect.objectContaining({ kind: "WAW", target: "total", loopCarried: true }),
+    ]));
+
+    expect(countDegrees?.parallelism.classification).toBe("PARALLEL_MAP_REDUCE");
+    expect(countDegrees?.parallelism.regions[0]?.dependences).toContainEqual(
+      expect.objectContaining({ kind: "WAW", target: "degree[*]", loopCarried: true }),
+    );
+    expect(indexNodes?.parallelism.classification).toBe("PARALLEL_PARTITIONABLE");
+    expect(indexNodes?.parallelism.regions[0]?.writes).toContainEqual(
+      expect.objectContaining({ target: "byId[*]", scope: "PARTITIONED", partitionKeyCandidate: true }),
+    );
+    expect(enqueueNodes?.parallelism.classification).toBe("PARALLEL_WITH_SYNCHRONIZATION");
+    expect(enqueueNodes?.parallelism.regions[0]?.sharedWrites).toContain("queue");
+    expect(prefixSums?.parallelism.classification).toBe("SEQUENTIAL_DEPENDENCE");
+    expect(prefixSums?.parallelism.regions[0]?.dependences).toContainEqual(
+      expect.objectContaining({ kind: "RAW", target: "output[*]", loopCarried: true }),
+    );
+    expect(readAhead?.parallelism.regions[0]?.dependences).toContainEqual(
+      expect.objectContaining({ kind: "WAR", loopCarried: true }),
+    );
+    expect(parseConcurrently?.parallelism.classification).toBe("PARALLEL_PIPELINE");
+    expect(queueConcurrently?.parallelism.classification).toBe("PARALLEL_WITH_SYNCHRONIZATION");
+    expect(queueConcurrently?.parallelism.regions[0]?.sharedWrites).toContain("queue");
+
+    const parseFilesOpportunity = parseFiles
+      ? Math.max(parseFiles.opportunities.cpu, parseFiles.opportunities.memory, parseFiles.opportunities.parallel)
+      : 0;
+    expect(parseFiles?.nativePriority).toBe(
+      Math.round((parseFiles?.suitability ?? 0) * parseFilesOpportunity / 100),
+    );
+    const report = renderTextReport(result, { verbose: true });
+    expect(report).toContain("parseFiles(): PARALLEL_DOALL");
+    expect(report).toContain("RAW output[*] (loop-carried)");
   });
 
   it("maps V8 CPU profile samples to functions and orders candidates without changing native priority", () => {

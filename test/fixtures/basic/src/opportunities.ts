@@ -48,3 +48,69 @@ export function profiledRoot(value: number): number {
 export function profiledHelper(value: number): number {
   return value * 2;
 }
+
+function parseOne(file: string): { file: string } {
+  return { file };
+}
+
+export function parseFiles(files: string[], output: Array<{ file: string }>): Array<{ file: string }> {
+  for (let index = 0; index < files.length; index += 1) {
+    output[index] = parseOne(files[index]);
+  }
+  return output;
+}
+
+export function sumValues(values: number[]): number {
+  let total = 0;
+  for (const value of values) {
+    total += value;
+  }
+  return total;
+}
+
+export function countDegrees(edges: Array<{ target: number }>): Map<number, number> {
+  const degree = new Map<number, number>();
+  for (const edge of edges) {
+    degree.set(edge.target, (degree.get(edge.target) ?? 0) + 1);
+  }
+  return degree;
+}
+
+export function indexNodesById(nodes: Array<{ id: number }>): Map<number, { id: number }> {
+  const byId = new Map<number, { id: number }>();
+  for (const node of nodes) {
+    byId.set(node.id, node);
+  }
+  return byId;
+}
+
+export function enqueueNodes(nodes: number[], queue: number[]): number[] {
+  for (const node of nodes) {
+    queue.push(node);
+  }
+  return queue;
+}
+
+export function prefixSums(values: number[], output: number[]): number[] {
+  for (let index = 1; index < values.length; index += 1) {
+    output[index] = output[index - 1] + values[index];
+  }
+  return output;
+}
+
+export function readAheadAndWrite(values: number[], output: number[]): void {
+  for (let index = 0; index < values.length; index += 1) {
+    const next = output[index + 1];
+    output[index] = next ?? values[index];
+  }
+}
+
+export async function parseFilesConcurrently(files: string[]): Promise<Array<{ file: string }>> {
+  return Promise.all(files.map(async (file) => parseOne(file)));
+}
+
+export async function parseAndQueueConcurrently(nodes: number[], queue: number[]): Promise<void> {
+  await Promise.all(nodes.map(async (node) => {
+    queue.push(node);
+  }));
+}

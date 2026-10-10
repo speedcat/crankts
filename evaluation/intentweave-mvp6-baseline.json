@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "comparisonType": "post-kwx-matcher-mvp6-baseline",
+  "capturedAt": "2026-10-10",
+  "groundTruth": false,
+  "workloadLabel": "iw-full-depth-ts-post-matcher",
+  "workspaceRoot": "/Users/benjaminbecker/Workspace/intentweave",
+  "artifactDirectory": "/tmp/crankts-iw-mvp6-NhJwqP",
+  "environment": {
+    "node": "22.19.0",
+    "typescript": "5.9.3",
+    "depth": "full",
+    "backend": "typescript (--no-native)",
+    "cpuProfileIntervalMicros": 1000,
+    "analysisTarget": "packages/analyzer",
+    "analysisConfidenceScope": "package-level; cross-package frames and function bodies are not resolved"
+  },
+  "commands": {
+    "unprofiled": "node --max-old-space-size=4096 --import tsx packages/cli/src/cli.ts index build --depth full --no-native --output <tmp>/run-N.db --verbose .",
+    "cpuProfiled": "node --max-old-space-size=4096 --cpu-prof --cpu-prof-interval=1000 --import tsx packages/cli/src/cli.ts index build --depth full --no-native --output <tmp>/cpu/index.db --verbose .",
+    "heapProfiled": "node --max-old-space-size=4096 --heap-prof --import tsx packages/cli/src/cli.ts index build --depth full --no-native --output <tmp>/heap/index.db --verbose ."
+  },
+  "unprofiledRuns": [
+    {
+      "wallSeconds": 19.8,
+      "stageSeconds": { "AX": 8.0, "KWG_IN": 7.1, "TCG": 2.6, "Annotate": 0.0, "Write": 1.1 }
+    },
+    {
+      "wallSeconds": 21.608,
+      "stageSeconds": { "AX": 8.7, "KWG_IN": 8.3, "TCG": 2.5, "Annotate": 0.1, "Write": 1.2 }
+    },
+    {
+      "wallSeconds": 21.757,
+      "stageSeconds": { "AX": 8.6, "KWG_IN": 7.9, "TCG": 3.2, "Annotate": 0.1, "Write": 1.0 }
+    }
+  ],
+  "unprofiledSummary": {
+    "wallSecondsMedian": 21.608,
+    "wallSecondsRange": [19.8, 21.757],
+    "kwgSecondsMedian": 7.9,
+    "profiledWallSeconds": {
+      "cpu": 23.176,
+      "heap": 22.609
+    },
+    "stableOutputCountsAcrossUnprofiledRuns": {
+      "documentFiles": 33,
+      "axFiles": 258,
+      "axSkippedOversize": 4,
+      "axSymbols": 7308,
+      "keywordEntities": 25025,
+      "mentionsAndAnnotations": 56475,
+      "groundedAnnotations": 44071,
+      "ungroundedAnnotations": 12404,
+      "coOccurrences": 16184,
+      "coChanges": 914,
+      "filesWritten": 713,
+      "imports": 742,
+      "symbolCalls": 15860,
+      "propertyAccesses": 2452,
+      "typeAssertions": 790
+    }
+  },
+  "cpuProfile": {
+    "file": "/tmp/crankts-iw-mvp6-NhJwqP/cpu/iw-mvp6-cpu.23358.cpuprofile",
+    "totalSampleMicros": 23089625,
+    "matchedSamplePercentInAnalyzerPackage": 37.02,
+    "confidence": "LOW",
+    "findings": [
+      {
+        "function": "HeuristicKeywordExtractor.extractDictionary",
+        "selfCpuMicros": 5977933,
+        "inclusiveCpuMicros": 7050689,
+        "selfSamplePercent": 25.89,
+        "runtimeHotness": "VERY_HIGH",
+        "nativeSuitability": 55,
+        "nativePriority": 55,
+        "boundaryRisk": "HIGH",
+        "recommendations": [
+          { "action": "OPTIMIZE_ALGORITHM", "level": "MEDIUM", "evidence": "Declared current fallback-scan observation" },
+          { "action": "PARALLELIZE", "level": "HIGH", "evidence": "Declared serial chunk work units" },
+          { "action": "KEEP_TS", "level": "MEDIUM", "evidence": "Conditional feasibility and high island boundary risk" }
+        ],
+        "nativeOffloadRecommended": false
+      },
+      {
+        "function": "HeuristicKeywordExtractor.extract",
+        "selfCpuMicros": 691374,
+        "inclusiveCpuMicros": 7790728,
+        "selfSamplePercent": 2.99,
+        "runtimeHotness": "MEDIUM",
+        "nativePriority": 24
+      }
+    ]
+  },
+  "allocationProfile": {
+    "file": "/tmp/crankts-iw-mvp6-NhJwqP/heap/iw-mvp6-heap.${pid}.heapprofile",
+    "totalSampledBytes": 18496648,
+    "matchedSampledBytes": 1048672,
+    "matchedSampledPercentInAnalyzerPackage": 5.67,
+    "sampleCount": 32,
+    "matchedSampleCount": 2,
+    "confidence": "LOW",
+    "topInclusiveFunctionSamples": [
+      { "function": "processFile", "sampledBytesSelf": 0, "sampledBytesInclusive": 524368, "sampleCountInclusive": 1 },
+      { "function": "parseGitLog", "sampledBytesSelf": 0, "sampledBytesInclusive": 524304, "sampleCountInclusive": 1 },
+      { "function": "runTcxStage", "sampledBytesSelf": 0, "sampledBytesInclusive": 524304, "sampleCountInclusive": 1 }
+    ],
+    "caveat": "Inclusive attribution overlaps across stack frames; do not sum function inclusive bytes. Only two samples matched the analyzer package, so no KWX data-layout conclusion is supported."
+  },
+  "pipeline": {
+    "descriptor": "evaluation/intentweave-pipeline.json",
+    "parallelCandidateStageCount": 8,
+    "serializedSinkCount": 1,
+    "serializationRisk": "HIGH",
+    "sink": "cari-index",
+    "sinkAdapter": "SQLITE",
+    "candidateUpstreamStages": [
+      "ax",
+      "in-documents",
+      "kwx-dictionary-chunks",
+      "kwx-documents",
+      "in-source-comments",
+      "kwx-source-comments",
+      "cox",
+      "tcg"
+    ],
+    "unresolvedCrossProjectEntries": ["annotate", "sqlite-write"],
+    "evidenceKind": "declared pipeline descriptor validated against package-local entries"
+  },
+  "caveats": [
+    "CPU and allocation profiles have LOW package-scope coverage; hotness is directional and allocation findings are insufficient for layout claims.",
+    "Pipeline work-unit independence and the sink adapter are declared in the descriptor; they are not runtime concurrency/contention measurements.",
+    "The old pre-matcher profile is a historical baseline from a different source/output snapshot and is not a direct before/after parity comparison.",
+    "Rust and TypeScript output semantics remain materially different; no native speedup claim is made."
+  ]
+}

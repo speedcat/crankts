@@ -2,15 +2,22 @@ import { basename } from "node:path";
 import { createCompilerFacade } from "../compiler/compiler-facade.js";
 import { buildCallGraph } from "./call-graph.js";
 import { attachCpuProfile, loadV8CpuProfile } from "./cpu-profile.js";
+import { attachHeapProfile, loadV8HeapProfile } from "./heap-profile.js";
 import { evaluateEligibility, propagateEligibility } from "./eligibility.js";
 import { inferDirectEffects, propagateEffects } from "./effects.js";
 import { collectFunctions } from "./functions.js";
 import { findCandidateIslands } from "./islands.js";
 import { calculateNativePriority, scoreOpportunities } from "./opportunities.js";
+import { analyzeParallelism } from "./parallelism.js";
+import { analyzeAcceleration } from "./assessment.js";
+import { analyzePipeline, loadPipelineDescriptor } from "./pipeline.js";
 import type { AnalysisResult, FunctionAnalysis, FunctionId } from "./model.js";
 
 export interface AnalyzeProjectOptions {
   readonly profilePath?: string;
+  readonly heapProfilePath?: string;
+  readonly pipelinePath?: string;
+  readonly workloadLabel?: string;
 }
 
 export function analyzeProject(target: string, options: AnalyzeProjectOptions = {}): AnalysisResult {
@@ -29,6 +36,7 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
       eligibility: eligibility.eligibility,
       suitability: eligibility.suitability,
       opportunities: { cpu: 0, memory: 0, parallel: 0 },
+      parallelism: { classification: "UNKNOWN", reads: [], writes: [], sharedWrites: [], dependences: [], regions: [] },
       nativePriority: 0,
       directEffects,
       effects: [],
@@ -36,6 +44,7 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     };
   });
   const effectfulFunctions = propagateEffects(propagateEligibility(directFunctions));
+  const effectsByFunction = new Map(effectfulFunctions.map((functionAnalysis) => [functionAnalysis.id, functionAnalysis.effects]));
   const allFunctions = effectfulFunctions.map((functionAnalysis) => {
     const definition = functionIndex.byId.get(functionAnalysis.id);
     if (!definition) {
@@ -45,6 +54,7 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     return {
       ...functionAnalysis,
       opportunities,
+      parallelism: analyzeParallelism(definition, functionAnalysis.calls, functionAnalysis.effects, facade, effectsByFunction),
       nativePriority: calculateNativePriority(functionAnalysis.suitability, opportunities),
     };
   });
@@ -55,6 +65,7 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     .sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
   let candidateIslands = findCandidateIslands(allFunctions, scopedFunctionIds);
   let cpuProfile: AnalysisResult["cpuProfile"];
+  let allocationProfile: AnalysisResult["allocationProfile"];
 
   if (options.profilePath) {
     const profile = loadV8CpuProfile(options.profilePath, facade.projectRoot, functions);
@@ -65,6 +76,33 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     cpuProfile = profiled.cpuProfile;
   }
 
+  if (options.heapProfilePath) {
+    const profile = loadV8HeapProfile(options.heapProfilePath, facade.projectRoot, functions);
+    const profiled = attachHeapProfile(functions, profile);
+    functions = [...profiled.functions]
+      .sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
+    allocationProfile = profiled.allocationProfile;
+  }
+
+  const loadedPipeline = options.pipelinePath
+    ? analyzePipeline(
+      loadPipelineDescriptor(options.pipelinePath),
+      functions.map(({ id, file, name, parallelism }) => ({ id, file, name, parallelism })),
+    )
+    : undefined;
+  const pipeline = loadedPipeline && options.workloadLabel
+    ? { ...loadedPipeline, workloadLabel: options.workloadLabel }
+    : loadedPipeline;
+  const workloadLabel = options.workloadLabel ?? pipeline?.workloadLabel;
+  const acceleration = analyzeAcceleration({
+    functions,
+    candidateIslands,
+    ...(pipeline ? { pipeline } : {}),
+    ...(cpuProfile ? { cpuProfile } : {}),
+    ...(allocationProfile ? { allocationProfile } : {}),
+    ...(workloadLabel ? { workloadLabel } : {}),
+  });
+
   return {
     projectName: basename(facade.projectRoot),
     projectRoot: facade.projectRoot,
@@ -73,6 +111,10 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
       source: facade.source,
     },
     ...(cpuProfile ? { cpuProfile } : {}),
+    ...(allocationProfile ? { allocationProfile } : {}),
+    ...(pipeline ? { pipeline } : {}),
+    ...(workloadLabel ? { workloadLabel } : {}),
+    acceleration,
     functions,
     candidateIslands,
   };

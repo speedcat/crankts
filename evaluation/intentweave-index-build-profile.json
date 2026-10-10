@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "comparisonType": "full-workspace-index-build-profile",
+  "capturedAt": "2026-10-10",
+  "groundTruth": false,
+  "workspaceRoot": "/Users/benjaminbecker/Workspace/intentweave",
+  "artifacts": {
+    "directory": "/tmp/crankts-iw-profile-6D0a7W",
+    "typescriptDatabase": "index-ts.db",
+    "rustDatabase": "index-rust.db",
+    "typescriptCpuProfile": "iw-index-ts.22710.cpuprofile"
+  },
+  "environment": {
+    "node": "22.19.0",
+    "typescript": "5.9.3",
+    "cpuProfileIntervalMicros": 1000,
+    "depth": "full",
+    "rootMode": "legacy-single-workspace-root",
+    "outputsOutsideWorkspace": true
+  },
+  "commands": {
+    "typescript": "node --max-old-space-size=4096 --cpu-prof --cpu-prof-dir=<tmp> --cpu-prof-name='iw-index-ts.${pid}.cpuprofile' --cpu-prof-interval=1000 --import tsx packages/cli/src/cli.ts index build --depth full --no-native --output <tmp>/index-ts.db --verbose .",
+    "rust": "node --max-old-space-size=4096 --import tsx packages/cli/src/cli.ts index build --depth full --output <tmp>/index-rust.db --verbose ."
+  },
+  "typescriptRun": {
+    "wallSeconds": 35,
+    "stageSeconds": {
+      "AX": 7.6,
+      "KWG_including_source_comments": 23.3,
+      "TCG": 2.5,
+      "Annotate": 0.0,
+      "Write": 1.12
+    },
+    "counts": {
+      "documentFiles": 33,
+      "axFiles": 256,
+      "axSkippedOversize": 4,
+      "axSymbols": 7206,
+      "keywordEntities": 24918,
+      "mentionsAndAnnotations": 56163,
+      "groundedAnnotations": 43755,
+      "coOccurrences": 16108,
+      "coChanges": 914,
+      "filesWritten": 711,
+      "imports": 733,
+      "symbolCalls": 15686
+    }
+  },
+  "rustRun": {
+    "wallSeconds": 4.3,
+    "pipelineSeconds": 3.4,
+    "stageSeconds": {
+      "AX": 0.11,
+      "KWX": 0.04,
+      "COX": 0.04,
+      "TCG": 2.05,
+      "Annotate": 0.02,
+      "Write": 1.13
+    },
+    "counts": {
+      "sourceFiles": 346,
+      "axSymbols": 7243,
+      "imports": 1427,
+      "symbolCalls": 4144,
+      "documentFiles": 32,
+      "documentMentions": 23362,
+      "sourceCommentFiles": 345,
+      "sourceCommentMentions": 26375,
+      "annotations": 49737,
+      "coOccurrences": 17228,
+      "filesWritten": 378,
+      "coChanges": 918
+    }
+  },
+  "profile": {
+    "totalSampleMicros": 35162833,
+    "sampleCount": 28239,
+    "packageMatches": {
+      "analyzer": {
+        "matchedSampleMicros": 22566583,
+        "matchedSamplePercent": 64.18,
+        "matchedSampleCount": 18154,
+        "confidence": "MEDIUM"
+      },
+      "index": {
+        "matchedSampleMicros": 24051378,
+        "matchedSamplePercent": 68.4,
+        "matchedSampleCount": 19214,
+        "confidence": "MEDIUM"
+      }
+    },
+    "findings": [
+      {
+        "function": "HeuristicKeywordExtractor.extractDictionary",
+        "source": "packages/analyzer/src/kwg/heuristicExtractor.ts",
+        "staticPriority": 30,
+        "selfCpuMicros": 10936226,
+        "inclusiveCpuMicros": 21235264,
+        "selfSamplePercent": 31.1,
+        "interpretation": "Hot runtime work missed by the current static opportunity heuristic."
+      },
+      {
+        "function": "HeuristicKeywordExtractor.extract",
+        "source": "packages/analyzer/src/kwg/heuristicExtractor.ts",
+        "staticPriority": 24,
+        "selfCpuMicros": 422410,
+        "inclusiveCpuMicros": 21695089,
+        "selfSamplePercent": 1.2,
+        "interpretation": "Parent extraction function; most inclusive time is in extractDictionary."
+      },
+      {
+        "function": "runKwxStage",
+        "source": "packages/analyzer/src/kwg/kwxStage.ts",
+        "staticPriority": 41,
+        "selfCpuMicros": 28626,
+        "inclusiveCpuMicros": 22042962,
+        "selfSamplePercent": 0.08,
+        "interpretation": "Stage orchestration is cheap itself; inclusive cost is dominated by child extraction."
+      },
+      {
+        "function": "aggregateEntities",
+        "source": "packages/analyzer/src/kwg/kwxStage.ts",
+        "staticPriority": 85,
+        "selfCpuMicros": 15041,
+        "inclusiveCpuMicros": 15041,
+        "selfSamplePercent": 0.04,
+        "interpretation": "High static priority but nearly cold in this index build."
+      },
+      {
+        "function": "computeDocumentEdges",
+        "source": "packages/analyzer/src/kwg/coxStage.ts",
+        "staticPriority": 70,
+        "selfCpuMicros": 6208,
+        "inclusiveCpuMicros": 13166,
+        "selfSamplePercent": 0.02,
+        "interpretation": "High static priority but low observed CPU in this workload."
+      },
+      {
+        "function": "computeGini",
+        "source": "packages/analyzer/src/tcg/ownStage.ts",
+        "staticPriority": 81,
+        "selfCpuMicros": 0,
+        "inclusiveCpuMicros": 0,
+        "selfSamplePercent": 0,
+        "interpretation": "Not sampled in this build workload."
+      },
+      {
+        "function": "analyzeFocusInsights",
+        "source": "packages/index/src/export/focusReport.ts",
+        "staticPriority": 70,
+        "selfCpuMicros": 0,
+        "inclusiveCpuMicros": 0,
+        "selfSamplePercent": 0,
+        "interpretation": "Not part of iw index build; absence of samples is not evidence that the function is generally cold."
+      },
+      {
+        "function": "buildFromPaths",
+        "source": "packages/index/src/facade.ts",
+        "staticPriority": 0,
+        "selfCpuMicros": 55043,
+        "inclusiveCpuMicros": 23697542,
+        "selfSamplePercent": 0.16,
+        "interpretation": "Mostly orchestration; its inclusive profile contains the TypeScript pipeline work."
+      }
+    ]
+  },
+  "dictionaryAlgorithmComparison": {
+    "typescript": "For each dictionary term, build a word-boundary RegExp and scan the stripped text. Approximate work grows with dictionary terms times text length.",
+    "rust": "Scan text into words once and test each lowercased word against a HashSet. Approximate work grows with text length plus word lookups.",
+    "sourceFiles": [
+      "packages/analyzer/src/kwg/heuristicExtractor.ts#extractDictionary",
+      "packages/cari-native/src/kwx/mod.rs#extract_dictionary_mentions"
+    ],
+    "parityCaveat": "The Rust word scan does not obviously have identical multi-word dictionary matching semantics; output counts differ, so the observed stage-time contrast is diagnostic, not a clean speedup claim."
+  },
+  "semanticOutputDrift": {
+    "databaseRows": {
+      "files": { "typescript": 711, "rust": 378, "sharedFilePaths": 378 },
+      "symbols": { "typescript": 7172, "rust": 6220, "sharedSemanticKeys": 5829 },
+      "imports": { "typescript": 733, "rust": 1322, "sharedSemanticKeys": 335 },
+      "annotations": { "typescript": 56163, "rust": 45992 },
+      "coOccurrences": { "typescript": 16108, "rust": 17228, "sharedEntityPairsIgnoringSourceAndCount": 4376 },
+      "coChanges": { "typescript": 914, "rust": 918, "sharedFilePairsAndCounts": 914 }
+    },
+    "interpretation": "The builds use the same workspace root and full depth, but outputs are not yet semantically equivalent. Do not report an unqualified Rust-vs-TypeScript performance ratio."
+  },
+  "limitations": [
+    "CrankTS analyzes analyzer/index package tsconfigs separately; matched package profile percentages overlap and must not be summed.",
+    "No Rust CPU profiler or allocation/heap profile was captured.",
+    "The profile is one workload run; confidence is medium at package level and does not establish repeatability.",
+    "The pre-existing IW parity harness checks selected fixture outputs, not full workspace row-by-row parity."
+  ]
+}

@@ -930,7 +930,7 @@ This dogfood phase should answer the central CrankTS hypothesis:
 
 # Current Implementation Status
 
-The current v0.1 MVP is an analysis-only CLI. It loads a TypeScript project, inventories functions, resolves in-project calls, classifies typed/runtime-boundary call edges and blockers, propagates eligibility and effects, estimates CPU/memory/parallel opportunity, groups candidate components, and can optionally attach a Node/V8 CPU profile. It never executes the target program.
+The current v0.1 MVP is an analysis-only CLI. It loads a TypeScript project, inventories functions, resolves in-project calls, classifies typed/runtime-boundary call edges and blockers, propagates eligibility and effects, estimates static CPU/memory/parallel opportunity, groups candidate components, and can attach CPU/allocation profiles plus a declared pipeline descriptor. It never executes the target program.
 
 ```bash
 pnpm install
@@ -944,6 +944,8 @@ node dist/cli.js analyze [target]
 The text report shows compiler provenance, `SUPPORTED` / `CONDITIONAL` / `BLOCKED` counts, candidate membership, edge counts, boundary ratio, member/boundary eligibility mix, articulation impact, size diagnostic, blocker explanations, effects, opportunity axes, and Native Priority. Eligibility and effects propagate over resolved in-project call edges, including recursive components; unresolved/external calls retain their direct diagnostics. Candidate components are weakly connected components over supported and conditional functions. No split heuristics are applied.
 
 Static suitability starts at 100, subtracts 15 for each distinct conditional blocker category, and is 0 if any blocking signal is present. Direct effects use conservative syntax and common Node.js API heuristics; transitive effects are unions across resolved calls. CPU, memory, and parallel opportunity are independent syntax/effect heuristics, not measurements.
+
+Parallelism classification is a separate conservative pass and does not feed Native Priority. Each function's versioned JSON entry includes `parallelism` with loop and `Promise.all(map(...))` regions, `PARALLEL_DOALL` / `PARALLEL_MAP_REDUCE` / `PARALLEL_PARTITIONABLE` / `PARALLEL_PIPELINE` / `PARALLEL_WITH_SYNCHRONIZATION` / `SEQUENTIAL_DEPENDENCE` / `UNKNOWN` classifications, read/write sets, shared writes, loop-carried RAW/WAR/WAW evidence, effects, and explanations. Text output lists function classifications; `--verbose` adds region-level evidence. This is a syntax-based heuristic, not a proof of independence: aliases, dynamic keys, unresolved calls, and external state can limit confidence. Keyed writes are only partitioning candidates; key uniqueness is not proven. `Promise.all` identifies an async batch, not CPU parallelism.
 
 For each function, Native Priority is:
 
@@ -969,17 +971,41 @@ pnpm dev analyze test/fixtures/basic --format json
 pnpm dev analyze test/fixtures/basic --verbose
 pnpm dev analyze test/fixtures/basic --min-score 70
 pnpm dev analyze src/ --profile ingest.cpuprofile
+pnpm dev analyze src/ --heap-profile allocations.heapprofile --workload "request replay"
+pnpm dev analyze ../intentweave/packages/analyzer --pipeline evaluation/intentweave-pipeline.json
 ```
 
 Call edges retain their syntactic `kind` and add a separate runtime `boundaryKind`: `LOCAL_DIRECT`, `LOCAL_METHOD`, `LOCAL_CALLBACK`, `LOCAL_CONSTRUCTOR`, `STDLIB_PURE`, `STDLIB_COLLECTION`, `STDLIB_RUNTIME`, `NODE_IO`, `DATABASE`, `NETWORK`, `PROCESS`, `EXTERNAL_TYPED`, `EXTERNAL_UNKNOWN`, `DYNAMIC`, or `UNRESOLVED`. The report summarizes raw and effective entry/exit edges plus counts by boundary kind. Effective counts omit kinds with zero diagnostic cost. Boundary cost units and `LOW` / `MEDIUM` / `HIGH` risk are experimental diagnostics only; they do not modify Native Priority.
 
 Current diagnostic units per crossing edge are: local calls/callbacks and pure/collection standard-library calls `0`; standard runtime and typed external `1`; Node I/O and unknown external `4`; database/process/unresolved `6`; network/dynamic `8`. Risk is `HIGH` if any database, network, process, dynamic, or unresolved edge is present; otherwise `MEDIUM` for Node I/O, unknown external, or at least 8 aggregate units; otherwise `LOW`. These are review aids, not calibrated native-transition costs.
 
-`--profile` accepts Node/V8 `.cpuprofile` JSON with aligned `samples` and `timeDeltas`. CrankTS matches frames to project functions by source path and function name, with common `dist`/`build` JavaScript paths mapped back to `src` TypeScript paths. Source maps, inline/eval frames, and call counts are not inferred. Reports show function/island self CPU, inclusive CPU, sample share, matched-profile coverage, and confidence. When a profile is present, candidate presentation order uses observed island self CPU with static priority as a tie-breaker; `nativePriority` itself is unchanged. High confidence currently requires at least 80% matched sample time and 100 matched samples; medium requires at least 50% and 25 samples; otherwise confidence is low. This is CPU evidence only; heap/allocation profiles are not supported.
+`--profile` accepts Node/V8 `.cpuprofile` JSON with aligned `samples` and `timeDeltas`. CrankTS matches frames to project functions by source path and function name, with common `dist`/`build` JavaScript paths mapped back to `src` TypeScript paths. Source maps, inline/eval frames, and call counts are not inferred. Reports show function/island self CPU, inclusive CPU, sample share, matched-profile coverage, and confidence. When a profile is present, candidate presentation order uses observed island self CPU with static priority as a tie-breaker; `nativePriority` itself is unchanged. High confidence currently requires at least 80% matched sample time and 100 matched samples; medium requires at least 50% and 25 samples; otherwise confidence is low.
+
+`--heap-profile` accepts Node/V8 `.heapprofile` JSON. `sample.size` is treated as sampled allocated bytes and mapped through the sampled call-frame tree to self and inclusive functions. The report distinguishes allocated-byte samples from retained heap and RSS; neither retained size nor allocation rate is inferred. Allocation profile coverage/confidence is separate from CPU coverage/confidence.
+
+Self and inclusive allocation shares are reported separately. Inclusive samples are attributed to mapped ancestors even when the sampled V8 leaf is an unmapped runtime frame; therefore inclusive bytes overlap across stack functions and must not be summed. With zero matched function samples and low profile coverage, memory/layout potential remains `UNKNOWN` rather than being treated as zero allocation.
+
+`--pipeline` accepts a versioned JSON manifest. Entry file paths are relative to the analyzed project's `projectRoot`; entries outside the selected TypeScript project are reported as unresolved rather than guessed. A stage declares its work-unit grain, current scheduling mode, input sharing, aggregation, dependencies, optional sink IDs, and optional analyst-supplied optimization evidence. Descriptors are validated for duplicate/unknown IDs and dependency cycles. They are a deliberate evidence boundary: `independentWork: CANDIDATE` means the manifest declares read-only work units and a compatible aggregation, not that CrankTS proved runtime independence. `ASYNC_IO` is not CPU parallelism.
+
+Pipeline sinks accept `SQLITE`, `BETTER_SQLITE3`, `NODE_SQLITE`, or `GENERIC` adapters and optional writer-mode, transaction, and ordered-commit declarations. The first three adapters default to the known single-writer model unless the descriptor explicitly declares otherwise; generic sinks remain `UNKNOWN` unless writer mode is stated. CrankTS reports upstream candidate stages and a scaling-risk classification, not a measured contention percentage. It does not change the application, database driver, or writer architecture.
+
+The acceleration report separates `feasibility`, `staticOpportunity`, `observedWorkload`, `optimizationPotential`, and evidence-linked recommendations. Recommendation actions include `KEEP_TS`, `OPTIMIZE_ALGORITHM`, `PARALLELIZE`, `CHANGE_DATA_LAYOUT`, `MOVE_OFF_EVENT_LOOP`, `NATIVE_OFFLOAD`, `BATCH_IO`, and `REMOVE_SERIALIZED_SINK`; only rules with supporting evidence emit an action. Algorithmic and data-layout hints in a pipeline descriptor are explicitly declared evidence, not inferred facts. Runtime hotness review bands currently use self CPU shares of 20% (`VERY_HIGH`), 10% (`HIGH`), and 2% (`MEDIUM`); these bands are provisional, not calibrated benefit estimates. Low profile coverage caps native potential and is retained on any provisional recommendation. No weighted score replaces Native Priority, and no recommendation triggers code generation or execution.
+
+The JSON report is now schema version 2. Existing function, island, and Native Priority fields remain; v2 adds `workloadLabel`, optional `allocationProfile` and `pipeline` evidence, and `acceleration` assessments. The initial intentweave stage/sink descriptor is [evaluation/intentweave-pipeline.json](evaluation/intentweave-pipeline.json).
+
+### MVP-6 IntentWeave Baseline (2026-10-10)
+
+Three sequential unprofiled full-depth TypeScript builds took 19.8 s, 21.6 s, and 21.8 s (median 21.6 s); KWG/IN medians were 7.9 s. All three produced the same coarse counts: 7,308 symbols, 56,475 mentions/annotations, and 16,184 co-occurrences. The repeat summary and separate profile evidence are in [evaluation/intentweave-mvp6-baseline.json](evaluation/intentweave-mvp6-baseline.json); raw profiles and databases remain under `/tmp`.
+
+The current 1 ms CPU profile matched 37.02% of samples for the analyzer package (`LOW`). `HeuristicKeywordExtractor.extractDictionary` had 5.98 s self CPU, 7.05 s inclusive, and 25.89% of total sampled CPU. Its assessment is `VERY_HIGH` runtime hotness, `MEDIUM` declared algorithmic potential, `HIGH` chunk-parallelization potential, and `LOW` native-execution potential because suitability is conditional and the analyzed island boundary risk is high. Recommendations are provisional under low profile coverage; Native Priority remains 55 and is not used as the runtime ranking.
+
+The separate heap profile matched only 2 of 32 allocation samples (5.67%, `LOW`). Its matched inclusive bytes landed on `processFile`, `parseGitLog`, and `runTcxStage`; self bytes were zero because sampled leaves were unmapped runtime frames. There is not enough allocation evidence to recommend a KWX data-layout change.
+
+The checked-in pipeline descriptor declares eight read-only candidate work stages upstream of one SQLite single-writer sink, yielding `HIGH` serialization risk and `REMOVE_SERIALIZED_SINK` / `BATCH_IO` review recommendations. These are manifest-backed architecture evidence, not measured concurrency or contention percentages. The `annotate` and `sqlite-write` functions remain `UNRESOLVED` when analyzing the analyzer package because their implementations belong to the separate index package `tsconfig`.
 
 The provisional IntentWeave source-review labels are available as machine-readable data in [evaluation/intentweave-index-top16.json](evaluation/intentweave-index-top16.json). They are not profiler-backed ground truth.
 
-No `.cpuprofile` was present in the IntentWeave workspace during this review. The profile-ingestion path is validated with deterministic synthetic V8 samples only; a real IW hotness ranking remains pending an actual captured profile.
+The current IntentWeave profile and the follow-up KWX matcher measurement are summarized below. The raw profiles and index databases are kept under `/tmp`, not in Git; the reported post-change profile has low matched coverage and is directional evidence only.
 
 Run the fixture suite and static checks with:
 
@@ -1024,7 +1050,35 @@ The AX function count covers the analyzer AX implementation and helpers; TypeScr
 
 In the index package, 16 of 334 candidate islands scored at least 70. The largest component is conditional, scored 55, and has 1,354 raw exit edges. A separate connectivity check found 59 articulation functions in it; the highest-impact ones include query entry points, and no single function has unusually high fan-in. The analyzer package's largest component is 20 functions.
 
-For the 16 priority-70 index candidates, there are 1,142 raw exits and 439 effective exits. Their boundary-kind histogram includes 24 `LOCAL_DIRECT`, 650 `STDLIB_COLLECTION`, 33 `STDLIB_PURE`, 6 `STDLIB_RUNTIME`, 152 `DATABASE`, 188 `EXTERNAL_TYPED`, and 93 `EXTERNAL_UNKNOWN` directed boundary appearances. Twelve candidates are `HIGH` risk and four are `MEDIUM`; the largest graph-analysis candidate has 271 raw exits but 49 effective exits and `MEDIUM` risk. No real IW `.cpuprofile` was supplied for this review.
+### Real Full-Workspace CPU Profile
+
+A real `iw index build` TypeScript run was captured with Node 22.19, `--depth full`, legacy root `.`, `--no-native`, V8 sampling at 1 ms, and the database/profile written under `/tmp`. The unprofiled TS run also took about 35 s. CrankTS matched 64.18% of samples in `packages/analyzer/src` and 68.4% in `packages/index/src` (medium package-scope confidence; these percentages overlap and must not be added).
+
+| Pipeline work | TypeScript | Rust `cari-build` |
+| --- | ---: | ---: |
+| AX | 7.6 s | 0.11 s |
+| IN + KWX + COX aggregate / KWX | 23.3 s | 0.04 s |
+| COX | included above | 0.04 s |
+| TCG | 2.5 s | 2.05 s |
+| Annotate | <0.1 s | 0.02 s |
+| Write | 1.12 s | 1.13 s |
+| Whole command | ~35 s | 4.3 s |
+
+Stage boundaries are not perfectly aligned: TypeScript's reported KWG interval includes IN, KWX, COX, per-file reads, and source-comment extraction, while Rust reports KWX and COX separately and performs discovery inside AX. More importantly, output work differs: TS indexed 256 AX files and 56,163 mentions/annotations; Rust reported 346 source files and 49,737 annotations. Final DB counts also differ (files 711/378, symbols 7,172/6,220, imports 733/1,322, co-occurrences 16,108/17,228, co-changes 914/918 for TS/Rust). This is not an apples-to-apples speedup result.
+
+The V8 profile exposed a useful static-ranking error: `HeuristicKeywordExtractor.extractDictionary` consumed 10.94 s self CPU (31.1% of the sampled build, 21.24 s inclusive) but had static Native Priority 30. Conversely, `aggregateEntities` scored 85 but showed only 15 ms self CPU, and `computeDocumentEdges` scored 70 but showed about 6 ms. `analyzeFocusInsights` scored 70 in the index source but was not called by `iw index build`; its lack of samples is not evidence that it is generally cold.
+
+At the time of this initial profile, TypeScript iterated each dictionary term, constructed a word-boundary regex, and scanned the text; Rust scanned text into words and probed a `HashSet`. The Rust algorithm remains a promising blueprint, but its mention/output counts differ, including multi-word matching semantics, so the TS/Rust runtime contrast does not prove equal-output acceleration. The full initial profile summary and caveats are in [evaluation/intentweave-index-build-profile.json](evaluation/intentweave-index-build-profile.json); the raw profile and DBs remain under `/tmp`, not in Git.
+
+### KWX Matcher Follow-up (2026-10-10)
+
+The TypeScript extractor now indexes simple ASCII dictionary terms and scans each stripped text once; multi-word and punctuation terms retain the existing escaped-regex fallback. Five focused tests lock down case-insensitive word boundaries, first-match behavior, dictionary order, structured-match deduplication, fallback terms, and mutable dictionary sets. A synthetic 2,500-term / 30,000-character microbenchmark found the same 2,500 matches in 1.8 ms versus 16.5 ms for regex-per-term (9.2x in that microbenchmark; not a workload benchmark).
+
+A repeat of the profiled full-depth TS build took about 19 s with KWG at 6.5 s, versus about 35 s and 23.3 s in the initial run. CrankTS attributed `extractDictionary` 4.49 s self CPU / 23.7% and 5.18 s inclusive CPU in the final run, compared with 10.94 s / 31.1% and 21.24 s initially. The final profile matched only 30.31% of samples (`LOW` confidence), so these single-run measurements are directional, not a calibrated speedup claim. Static Native Priority is still not a runtime ranking; after the source rewrite CrankTS reports 55 for the current implementation.
+
+The final TS DB retained 7,206 symbols and 16,108 co-occurrences; mentions rose from 56,163 to 56,170. Exact annotation-match changes (8 added, 1 removed) were confined to KWX's own `heuristicExtractor.ts` source-comment output after its comments changed; Markdown-document match identities were unchanged. IDF/confidence values were consequently recomputed. This checks the TS matcher against its existing behavior on the document corpus, but does not resolve TS/Rust parity or multi-word semantics.
+
+For the 16 priority-70 index candidates, there are 1,142 raw exits and 439 effective exits. Their boundary-kind histogram includes 24 `LOCAL_DIRECT`, 650 `STDLIB_COLLECTION`, 33 `STDLIB_PURE`, 6 `STDLIB_RUNTIME`, 152 `DATABASE`, 188 `EXTERNAL_TYPED`, and 93 `EXTERNAL_UNKNOWN` directed boundary appearances. Twelve candidates are `HIGH` risk and four are `MEDIUM`; the largest graph-analysis candidate has 271 raw exits but 49 effective exits and `MEDIUM` risk. This static Top-16 set predates the real profile results above.
 
 These results confirm that WCC can group large regions, but do not yet establish a reliable automatic split rule. Components remain unsplit candidate regions; scores and edge boundaries should guide further review, not be read as measured performance. Each package was analyzed using its own `tsconfig.json`: the monorepo root config is a solution config with no source files, so source-level calls across package references are outside these per-package call graphs.
 

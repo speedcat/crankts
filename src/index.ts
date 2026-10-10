@@ -14,6 +14,9 @@ interface AnalyzeOptions {
   readonly format: OutputFormat;
   readonly minScore: number;
   readonly profilePath?: string;
+  readonly heapProfilePath?: string;
+  readonly pipelinePath?: string;
+  readonly workloadLabel?: string;
   readonly target: string;
   readonly verbose: boolean;
 }
@@ -46,7 +49,12 @@ export function runCli(arguments_: readonly string[]): number {
 
   const target = resolve(options.target);
   try {
-    const result = analyzeProject(target, options.profilePath ? { profilePath: options.profilePath } : {});
+    const result = analyzeProject(target, {
+      ...(options.profilePath ? { profilePath: options.profilePath } : {}),
+      ...(options.heapProfilePath ? { heapProfilePath: options.heapProfilePath } : {}),
+      ...(options.pipelinePath ? { pipelinePath: options.pipelinePath } : {}),
+      ...(options.workloadLabel ? { workloadLabel: options.workloadLabel } : {}),
+    });
     const reportOptions = { verbose: options.verbose, minScore: options.minScore };
     const report = options.format === "json"
       ? renderJsonReport(result, reportOptions)
@@ -68,6 +76,9 @@ function printUsage(): void {
   console.log("  --verbose             Include resolved and unresolved call edges");
   console.log("  --min-score <0-100>   Only report candidate islands at or above this score");
   console.log("  --profile <file>      Attach a Node/V8 .cpuprofile; Native Priority is unchanged");
+  console.log("  --heap-profile <file> Attach a Node/V8 .heapprofile of sampled allocated bytes");
+  console.log("  --pipeline <file>     Add a versioned pipeline/sink evidence descriptor");
+  console.log("  --workload <label>    Label the workload represented by attached profiles");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
@@ -76,6 +87,9 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
   let verbose = false;
   let minScore = 0;
   let profilePath: string | undefined;
+  let heapProfilePath: string | undefined;
+  let pipelinePath: string | undefined;
+  let workloadLabel: string | undefined;
 
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index];
@@ -92,6 +106,39 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
         throw new Error("--profile requires a V8 .cpuprofile file path.");
       }
       profilePath = value;
+      continue;
+    }
+    if (argument === "--pipeline" || argument?.startsWith("--pipeline=")) {
+      const value = argument === "--pipeline" ? arguments_[index + 1] : argument.slice("--pipeline=".length);
+      if (argument === "--pipeline") {
+        index += 1;
+      }
+      if (!value || value.startsWith("-")) {
+        throw new Error("--pipeline requires a versioned JSON descriptor path.");
+      }
+      pipelinePath = value;
+      continue;
+    }
+    if (argument === "--heap-profile" || argument?.startsWith("--heap-profile=")) {
+      const value = argument === "--heap-profile" ? arguments_[index + 1] : argument.slice("--heap-profile=".length);
+      if (argument === "--heap-profile") {
+        index += 1;
+      }
+      if (!value || value.startsWith("-")) {
+        throw new Error("--heap-profile requires a V8 .heapprofile file path.");
+      }
+      heapProfilePath = value;
+      continue;
+    }
+    if (argument === "--workload" || argument?.startsWith("--workload=")) {
+      const value = argument === "--workload" ? arguments_[index + 1] : argument.slice("--workload=".length);
+      if (argument === "--workload") {
+        index += 1;
+      }
+      if (!value || value.startsWith("-")) {
+        throw new Error("--workload requires a non-empty label.");
+      }
+      workloadLabel = value;
       continue;
     }
     if (argument === "--format" || argument?.startsWith("--format=")) {
@@ -132,5 +179,8 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
     verbose,
     minScore,
     ...(profilePath ? { profilePath } : {}),
+    ...(heapProfilePath ? { heapProfilePath } : {}),
+    ...(pipelinePath ? { pipelinePath } : {}),
+    ...(workloadLabel ? { workloadLabel } : {}),
   };
 }

@@ -10,7 +10,7 @@ import type {
   FunctionId,
 } from "./model.js";
 
-interface V8CallFrame {
+export interface ProfileCallFrame {
   readonly functionName?: string;
   readonly url?: string;
   readonly lineNumber?: number;
@@ -18,7 +18,7 @@ interface V8CallFrame {
 
 interface V8ProfileNode {
   readonly id: number;
-  readonly callFrame: V8CallFrame;
+  readonly callFrame: ProfileCallFrame;
   readonly children?: readonly number[];
 }
 
@@ -210,7 +210,7 @@ function validateProfile(value: unknown, profilePath: string): V8CpuProfile {
   return profile as V8CpuProfile;
 }
 
-function indexFunctionsByFile(functions: readonly FunctionAnalysis[]): Map<string, FunctionAnalysis[]> {
+export function indexFunctionsByFile(functions: readonly FunctionAnalysis[]): Map<string, FunctionAnalysis[]> {
   const functionsByFile = new Map<string, FunctionAnalysis[]>();
   for (const functionAnalysis of functions) {
     const fileFunctions = functionsByFile.get(functionAnalysis.file) ?? [];
@@ -220,8 +220,8 @@ function indexFunctionsByFile(functions: readonly FunctionAnalysis[]): Map<strin
   return functionsByFile;
 }
 
-function matchFunction(
-  callFrame: V8CallFrame,
+export function matchFunction(
+  callFrame: ProfileCallFrame,
   projectRoot: string,
   functionsByFile: ReadonlyMap<string, readonly FunctionAnalysis[]>,
 ): FunctionAnalysis | undefined {
@@ -300,6 +300,6 @@ function getSourceFileCandidates(profileUrl: string, projectRoot: string): strin
   return [...candidates];
 }
 
-function percentOf(part: number, total: number): number {
+export function percentOf(part: number, total: number): number {
   return total === 0 ? 0 : Math.round((part / total) * 10_000) / 100;
 }

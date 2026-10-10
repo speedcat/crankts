@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const evaluationPath = fileURLToPath(new URL("../evaluation/intentweave-index-top16.json", import.meta.url));
 const rustSplitPath = fileURLToPath(new URL("../evaluation/intentweave-rust-split.json", import.meta.url));
+const profileEvidencePath = fileURLToPath(new URL("../evaluation/intentweave-index-build-profile.json", import.meta.url));
 
 describe("IntentWeave evaluation labels", () => {
   it("contains 16 uniquely keyed candidates with machine-readable labels and reasons", () => {
@@ -85,5 +86,27 @@ describe("IntentWeave evaluation labels", () => {
     expect(comparison.parityHarness.performanceAssertion).toBe(false);
     expect(comparison.parityHarness.observedTinyFixtureRun.nativeToTypescriptRatio).toBeGreaterThan(1);
     expect(comparison.parityHarness.observedTinyFixtureRun.interpretation).toContain("not representative");
+  });
+
+  it("records the real IW profile discrepancy and refuses an unqualified speedup claim", () => {
+    const evidence = JSON.parse(readFileSync(profileEvidencePath, "utf8")) as {
+      schemaVersion: number;
+      profile: { totalSampleMicros: number; findings: Array<{ function: string; staticPriority: number; selfCpuMicros: number }> };
+      dictionaryAlgorithmComparison: { parityCaveat: string };
+      semanticOutputDrift: { interpretation: string; databaseRows: Record<string, { typescript: number; rust: number }> };
+      limitations: string[];
+    };
+    const hotDictionaryScan = evidence.profile.findings.find((finding) => finding.function === "HeuristicKeywordExtractor.extractDictionary");
+    const staticHighButCold = evidence.profile.findings.find((finding) => finding.function === "aggregateEntities");
+
+    expect(evidence.schemaVersion).toBe(1);
+    expect(evidence.profile.totalSampleMicros).toBeGreaterThan(0);
+    expect(hotDictionaryScan).toMatchObject({ staticPriority: 30, selfCpuMicros: 10_936_226 });
+    expect(staticHighButCold).toMatchObject({ staticPriority: 85, selfCpuMicros: 15_041 });
+    expect(evidence.dictionaryAlgorithmComparison.parityCaveat).toContain("multi-word");
+    expect(evidence.semanticOutputDrift.databaseRows.annotations.typescript)
+      .not.toBe(evidence.semanticOutputDrift.databaseRows.annotations.rust);
+    expect(evidence.semanticOutputDrift.interpretation).toContain("not yet semantically equivalent");
+    expect(evidence.limitations).toContain("No Rust CPU profiler or allocation/heap profile was captured.");
   });
 });
