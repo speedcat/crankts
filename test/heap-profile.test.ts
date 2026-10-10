@@ -90,6 +90,71 @@ describe("loadV8HeapProfile", () => {
     });
   });
 
+  it("attributes layout-relevant bytes to the nearest analyzed frame, excluding orchestrators and dependencies", () => {
+    const project = analyzeProject(fixtureRoot);
+    const root = project.functions.find((functionAnalysis) => functionAnalysis.name === "profiledRoot");
+    const helper = project.functions.find((functionAnalysis) => functionAnalysis.name === "profiledHelper");
+    if (!root || !helper) throw new Error("Expected heap profile fixture functions.");
+
+    const temporaryDirectory = mkdtempSync(join(tmpdir(), "crankts-heapprofile-"));
+    temporaryDirectories.push(temporaryDirectory);
+    const profilePath = join(temporaryDirectory, "attributable.heapprofile");
+    const sourceUrl = pathToFileURL(join(fixtureRoot, "src", "opportunities.ts")).href;
+    const packageUrl = pathToFileURL(join(fixtureRoot, "node_modules", "typescript", "lib", "typescript.js")).href;
+    writeFileSync(profilePath, JSON.stringify({
+      head: {
+        id: 1,
+        callFrame: { functionName: "(root)", url: "" },
+        children: [{
+          id: 2,
+          callFrame: { functionName: "profiledRoot", url: sourceUrl, lineNumber: 0 },
+          children: [
+            {
+              id: 3,
+              callFrame: { functionName: "profiledHelper", url: sourceUrl, lineNumber: 0 },
+              children: [{ id: 4, callFrame: { functionName: "map", url: "" } }],
+            },
+            {
+              id: 5,
+              callFrame: { functionName: "createProgram", url: packageUrl, lineNumber: 0 },
+              children: [{ id: 6, callFrame: { functionName: "push", url: "" } }],
+            },
+            {
+              id: 7,
+              callFrame: { functionName: "Module._load", url: "node:internal/modules/cjs/loader", lineNumber: 0 },
+              children: [{ id: 8, callFrame: { functionName: "compileFunction", url: "" } }],
+            },
+          ],
+        }],
+      },
+      samples: [
+        { size: 100, nodeId: 3 },
+        { size: 300, nodeId: 4 },
+        { size: 300, nodeId: 5 },
+        { size: 200, nodeId: 6 },
+        { size: 100, nodeId: 8 },
+      ],
+    }));
+
+    const profile = loadV8HeapProfile(profilePath, project.projectRoot, project.functions);
+    expect(profile.observations.get(root.id)).toMatchObject({
+      sampledBytesTotal: 1000,
+      sampledBytesAttributable: 0,
+      sampleCountAttributable: 0,
+    });
+    expect(profile.observations.get(helper.id)).toMatchObject({
+      sampledBytesSelf: 100,
+      sampledBytesAttributable: 400,
+      sampledBytesAttributablePercent: 40,
+      sampleCountAttributable: 2,
+    });
+
+    const profiled = analyzeProject(fixtureRoot, { heapProfilePath: profilePath });
+    const rootAssessment = profiled.acceleration.functions.find((assessment) => assessment.functionId === root.id);
+    expect(rootAssessment?.observedWorkload.allocationInclusiveSamplePercent).toBe(100);
+    expect(rootAssessment?.recommendations.map((recommendation) => recommendation.action)).not.toContain("CHANGE_DATA_LAYOUT");
+  });
+
   it("rejects malformed or negative allocation samples", () => {
     const project = analyzeProject(fixtureRoot);
     const temporaryDirectory = mkdtempSync(join(tmpdir(), "crankts-heapprofile-"));

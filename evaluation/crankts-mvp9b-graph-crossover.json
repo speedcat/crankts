@@ -1,0 +1,1846 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "mvp9b-graph-batch-crossover",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "rust": "1.95.0",
+    "napi": "3.14.2"
+  },
+  "graphs": [
+    {
+      "source": {
+        "target": "../intentweave",
+        "workspaceReferences": true,
+        "crankts": "dist/",
+        "typescript": "5.9.3"
+      },
+      "nodeCount": 3679,
+      "undirectedEdgeCount": 3783,
+      "candidateIslands": 928,
+      "fidelity": "WCC over this graph reproduces every candidate island's member list"
+    },
+    {
+      "source": {
+        "target": "../intentweave/packages/analyzer",
+        "workspaceReferences": false,
+        "crankts": "dist/",
+        "typescript": "5.9.3"
+      },
+      "nodeCount": 248,
+      "undirectedEdgeCount": 150,
+      "candidateIslands": 108,
+      "fidelity": "WCC over this graph reproduces every candidate island's member list"
+    },
+    {
+      "source": {
+        "target": "src",
+        "workspaceReferences": false,
+        "crankts": "dist/",
+        "typescript": "5.9.3"
+      },
+      "nodeCount": 389,
+      "undirectedEdgeCount": 429,
+      "candidateIslands": 47,
+      "fidelity": "WCC over this graph reproduces every candidate island's member list"
+    }
+  ],
+  "protocol": {
+    "warmupRuns": 1,
+    "measuredRuns": 5,
+    "typescriptKernel": "findWeaklyConnectedComponents + findArticulationPoints per component (dist/analysis/islands.js) on Map<FunctionId, Set<FunctionId>> adjacency",
+    "nativeTotal": "prepare (Map adjacency -> CSR Uint32Arrays, file ranks via localeCompare) + graphBatch call + decode (FunctionId arrays, localeCompare articulation tie-break)",
+    "topologies": {
+      "replicate": "k disjoint copies of the real graph",
+      "bridged": "k copies plus one edge between the highest-degree node of consecutive copies (one giant component)"
+    },
+    "parity": "sha256 of the canonical result JSON must match between TypeScript and native for every run",
+    "isolation": "one child process per topology, scale, and implementation; --expose-gc and gc() before every run; ICU collator initialized before the first (cold) run",
+    "fractionalScales": "scale < 1 keeps the first nodes in (file, line) order and drops edges leaving the subset"
+  },
+  "measurements": [
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "bridged",
+      "scale": 0.05,
+      "nodes": 12,
+      "undirectedEdges": 5,
+      "components": 7,
+      "largestComponent": 4,
+      "componentsWithArticulationPoints": 2,
+      "parity": true,
+      "resultSha256": "6c3058c97fd155a75a976f5b31e5d25830e5eb5b11fa3491ae19fd38af3b0567",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.049,
+          "min": 0.043,
+          "max": 0.104
+        },
+        "coldMs": 0.379,
+        "rssAfterInputMb": 119.194,
+        "peakRssMb": 123.191
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.022,
+          "min": 0.011,
+          "max": 0.066
+        },
+        "callMs": {
+          "median": 0.031,
+          "min": 0.015,
+          "max": 0.058
+        },
+        "decodeMs": {
+          "median": 0.005,
+          "min": 0.003,
+          "max": 0.034
+        },
+        "totalMs": {
+          "median": 0.057,
+          "min": 0.029,
+          "max": 0.142
+        },
+        "coldTotalMs": 0.213,
+        "rssAfterInputMb": 119.587,
+        "peakRssMb": 122.782
+      },
+      "speedup": {
+        "total": 0.862,
+        "callOnly": 1.59,
+        "cold": 1.778
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "bridged",
+      "scale": 0.05,
+      "nodes": 19,
+      "undirectedEdges": 6,
+      "components": 13,
+      "largestComponent": 4,
+      "componentsWithArticulationPoints": 2,
+      "parity": true,
+      "resultSha256": "0e3ff1c285373bf0d6add3808952796c6ac05ac561261ec7940a1baac69c330c",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.08,
+          "min": 0.066,
+          "max": 0.107
+        },
+        "coldMs": 0.381,
+        "rssAfterInputMb": 119.325,
+        "peakRssMb": 123.175
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.017,
+          "min": 0.011,
+          "max": 0.063
+        },
+        "callMs": {
+          "median": 0.016,
+          "min": 0.009,
+          "max": 0.053
+        },
+        "decodeMs": {
+          "median": 0.004,
+          "min": 0.003,
+          "max": 0.015
+        },
+        "totalMs": {
+          "median": 0.037,
+          "min": 0.024,
+          "max": 0.131
+        },
+        "coldTotalMs": 0.191,
+        "rssAfterInputMb": 119.62,
+        "peakRssMb": 122.995
+      },
+      "speedup": {
+        "total": 2.174,
+        "callOnly": 5.047,
+        "cold": 1.991
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "bridged",
+      "scale": 0.1,
+      "nodes": 25,
+      "undirectedEdges": 14,
+      "components": 11,
+      "largestComponent": 6,
+      "componentsWithArticulationPoints": 4,
+      "parity": true,
+      "resultSha256": "6018ff0233927422d7ddad044bd7a5a8b5ad2f8ea661c0627bad23a988ff306d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.1,
+          "min": 0.062,
+          "max": 0.12
+        },
+        "coldMs": 0.445,
+        "rssAfterInputMb": 119.292,
+        "peakRssMb": 123.453
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.062,
+          "min": 0.029,
+          "max": 0.12
+        },
+        "callMs": {
+          "median": 0.029,
+          "min": 0.02,
+          "max": 0.072
+        },
+        "decodeMs": {
+          "median": 0.007,
+          "min": 0.005,
+          "max": 0.008
+        },
+        "totalMs": {
+          "median": 0.087,
+          "min": 0.055,
+          "max": 0.161
+        },
+        "coldTotalMs": 0.198,
+        "rssAfterInputMb": 119.489,
+        "peakRssMb": 123.175
+      },
+      "speedup": {
+        "total": 1.143,
+        "callOnly": 3.484,
+        "cold": 2.251
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "bridged",
+      "scale": 0.1,
+      "nodes": 39,
+      "undirectedEdges": 19,
+      "components": 20,
+      "largestComponent": 11,
+      "componentsWithArticulationPoints": 4,
+      "parity": true,
+      "resultSha256": "ed4fe30eebcfc8686b2282b682494c86be112d24fdcc03af9de99a996310a256",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.126,
+          "min": 0.07,
+          "max": 0.277
+        },
+        "coldMs": 0.451,
+        "rssAfterInputMb": 119.243,
+        "peakRssMb": 123.257
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.06,
+          "min": 0.033,
+          "max": 0.106
+        },
+        "callMs": {
+          "median": 0.027,
+          "min": 0.02,
+          "max": 0.043
+        },
+        "decodeMs": {
+          "median": 0.008,
+          "min": 0.007,
+          "max": 0.019
+        },
+        "totalMs": {
+          "median": 0.108,
+          "min": 0.06,
+          "max": 0.141
+        },
+        "coldTotalMs": 0.163,
+        "rssAfterInputMb": 119.767,
+        "peakRssMb": 123.65
+      },
+      "speedup": {
+        "total": 1.165,
+        "callOnly": 4.59,
+        "cold": 2.769
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "bridged",
+      "scale": 0.25,
+      "nodes": 62,
+      "undirectedEdges": 47,
+      "components": 18,
+      "largestComponent": 16,
+      "componentsWithArticulationPoints": 6,
+      "parity": true,
+      "resultSha256": "0805fa1c6d500b19006ad52545ef28c49624e3013b77031c310232746e14b49d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.228,
+          "min": 0.189,
+          "max": 0.311
+        },
+        "coldMs": 0.527,
+        "rssAfterInputMb": 119.194,
+        "peakRssMb": 123.044
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.047,
+          "min": 0.027,
+          "max": 0.061
+        },
+        "callMs": {
+          "median": 0.021,
+          "min": 0.012,
+          "max": 0.034
+        },
+        "decodeMs": {
+          "median": 0.005,
+          "min": 0.004,
+          "max": 0.019
+        },
+        "totalMs": {
+          "median": 0.073,
+          "min": 0.043,
+          "max": 0.106
+        },
+        "coldTotalMs": 0.198,
+        "rssAfterInputMb": 119.636,
+        "peakRssMb": 123.879
+      },
+      "speedup": {
+        "total": 3.139,
+        "callOnly": 10.87,
+        "cold": 2.668
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "bridged",
+      "scale": 0.25,
+      "nodes": 97,
+      "undirectedEdges": 76,
+      "components": 29,
+      "largestComponent": 38,
+      "componentsWithArticulationPoints": 5,
+      "parity": true,
+      "resultSha256": "8fa5951029758fa4fc617a9cad7358251bb1b5cd683989e7dd3307c217abac3d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.317,
+          "min": 0.171,
+          "max": 0.343
+        },
+        "coldMs": 0.597,
+        "rssAfterInputMb": 119.194,
+        "peakRssMb": 122.978
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.089,
+          "min": 0.076,
+          "max": 0.107
+        },
+        "callMs": {
+          "median": 0.041,
+          "min": 0.037,
+          "max": 0.067
+        },
+        "decodeMs": {
+          "median": 0.01,
+          "min": 0.007,
+          "max": 0.011
+        },
+        "totalMs": {
+          "median": 0.137,
+          "min": 0.125,
+          "max": 0.181
+        },
+        "coldTotalMs": 0.184,
+        "rssAfterInputMb": 119.472,
+        "peakRssMb": 123.617
+      },
+      "speedup": {
+        "total": 2.311,
+        "callOnly": 7.679,
+        "cold": 3.251
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "bridged",
+      "scale": 0.5,
+      "nodes": 124,
+      "undirectedEdges": 75,
+      "components": 54,
+      "largestComponent": 36,
+      "componentsWithArticulationPoints": 8,
+      "parity": true,
+      "resultSha256": "9a9c47c711e82d870fc678f1fd7f82b56e2d070f5af75b04c97820b8fc09b73e",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.349,
+          "min": 0.302,
+          "max": 0.365
+        },
+        "coldMs": 0.576,
+        "rssAfterInputMb": 119.21,
+        "peakRssMb": 123.519
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.101,
+          "min": 0.081,
+          "max": 0.118
+        },
+        "callMs": {
+          "median": 0.039,
+          "min": 0.027,
+          "max": 0.062
+        },
+        "decodeMs": {
+          "median": 0.014,
+          "min": 0.012,
+          "max": 0.015
+        },
+        "totalMs": {
+          "median": 0.155,
+          "min": 0.12,
+          "max": 0.196
+        },
+        "coldTotalMs": 0.23,
+        "rssAfterInputMb": 119.538,
+        "peakRssMb": 123.535
+      },
+      "speedup": {
+        "total": 2.257,
+        "callOnly": 8.935,
+        "cold": 2.498
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "bridged",
+      "scale": 0.5,
+      "nodes": 195,
+      "undirectedEdges": 187,
+      "components": 34,
+      "largestComponent": 107,
+      "componentsWithArticulationPoints": 8,
+      "parity": true,
+      "resultSha256": "ca7e55b022e99f75be321c4a76e3cae955a37c99895147eafd43d6fdd30ad046",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.5,
+          "min": 0.378,
+          "max": 0.667
+        },
+        "coldMs": 0.816,
+        "rssAfterInputMb": 119.095,
+        "peakRssMb": 123.388
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.144,
+          "min": 0.136,
+          "max": 0.151
+        },
+        "callMs": {
+          "median": 0.059,
+          "min": 0.052,
+          "max": 0.089
+        },
+        "decodeMs": {
+          "median": 0.015,
+          "min": 0.013,
+          "max": 0.016
+        },
+        "totalMs": {
+          "median": 0.218,
+          "min": 0.202,
+          "max": 0.255
+        },
+        "coldTotalMs": 0.27,
+        "rssAfterInputMb": 119.57,
+        "peakRssMb": 123.47
+      },
+      "speedup": {
+        "total": 2.298,
+        "callOnly": 8.548,
+        "cold": 3.025
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "bridged",
+      "scale": 1,
+      "nodes": 248,
+      "undirectedEdges": 150,
+      "components": 108,
+      "largestComponent": 36,
+      "componentsWithArticulationPoints": 19,
+      "parity": true,
+      "resultSha256": "b507be3ae0d99e3550e3df92cf7981d1d6f63331a08f7de42257f35eac4e3b19",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.489,
+          "min": 0.357,
+          "max": 0.52
+        },
+        "coldMs": 0.764,
+        "rssAfterInputMb": 119.161,
+        "peakRssMb": 122.814
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.166,
+          "min": 0.086,
+          "max": 0.18
+        },
+        "callMs": {
+          "median": 0.056,
+          "min": 0.029,
+          "max": 0.082
+        },
+        "decodeMs": {
+          "median": 0.025,
+          "min": 0.014,
+          "max": 0.026
+        },
+        "totalMs": {
+          "median": 0.24,
+          "min": 0.128,
+          "max": 0.277
+        },
+        "coldTotalMs": 0.261,
+        "rssAfterInputMb": 119.62,
+        "peakRssMb": 123.683
+      },
+      "speedup": {
+        "total": 2.039,
+        "callOnly": 8.8,
+        "cold": 2.923
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "bridged",
+      "scale": 1,
+      "nodes": 389,
+      "undirectedEdges": 429,
+      "components": 47,
+      "largestComponent": 238,
+      "componentsWithArticulationPoints": 10,
+      "parity": true,
+      "resultSha256": "ff95ce9ca315b4c020cd6d52eb3cf57f29388c603b2abbf758dba7631005a3e6",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.788,
+          "min": 0.719,
+          "max": 0.985
+        },
+        "coldMs": 1.316,
+        "rssAfterInputMb": 119.308,
+        "peakRssMb": 123.699
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.237,
+          "min": 0.12,
+          "max": 0.282
+        },
+        "callMs": {
+          "median": 0.037,
+          "min": 0.033,
+          "max": 0.092
+        },
+        "decodeMs": {
+          "median": 0.013,
+          "min": 0.011,
+          "max": 0.014
+        },
+        "totalMs": {
+          "median": 0.285,
+          "min": 0.165,
+          "max": 0.359
+        },
+        "coldTotalMs": 0.337,
+        "rssAfterInputMb": 119.456,
+        "peakRssMb": 123.798
+      },
+      "speedup": {
+        "total": 2.762,
+        "callOnly": 21.355,
+        "cold": 3.901
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 1,
+      "nodes": 3679,
+      "undirectedEdges": 3783,
+      "components": 928,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 110,
+      "parity": true,
+      "resultSha256": "60c829d88c76a8659dd8943651910ee73d0ee31d65d139c563cd08e42813e97a",
+      "typescript": {
+        "kernelMs": {
+          "median": 4.915,
+          "min": 4.787,
+          "max": 9.655
+        },
+        "coldMs": 8.499,
+        "rssAfterInputMb": 126.288,
+        "peakRssMb": 136.79
+      },
+      "native": {
+        "prepareMs": {
+          "median": 1.228,
+          "min": 0.891,
+          "max": 1.362
+        },
+        "callMs": {
+          "median": 0.256,
+          "min": 0.25,
+          "max": 0.263
+        },
+        "decodeMs": {
+          "median": 0.135,
+          "min": 0.019,
+          "max": 0.143
+        },
+        "totalMs": {
+          "median": 1.635,
+          "min": 1.174,
+          "max": 1.753
+        },
+        "coldTotalMs": 1.999,
+        "rssAfterInputMb": 126.157,
+        "peakRssMb": 132.088
+      },
+      "speedup": {
+        "total": 3.007,
+        "callOnly": 19.19,
+        "cold": 4.252
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 2,
+      "nodes": 7358,
+      "undirectedEdges": 7567,
+      "components": 1855,
+      "largestComponent": 3040,
+      "componentsWithArticulationPoints": 219,
+      "parity": true,
+      "resultSha256": "833ada0052ea4d5a0d02ead058b229c12bd013a9534c0e6f8324e85b9f31c5db",
+      "typescript": {
+        "kernelMs": {
+          "median": 9.46,
+          "min": 8.862,
+          "max": 10.539
+        },
+        "coldMs": 15.803,
+        "rssAfterInputMb": 128.057,
+        "peakRssMb": 151.044
+      },
+      "native": {
+        "prepareMs": {
+          "median": 2.618,
+          "min": 1.191,
+          "max": 2.691
+        },
+        "callMs": {
+          "median": 0.468,
+          "min": 0.397,
+          "max": 0.476
+        },
+        "decodeMs": {
+          "median": 0.258,
+          "min": 0.038,
+          "max": 0.275
+        },
+        "totalMs": {
+          "median": 3.237,
+          "min": 1.697,
+          "max": 3.329
+        },
+        "coldTotalMs": 3.908,
+        "rssAfterInputMb": 128.401,
+        "peakRssMb": 134.889
+      },
+      "speedup": {
+        "total": 2.922,
+        "callOnly": 20.208,
+        "cold": 4.044
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 5,
+      "nodes": 18395,
+      "undirectedEdges": 18919,
+      "components": 4636,
+      "largestComponent": 7600,
+      "componentsWithArticulationPoints": 546,
+      "parity": true,
+      "resultSha256": "fecc2ca6e87022157717f0f15a39bde7e1a0f0e09b4fbd2aa65cc1caa3d24572",
+      "typescript": {
+        "kernelMs": {
+          "median": 23.39,
+          "min": 22.678,
+          "max": 25.459
+        },
+        "coldMs": 35.59,
+        "rssAfterInputMb": 145.277,
+        "peakRssMb": 167.444
+      },
+      "native": {
+        "prepareMs": {
+          "median": 7.388,
+          "min": 4.099,
+          "max": 9.504
+        },
+        "callMs": {
+          "median": 1.013,
+          "min": 0.969,
+          "max": 1.061
+        },
+        "decodeMs": {
+          "median": 0.748,
+          "min": 0.105,
+          "max": 0.793
+        },
+        "totalMs": {
+          "median": 9.133,
+          "min": 5.253,
+          "max": 11.312
+        },
+        "coldTotalMs": 11.128,
+        "rssAfterInputMb": 145.31,
+        "peakRssMb": 154.436
+      },
+      "speedup": {
+        "total": 2.561,
+        "callOnly": 23.092,
+        "cold": 3.198
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 10,
+      "nodes": 36790,
+      "undirectedEdges": 37839,
+      "components": 9271,
+      "largestComponent": 15200,
+      "componentsWithArticulationPoints": 1091,
+      "parity": true,
+      "resultSha256": "1351bb9365ce08857fb88c03527da02a7c615bfa4f7f26211093d3d0460c1671",
+      "typescript": {
+        "kernelMs": {
+          "median": 49.874,
+          "min": 47.348,
+          "max": 99.73
+        },
+        "coldMs": 82.952,
+        "rssAfterInputMb": 157.155,
+        "peakRssMb": 194.986
+      },
+      "native": {
+        "prepareMs": {
+          "median": 14.82,
+          "min": 8.063,
+          "max": 15.185
+        },
+        "callMs": {
+          "median": 1.657,
+          "min": 1.657,
+          "max": 1.778
+        },
+        "decodeMs": {
+          "median": 1.448,
+          "min": 1.36,
+          "max": 1.519
+        },
+        "totalMs": {
+          "median": 18.033,
+          "min": 11.081,
+          "max": 18.36
+        },
+        "coldTotalMs": 18.47,
+        "rssAfterInputMb": 158.384,
+        "peakRssMb": 178.143
+      },
+      "speedup": {
+        "total": 2.766,
+        "callOnly": 30.099,
+        "cold": 4.491
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 25,
+      "nodes": 91975,
+      "undirectedEdges": 94599,
+      "components": 23176,
+      "largestComponent": 38000,
+      "componentsWithArticulationPoints": 2726,
+      "parity": true,
+      "resultSha256": "a96cb05b5839057e4415123fa042c16dc0e5ea5410e0bc62284e0def97745e78",
+      "typescript": {
+        "kernelMs": {
+          "median": 135.509,
+          "min": 133.422,
+          "max": 143.098
+        },
+        "coldMs": 172.43,
+        "rssAfterInputMb": 214.008,
+        "peakRssMb": 274.842
+      },
+      "native": {
+        "prepareMs": {
+          "median": 28.809,
+          "min": 21.851,
+          "max": 35.398
+        },
+        "callMs": {
+          "median": 4.131,
+          "min": 3.902,
+          "max": 4.153
+        },
+        "decodeMs": {
+          "median": 3.533,
+          "min": 0.719,
+          "max": 3.688
+        },
+        "totalMs": {
+          "median": 33.43,
+          "min": 29.665,
+          "max": 43.217
+        },
+        "coldTotalMs": 41.597,
+        "rssAfterInputMb": 215.007,
+        "peakRssMb": 253.231
+      },
+      "speedup": {
+        "total": 4.054,
+        "callOnly": 32.806,
+        "cold": 4.145
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 50,
+      "nodes": 183950,
+      "undirectedEdges": 189199,
+      "components": 46351,
+      "largestComponent": 76000,
+      "componentsWithArticulationPoints": 5451,
+      "parity": true,
+      "resultSha256": "32d3a56ab12d68d0bf21f197431aee587ab9c37b09ffc704521005f1d3ef6383",
+      "typescript": {
+        "kernelMs": {
+          "median": 328.86,
+          "min": 314.638,
+          "max": 396.698
+        },
+        "coldMs": 357.42,
+        "rssAfterInputMb": 279.101,
+        "peakRssMb": 410.73
+      },
+      "native": {
+        "prepareMs": {
+          "median": 53.444,
+          "min": 51.916,
+          "max": 61.697
+        },
+        "callMs": {
+          "median": 7.96,
+          "min": 7.854,
+          "max": 8.086
+        },
+        "decodeMs": {
+          "median": 1.311,
+          "min": 1.279,
+          "max": 1.401
+        },
+        "totalMs": {
+          "median": 62.659,
+          "min": 61.206,
+          "max": 71.184
+        },
+        "coldTotalMs": 82.455,
+        "rssAfterInputMb": 278.528,
+        "peakRssMb": 348.357
+      },
+      "speedup": {
+        "total": 5.248,
+        "callOnly": 41.314,
+        "cold": 4.335
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "bridged",
+      "scale": 100,
+      "nodes": 367900,
+      "undirectedEdges": 378399,
+      "components": 92701,
+      "largestComponent": 152000,
+      "componentsWithArticulationPoints": 10901,
+      "parity": true,
+      "resultSha256": "c432468b432f7ff7275fc9d322688e03db5aaaa8b57ebd924c490f5c2c31303d",
+      "typescript": {
+        "kernelMs": {
+          "median": 718.819,
+          "min": 709.427,
+          "max": 738.967
+        },
+        "coldMs": 718.307,
+        "rssAfterInputMb": 419.135,
+        "peakRssMb": 702.12
+      },
+      "native": {
+        "prepareMs": {
+          "median": 124.583,
+          "min": 122.141,
+          "max": 129.88
+        },
+        "callMs": {
+          "median": 15.974,
+          "min": 15.736,
+          "max": 16.117
+        },
+        "decodeMs": {
+          "median": 3.34,
+          "min": 3.05,
+          "max": 3.473
+        },
+        "totalMs": {
+          "median": 143.671,
+          "min": 141.391,
+          "max": 149.47
+        },
+        "coldTotalMs": 190.512,
+        "rssAfterInputMb": 419.987,
+        "peakRssMb": 599.425
+      },
+      "speedup": {
+        "total": 5.003,
+        "callOnly": 44.999,
+        "cold": 3.77
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "replicate",
+      "scale": 0.05,
+      "nodes": 12,
+      "undirectedEdges": 5,
+      "components": 7,
+      "largestComponent": 4,
+      "componentsWithArticulationPoints": 2,
+      "parity": true,
+      "resultSha256": "6c3058c97fd155a75a976f5b31e5d25830e5eb5b11fa3491ae19fd38af3b0567",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.074,
+          "min": 0.07,
+          "max": 0.116
+        },
+        "coldMs": 0.392,
+        "rssAfterInputMb": 119.144,
+        "peakRssMb": 123.191
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.024,
+          "min": 0.019,
+          "max": 0.053
+        },
+        "callMs": {
+          "median": 0.033,
+          "min": 0.025,
+          "max": 0.081
+        },
+        "decodeMs": {
+          "median": 0.006,
+          "min": 0.004,
+          "max": 0.033
+        },
+        "totalMs": {
+          "median": 0.063,
+          "min": 0.049,
+          "max": 0.13
+        },
+        "coldTotalMs": 0.191,
+        "rssAfterInputMb": 119.489,
+        "peakRssMb": 123.355
+      },
+      "speedup": {
+        "total": 1.182,
+        "callOnly": 2.245,
+        "cold": 2.051
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "replicate",
+      "scale": 0.05,
+      "nodes": 19,
+      "undirectedEdges": 6,
+      "components": 13,
+      "largestComponent": 4,
+      "componentsWithArticulationPoints": 2,
+      "parity": true,
+      "resultSha256": "0e3ff1c285373bf0d6add3808952796c6ac05ac561261ec7940a1baac69c330c",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.082,
+          "min": 0.058,
+          "max": 0.139
+        },
+        "coldMs": 0.446,
+        "rssAfterInputMb": 119.128,
+        "peakRssMb": 123.257
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.013,
+          "min": 0.011,
+          "max": 0.055
+        },
+        "callMs": {
+          "median": 0.013,
+          "min": 0.01,
+          "max": 0.033
+        },
+        "decodeMs": {
+          "median": 0.003,
+          "min": 0.002,
+          "max": 0.013
+        },
+        "totalMs": {
+          "median": 0.029,
+          "min": 0.023,
+          "max": 0.1
+        },
+        "coldTotalMs": 0.196,
+        "rssAfterInputMb": 119.587,
+        "peakRssMb": 124.01
+      },
+      "speedup": {
+        "total": 2.863,
+        "callOnly": 6.482,
+        "cold": 2.274
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "replicate",
+      "scale": 0.1,
+      "nodes": 25,
+      "undirectedEdges": 14,
+      "components": 11,
+      "largestComponent": 6,
+      "componentsWithArticulationPoints": 4,
+      "parity": true,
+      "resultSha256": "6018ff0233927422d7ddad044bd7a5a8b5ad2f8ea661c0627bad23a988ff306d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.095,
+          "min": 0.068,
+          "max": 0.15
+        },
+        "coldMs": 0.464,
+        "rssAfterInputMb": 119.226,
+        "peakRssMb": 123.126
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.058,
+          "min": 0.034,
+          "max": 0.061
+        },
+        "callMs": {
+          "median": 0.025,
+          "min": 0.023,
+          "max": 0.028
+        },
+        "decodeMs": {
+          "median": 0.006,
+          "min": 0.006,
+          "max": 0.006
+        },
+        "totalMs": {
+          "median": 0.089,
+          "min": 0.063,
+          "max": 0.093
+        },
+        "coldTotalMs": 0.217,
+        "rssAfterInputMb": 119.62,
+        "peakRssMb": 123.159
+      },
+      "speedup": {
+        "total": 1.074,
+        "callOnly": 3.868,
+        "cold": 2.138
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "replicate",
+      "scale": 0.1,
+      "nodes": 39,
+      "undirectedEdges": 19,
+      "components": 20,
+      "largestComponent": 11,
+      "componentsWithArticulationPoints": 4,
+      "parity": true,
+      "resultSha256": "ed4fe30eebcfc8686b2282b682494c86be112d24fdcc03af9de99a996310a256",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.152,
+          "min": 0.138,
+          "max": 0.251
+        },
+        "coldMs": 0.456,
+        "rssAfterInputMb": 119.128,
+        "peakRssMb": 123.568
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.048,
+          "min": 0.031,
+          "max": 0.076
+        },
+        "callMs": {
+          "median": 0.027,
+          "min": 0.014,
+          "max": 0.031
+        },
+        "decodeMs": {
+          "median": 0.007,
+          "min": 0.004,
+          "max": 0.008
+        },
+        "totalMs": {
+          "median": 0.083,
+          "min": 0.053,
+          "max": 0.115
+        },
+        "coldTotalMs": 0.237,
+        "rssAfterInputMb": 119.587,
+        "peakRssMb": 123.519
+      },
+      "speedup": {
+        "total": 1.824,
+        "callOnly": 5.552,
+        "cold": 1.923
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "replicate",
+      "scale": 0.25,
+      "nodes": 62,
+      "undirectedEdges": 47,
+      "components": 18,
+      "largestComponent": 16,
+      "componentsWithArticulationPoints": 6,
+      "parity": true,
+      "resultSha256": "0805fa1c6d500b19006ad52545ef28c49624e3013b77031c310232746e14b49d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.246,
+          "min": 0.126,
+          "max": 0.331
+        },
+        "coldMs": 0.496,
+        "rssAfterInputMb": 119.144,
+        "peakRssMb": 122.585
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.065,
+          "min": 0.035,
+          "max": 0.122
+        },
+        "callMs": {
+          "median": 0.032,
+          "min": 0.018,
+          "max": 0.059
+        },
+        "decodeMs": {
+          "median": 0.008,
+          "min": 0.005,
+          "max": 0.028
+        },
+        "totalMs": {
+          "median": 0.123,
+          "min": 0.074,
+          "max": 0.152
+        },
+        "coldTotalMs": 0.291,
+        "rssAfterInputMb": 119.505,
+        "peakRssMb": 122.798
+      },
+      "speedup": {
+        "total": 1.995,
+        "callOnly": 7.609,
+        "cold": 1.704
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "replicate",
+      "scale": 0.25,
+      "nodes": 97,
+      "undirectedEdges": 76,
+      "components": 29,
+      "largestComponent": 38,
+      "componentsWithArticulationPoints": 5,
+      "parity": true,
+      "resultSha256": "8fa5951029758fa4fc617a9cad7358251bb1b5cd683989e7dd3307c217abac3d",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.324,
+          "min": 0.296,
+          "max": 0.357
+        },
+        "coldMs": 0.559,
+        "rssAfterInputMb": 119.226,
+        "peakRssMb": 123.29
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.082,
+          "min": 0.074,
+          "max": 0.095
+        },
+        "callMs": {
+          "median": 0.04,
+          "min": 0.028,
+          "max": 0.06
+        },
+        "decodeMs": {
+          "median": 0.011,
+          "min": 0.008,
+          "max": 0.013
+        },
+        "totalMs": {
+          "median": 0.135,
+          "min": 0.112,
+          "max": 0.155
+        },
+        "coldTotalMs": 0.254,
+        "rssAfterInputMb": 119.439,
+        "peakRssMb": 123.65
+      },
+      "speedup": {
+        "total": 2.389,
+        "callOnly": 8.191,
+        "cold": 2.201
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "replicate",
+      "scale": 0.5,
+      "nodes": 124,
+      "undirectedEdges": 75,
+      "components": 54,
+      "largestComponent": 36,
+      "componentsWithArticulationPoints": 8,
+      "parity": true,
+      "resultSha256": "9a9c47c711e82d870fc678f1fd7f82b56e2d070f5af75b04c97820b8fc09b73e",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.341,
+          "min": 0.187,
+          "max": 0.367
+        },
+        "coldMs": 0.645,
+        "rssAfterInputMb": 119.308,
+        "peakRssMb": 123.552
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.112,
+          "min": 0.051,
+          "max": 0.115
+        },
+        "callMs": {
+          "median": 0.042,
+          "min": 0.023,
+          "max": 0.046
+        },
+        "decodeMs": {
+          "median": 0.014,
+          "min": 0.008,
+          "max": 0.017
+        },
+        "totalMs": {
+          "median": 0.161,
+          "min": 0.082,
+          "max": 0.174
+        },
+        "coldTotalMs": 0.255,
+        "rssAfterInputMb": 119.439,
+        "peakRssMb": 123.847
+      },
+      "speedup": {
+        "total": 2.113,
+        "callOnly": 8.038,
+        "cold": 2.532
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "replicate",
+      "scale": 0.5,
+      "nodes": 195,
+      "undirectedEdges": 187,
+      "components": 34,
+      "largestComponent": 107,
+      "componentsWithArticulationPoints": 8,
+      "parity": true,
+      "resultSha256": "ca7e55b022e99f75be321c4a76e3cae955a37c99895147eafd43d6fdd30ad046",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.509,
+          "min": 0.34,
+          "max": 0.555
+        },
+        "coldMs": 0.805,
+        "rssAfterInputMb": 119.276,
+        "peakRssMb": 123.486
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.135,
+          "min": 0.074,
+          "max": 0.16
+        },
+        "callMs": {
+          "median": 0.051,
+          "min": 0.034,
+          "max": 0.056
+        },
+        "decodeMs": {
+          "median": 0.014,
+          "min": 0.008,
+          "max": 0.015
+        },
+        "totalMs": {
+          "median": 0.2,
+          "min": 0.116,
+          "max": 0.23
+        },
+        "coldTotalMs": 0.297,
+        "rssAfterInputMb": 119.521,
+        "peakRssMb": 123.453
+      },
+      "speedup": {
+        "total": 2.539,
+        "callOnly": 9.973,
+        "cold": 2.709
+      }
+    },
+    {
+      "graph": "../intentweave/packages/analyzer",
+      "topology": "replicate",
+      "scale": 1,
+      "nodes": 248,
+      "undirectedEdges": 150,
+      "components": 108,
+      "largestComponent": 36,
+      "componentsWithArticulationPoints": 19,
+      "parity": true,
+      "resultSha256": "b507be3ae0d99e3550e3df92cf7981d1d6f63331a08f7de42257f35eac4e3b19",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.484,
+          "min": 0.336,
+          "max": 0.565
+        },
+        "coldMs": 0.931,
+        "rssAfterInputMb": 119.341,
+        "peakRssMb": 122.651
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.161,
+          "min": 0.115,
+          "max": 0.165
+        },
+        "callMs": {
+          "median": 0.048,
+          "min": 0.046,
+          "max": 0.053
+        },
+        "decodeMs": {
+          "median": 0.025,
+          "min": 0.022,
+          "max": 0.033
+        },
+        "totalMs": {
+          "median": 0.238,
+          "min": 0.187,
+          "max": 0.242
+        },
+        "coldTotalMs": 0.299,
+        "rssAfterInputMb": 119.587,
+        "peakRssMb": 123.748
+      },
+      "speedup": {
+        "total": 2.036,
+        "callOnly": 10.047,
+        "cold": 3.116
+      }
+    },
+    {
+      "graph": "src",
+      "topology": "replicate",
+      "scale": 1,
+      "nodes": 389,
+      "undirectedEdges": 429,
+      "components": 47,
+      "largestComponent": 238,
+      "componentsWithArticulationPoints": 10,
+      "parity": true,
+      "resultSha256": "ff95ce9ca315b4c020cd6d52eb3cf57f29388c603b2abbf758dba7631005a3e6",
+      "typescript": {
+        "kernelMs": {
+          "median": 0.903,
+          "min": 0.745,
+          "max": 0.99
+        },
+        "coldMs": 1.213,
+        "rssAfterInputMb": 119.308,
+        "peakRssMb": 124.223
+      },
+      "native": {
+        "prepareMs": {
+          "median": 0.267,
+          "min": 0.124,
+          "max": 0.271
+        },
+        "callMs": {
+          "median": 0.045,
+          "min": 0.038,
+          "max": 0.094
+        },
+        "decodeMs": {
+          "median": 0.013,
+          "min": 0.011,
+          "max": 0.016
+        },
+        "totalMs": {
+          "median": 0.329,
+          "min": 0.174,
+          "max": 0.362
+        },
+        "coldTotalMs": 0.376,
+        "rssAfterInputMb": 119.636,
+        "peakRssMb": 122.946
+      },
+      "speedup": {
+        "total": 2.747,
+        "callOnly": 20.11,
+        "cold": 3.221
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 1,
+      "nodes": 3679,
+      "undirectedEdges": 3783,
+      "components": 928,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 110,
+      "parity": true,
+      "resultSha256": "60c829d88c76a8659dd8943651910ee73d0ee31d65d139c563cd08e42813e97a",
+      "typescript": {
+        "kernelMs": {
+          "median": 4.661,
+          "min": 4.491,
+          "max": 8.151
+        },
+        "coldMs": 8.053,
+        "rssAfterInputMb": 126.173,
+        "peakRssMb": 138.199
+      },
+      "native": {
+        "prepareMs": {
+          "median": 1.229,
+          "min": 0.771,
+          "max": 1.368
+        },
+        "callMs": {
+          "median": 0.257,
+          "min": 0.247,
+          "max": 0.3
+        },
+        "decodeMs": {
+          "median": 0.136,
+          "min": 0.019,
+          "max": 0.139
+        },
+        "totalMs": {
+          "median": 1.621,
+          "min": 1.036,
+          "max": 1.757
+        },
+        "coldTotalMs": 1.947,
+        "rssAfterInputMb": 126.599,
+        "peakRssMb": 132.383
+      },
+      "speedup": {
+        "total": 2.876,
+        "callOnly": 18.152,
+        "cold": 4.136
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 2,
+      "nodes": 7358,
+      "undirectedEdges": 7566,
+      "components": 1856,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 220,
+      "parity": true,
+      "resultSha256": "c89a504c8548cb683e9892aa5e782d0c2f75ddcb6e556f63710969277c11c306",
+      "typescript": {
+        "kernelMs": {
+          "median": 9.589,
+          "min": 8.559,
+          "max": 10.338
+        },
+        "coldMs": 15.233,
+        "rssAfterInputMb": 128.057,
+        "peakRssMb": 149.193
+      },
+      "native": {
+        "prepareMs": {
+          "median": 3.169,
+          "min": 1.54,
+          "max": 3.458
+        },
+        "callMs": {
+          "median": 0.505,
+          "min": 0.461,
+          "max": 0.637
+        },
+        "decodeMs": {
+          "median": 0.282,
+          "min": 0.043,
+          "max": 0.389
+        },
+        "totalMs": {
+          "median": 4.135,
+          "min": 2.07,
+          "max": 4.25
+        },
+        "coldTotalMs": 4.746,
+        "rssAfterInputMb": 128.434,
+        "peakRssMb": 134.857
+      },
+      "speedup": {
+        "total": 2.319,
+        "callOnly": 18.985,
+        "cold": 3.209
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 5,
+      "nodes": 18395,
+      "undirectedEdges": 18915,
+      "components": 4640,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 550,
+      "parity": true,
+      "resultSha256": "024dc191e64dc036cc7c52b146d19edd26c4fec2241e3e9b530863e361cf2511",
+      "typescript": {
+        "kernelMs": {
+          "median": 25.374,
+          "min": 24.512,
+          "max": 27.425
+        },
+        "coldMs": 35.419,
+        "rssAfterInputMb": 145.113,
+        "peakRssMb": 166.806
+      },
+      "native": {
+        "prepareMs": {
+          "median": 7.792,
+          "min": 4.551,
+          "max": 9.022
+        },
+        "callMs": {
+          "median": 1.058,
+          "min": 0.933,
+          "max": 1.139
+        },
+        "decodeMs": {
+          "median": 0.729,
+          "min": 0.107,
+          "max": 0.894
+        },
+        "totalMs": {
+          "median": 9.532,
+          "min": 5.601,
+          "max": 10.929
+        },
+        "coldTotalMs": 11.414,
+        "rssAfterInputMb": 145.392,
+        "peakRssMb": 153.829
+      },
+      "speedup": {
+        "total": 2.662,
+        "callOnly": 23.977,
+        "cold": 3.103
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 10,
+      "nodes": 36790,
+      "undirectedEdges": 37830,
+      "components": 9280,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 1100,
+      "parity": true,
+      "resultSha256": "4bda860e9a8c6c777b81133d421e1f77ca2dcd8781624c8237e5e8c2cd8fd460",
+      "typescript": {
+        "kernelMs": {
+          "median": 51.691,
+          "min": 50.59,
+          "max": 52.886
+        },
+        "coldMs": 61.506,
+        "rssAfterInputMb": 156.877,
+        "peakRssMb": 186.286
+      },
+      "native": {
+        "prepareMs": {
+          "median": 14.759,
+          "min": 8.262,
+          "max": 15.916
+        },
+        "callMs": {
+          "median": 1.599,
+          "min": 1.578,
+          "max": 1.788
+        },
+        "decodeMs": {
+          "median": 1.405,
+          "min": 1.314,
+          "max": 1.566
+        },
+        "totalMs": {
+          "median": 17.862,
+          "min": 11.242,
+          "max": 19.016
+        },
+        "coldTotalMs": 19.906,
+        "rssAfterInputMb": 157.368,
+        "peakRssMb": 178.34
+      },
+      "speedup": {
+        "total": 2.894,
+        "callOnly": 32.336,
+        "cold": 3.09
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 25,
+      "nodes": 91975,
+      "undirectedEdges": 94575,
+      "components": 23200,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 2750,
+      "parity": true,
+      "resultSha256": "39c64921b729ce28b20df972c06401c1a401536107541484ae07d820aa47033b",
+      "typescript": {
+        "kernelMs": {
+          "median": 146.179,
+          "min": 138.601,
+          "max": 157.87
+        },
+        "coldMs": 168.068,
+        "rssAfterInputMb": 206.668,
+        "peakRssMb": 215.187
+      },
+      "native": {
+        "prepareMs": {
+          "median": 35.805,
+          "min": 24.222,
+          "max": 44.848
+        },
+        "callMs": {
+          "median": 3.78,
+          "min": 3.635,
+          "max": 4.062
+        },
+        "decodeMs": {
+          "median": 3.296,
+          "min": 0.646,
+          "max": 3.558
+        },
+        "totalMs": {
+          "median": 40.513,
+          "min": 31.502,
+          "max": 51.779
+        },
+        "coldTotalMs": 47.44,
+        "rssAfterInputMb": 214.548,
+        "peakRssMb": 251.331
+      },
+      "speedup": {
+        "total": 3.608,
+        "callOnly": 38.667,
+        "cold": 3.543
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 50,
+      "nodes": 183950,
+      "undirectedEdges": 189150,
+      "components": 46400,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 5500,
+      "parity": true,
+      "resultSha256": "eaec7cdc462e3b3ee420aedda01332b67ddd946344ccb6abfd46572addeb0eeb",
+      "typescript": {
+        "kernelMs": {
+          "median": 298.272,
+          "min": 268.693,
+          "max": 300.64
+        },
+        "coldMs": 308.913,
+        "rssAfterInputMb": 220.201,
+        "peakRssMb": 322.126
+      },
+      "native": {
+        "prepareMs": {
+          "median": 62.213,
+          "min": 50.417,
+          "max": 66.162
+        },
+        "callMs": {
+          "median": 7.181,
+          "min": 6.81,
+          "max": 8.177
+        },
+        "decodeMs": {
+          "median": 1.013,
+          "min": 0.988,
+          "max": 1.099
+        },
+        "totalMs": {
+          "median": 71.478,
+          "min": 58.586,
+          "max": 74.024
+        },
+        "coldTotalMs": 85.869,
+        "rssAfterInputMb": 279.265,
+        "peakRssMb": 347.488
+      },
+      "speedup": {
+        "total": 4.173,
+        "callOnly": 41.538,
+        "cold": 3.598
+      }
+    },
+    {
+      "graph": "../intentweave",
+      "topology": "replicate",
+      "scale": 100,
+      "nodes": 367900,
+      "undirectedEdges": 378300,
+      "components": 92800,
+      "largestComponent": 1520,
+      "componentsWithArticulationPoints": 11000,
+      "parity": true,
+      "resultSha256": "0c83d403d98e19bdaabc8428cb2e41c72decce755e4175521486c482f7cabb6b",
+      "typescript": {
+        "kernelMs": {
+          "median": 671.891,
+          "min": 605.316,
+          "max": 769.286
+        },
+        "coldMs": 672.308,
+        "rssAfterInputMb": 419.201,
+        "peakRssMb": 530.399
+      },
+      "native": {
+        "prepareMs": {
+          "median": 140.577,
+          "min": 128.866,
+          "max": 147.981
+        },
+        "callMs": {
+          "median": 15.528,
+          "min": 13.973,
+          "max": 15.56
+        },
+        "decodeMs": {
+          "median": 2.697,
+          "min": 2.564,
+          "max": 3.307
+        },
+        "totalMs": {
+          "median": 158.668,
+          "min": 146.145,
+          "max": 166.644
+        },
+        "coldTotalMs": 179.887,
+        "rssAfterInputMb": 420.037,
+        "peakRssMb": 595.984
+      },
+      "speedup": {
+        "total": 4.235,
+        "callOnly": 43.271,
+        "cold": 3.737
+      }
+    }
+  ],
+  "crossover": {
+    "replicate": {
+      "typescriptWinsAtNodes": [],
+      "nativeWinsFromNodes": 12
+    },
+    "bridged": {
+      "typescriptWinsAtNodes": [
+        12
+      ],
+      "nativeWinsFromNodes": 19
+    }
+  },
+  "allParity": true
+}

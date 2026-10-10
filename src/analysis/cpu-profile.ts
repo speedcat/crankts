@@ -5,6 +5,8 @@ import type {
   AnalysisResult,
   CandidateIsland,
   CpuProfileObservation,
+  CpuProfileOrigin,
+  CpuProfileOriginKind,
   CpuProfileSummary,
   FunctionAnalysis,
   FunctionId,
@@ -75,6 +77,8 @@ export function loadV8CpuProfile(
   const selfMicrosByFunction = new Map<FunctionId, number>();
   const totalMicrosByFunction = new Map<FunctionId, number>();
   const samples: ProfileSample[] = [];
+  const originByNode = new Map<number, { readonly origin: string; readonly kind: CpuProfileOriginKind }>();
+  const originTotals = new Map<string, { kind: CpuProfileOriginKind; selfMicros: number; unmatchedMicros: number }>();
   let totalSampleMicros = 0;
   let matchedSampleMicros = 0;
   let matchedSampleCount = 0;
@@ -98,6 +102,18 @@ export function loadV8CpuProfile(
       }
       currentNodeId = parentByNode.get(currentNodeId);
     }
+
+    let origin = originByNode.get(nodeId);
+    if (!origin) {
+      origin = classifyOrigin(nodeById.get(nodeId)?.callFrame, projectRoot);
+      originByNode.set(nodeId, origin);
+    }
+    const originTotal = originTotals.get(origin.origin) ?? { kind: origin.kind, selfMicros: 0, unmatchedMicros: 0 };
+    originTotal.selfMicros += durationMicros;
+    if (functionIds.size === 0) {
+      originTotal.unmatchedMicros += durationMicros;
+    }
+    originTotals.set(origin.origin, originTotal);
 
     if (functionIds.size > 0) {
       matchedSampleMicros += durationMicros;
@@ -140,6 +156,16 @@ export function loadV8CpuProfile(
       ? "MEDIUM"
       : "LOW";
   const projectRelativeProfilePath = relative(process.cwd(), absoluteProfilePath).split(sep).join("/");
+  const origins: CpuProfileOrigin[] = [...originTotals]
+    .map(([origin, total]) => ({
+      origin,
+      kind: total.kind,
+      selfMicros: total.selfMicros,
+      selfPercent: percentOf(total.selfMicros, totalSampleMicros),
+      unmatchedMicros: total.unmatchedMicros,
+      unmatchedPercent: percentOf(total.unmatchedMicros, totalSampleMicros),
+    }))
+    .sort((left, right) => right.selfMicros - left.selfMicros || left.origin.localeCompare(right.origin));
 
   return {
     summary: {
@@ -151,6 +177,7 @@ export function loadV8CpuProfile(
       matchedSampleCount,
       timeUnit: "microseconds",
       confidence,
+      origins,
     },
     observations,
     samples,
@@ -194,6 +221,49 @@ export function attachCpuProfile(
     candidateIslands: profiledIslands,
     cpuProfile: profile.summary,
   };
+}
+
+const SYNTHETIC_FRAMES: ReadonlyMap<string, CpuProfileOriginKind> = new Map([
+  ["(garbage collector)", "GC"],
+  ["(program)", "PROGRAM"],
+  ["(root)", "PROGRAM"],
+  ["(idle)", "IDLE"],
+]);
+
+export function classifyOrigin(
+  callFrame: ProfileCallFrame | undefined,
+  projectRoot: string,
+): { readonly origin: string; readonly kind: CpuProfileOriginKind } {
+  const functionName = callFrame?.functionName ?? "";
+  const syntheticKind = SYNTHETIC_FRAMES.get(functionName);
+  if (syntheticKind) {
+    return { origin: functionName, kind: syntheticKind };
+  }
+  const url = callFrame?.url ?? "";
+  if (!url) {
+    return { origin: "(native)", kind: "NATIVE" };
+  }
+  if (url.startsWith("node:")) {
+    return { origin: "node", kind: "NODE" };
+  }
+  let path = url;
+  try {
+    path = url.startsWith("file:") ? fileURLToPath(new URL(url)) : url;
+  } catch {
+    return { origin: "other", kind: "OTHER" };
+  }
+  const normalizedPath = path.split(sep).join("/");
+  const packageMatch = /\/node_modules\/((?:@[^/]+\/)?[^/]+)\/(?!.*\/node_modules\/)/.exec(normalizedPath);
+  if (packageMatch?.[1]) {
+    return { origin: packageMatch[1], kind: "PACKAGE" };
+  }
+  if (isAbsolute(path)) {
+    const relativePath = relative(resolve(projectRoot), path);
+    if (relativePath && !relativePath.startsWith("..") && !isAbsolute(relativePath)) {
+      return { origin: "project", kind: "PROJECT" };
+    }
+  }
+  return { origin: "other", kind: "OTHER" };
 }
 
 function validateProfile(value: unknown, profilePath: string): V8CpuProfile {

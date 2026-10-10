@@ -8,7 +8,7 @@ import type {
   FunctionAnalysis,
   FunctionId,
 } from "./model.js";
-import { indexFunctionsByFile, matchFunction, percentOf } from "./cpu-profile.js";
+import { classifyOrigin, indexFunctionsByFile, matchFunction, percentOf } from "./cpu-profile.js";
 import type { ProfileCallFrame } from "./cpu-profile.js";
 
 interface V8HeapProfileNode {
@@ -56,6 +56,8 @@ export function loadV8HeapProfile(
   const profile = validateHeapProfile(rawProfile, absoluteProfilePath);
   const functionsByFile = indexFunctionsByFile(functions);
   const functionByNode = new Map<number, FunctionId>();
+  // Frames whose allocations a caller cannot reshape: dependency code and module loading.
+  const nonAttributableNodes = new Set<number>();
   const parentByNode = new Map<number, number>();
   const visitedNodes = new Set<number>();
   const visit = (node: V8HeapProfileNode, parentId?: number): void => {
@@ -66,6 +68,7 @@ export function loadV8HeapProfile(
     if (parentId !== undefined) parentByNode.set(node.id, parentId);
     const functionAnalysis = matchFunction(node.callFrame, projectRoot, functionsByFile);
     if (functionAnalysis) functionByNode.set(node.id, functionAnalysis.id);
+    else if (isNonAttributableFrame(node.callFrame, projectRoot)) nonAttributableNodes.add(node.id);
     for (const child of node.children ?? []) visit(child, node.id);
   };
   visit(profile.head);
@@ -74,6 +77,8 @@ export function loadV8HeapProfile(
   const totalBytesByFunction = new Map<FunctionId, number>();
   const selfCountByFunction = new Map<FunctionId, number>();
   const totalCountByFunction = new Map<FunctionId, number>();
+  const attributableBytesByFunction = new Map<FunctionId, number>();
+  const attributableCountByFunction = new Map<FunctionId, number>();
   const samples: LoadedHeapSample[] = [];
   let totalSampledBytes = 0;
   let matchedSampledBytes = 0;
@@ -83,13 +88,24 @@ export function loadV8HeapProfile(
     const sampledBytes = sample.sizeBytes ?? sample.size;
     totalSampledBytes += sampledBytes;
     const functionIds = new Set<FunctionId>();
+    let nearestFunctionId: FunctionId | undefined;
+    let crossesNonAttributableFrame = false;
     let currentNodeId: number | undefined = sample.nodeId;
     const visitedNodeIds = new Set<number>();
     while (currentNodeId !== undefined && !visitedNodeIds.has(currentNodeId)) {
       visitedNodeIds.add(currentNodeId);
       const functionId = functionByNode.get(currentNodeId);
-      if (functionId) functionIds.add(functionId);
+      if (functionId) {
+        functionIds.add(functionId);
+        nearestFunctionId ??= functionId;
+      } else if (!nearestFunctionId && nonAttributableNodes.has(currentNodeId)) {
+        crossesNonAttributableFrame = true;
+      }
       currentNodeId = parentByNode.get(currentNodeId);
+    }
+    if (nearestFunctionId && !crossesNonAttributableFrame) {
+      attributableBytesByFunction.set(nearestFunctionId, (attributableBytesByFunction.get(nearestFunctionId) ?? 0) + sampledBytes);
+      attributableCountByFunction.set(nearestFunctionId, (attributableCountByFunction.get(nearestFunctionId) ?? 0) + 1);
     }
 
     if (functionIds.size > 0) {
@@ -112,6 +128,7 @@ export function loadV8HeapProfile(
   const observations = new Map<FunctionId, AllocationObservation>();
   for (const functionAnalysis of functions) {
     const sampledBytesSelf = selfBytesByFunction.get(functionAnalysis.id) ?? 0;
+    const sampledBytesAttributable = attributableBytesByFunction.get(functionAnalysis.id) ?? 0;
     observations.set(functionAnalysis.id, {
       sampledBytesSelf,
       sampledBytesTotal: totalBytesByFunction.get(functionAnalysis.id) ?? sampledBytesSelf,
@@ -119,6 +136,9 @@ export function loadV8HeapProfile(
       sampledBytesTotalPercent: percentOf(totalBytesByFunction.get(functionAnalysis.id) ?? sampledBytesSelf, totalSampledBytes),
       sampleCountSelf: selfCountByFunction.get(functionAnalysis.id) ?? 0,
       sampleCountTotal: totalCountByFunction.get(functionAnalysis.id) ?? selfCountByFunction.get(functionAnalysis.id) ?? 0,
+      sampledBytesAttributable,
+      sampledBytesAttributablePercent: percentOf(sampledBytesAttributable, totalSampledBytes),
+      sampleCountAttributable: attributableCountByFunction.get(functionAnalysis.id) ?? 0,
     });
   }
 
@@ -151,6 +171,11 @@ export function attachHeapProfile(
     }),
     allocationProfile: profile.summary,
   };
+}
+
+function isNonAttributableFrame(callFrame: ProfileCallFrame, projectRoot: string): boolean {
+  return (callFrame.url ?? "").startsWith("node:internal/modules/")
+    || classifyOrigin(callFrame, projectRoot).kind === "PACKAGE";
 }
 
 function validateHeapProfile(value: unknown, profilePath: string): V8HeapProfile {

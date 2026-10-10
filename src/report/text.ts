@@ -31,6 +31,13 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
       `  Profile confidence: ${result.cpuProfile.confidence}`,
       "  Candidate order: observed self CPU; Native Priority unchanged.",
     );
+    const origins = (result.cpuProfile.origins ?? []).slice(0, 5);
+    if (origins.length > 0) {
+      lines.push("  Sample origins (self time, top 5):");
+      for (const origin of origins) {
+        lines.push(`    ${origin.origin} [${origin.kind}]: ${origin.selfPercent.toFixed(1)}% self, ${origin.unmatchedPercent.toFixed(1)}% unmatched`);
+      }
+    }
   }
   if (result.allocationProfile) {
     lines.push(

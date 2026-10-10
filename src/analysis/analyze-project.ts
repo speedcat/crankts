@@ -11,6 +11,7 @@ import { calculateNativePriority, scoreOpportunities } from "./opportunities.js"
 import { analyzeParallelism } from "./parallelism.js";
 import { analyzeAcceleration } from "./assessment.js";
 import { analyzePipeline, loadPipelineDescriptor } from "./pipeline.js";
+import { accumulateStage, measureStage, type StageTimer } from "./timings.js";
 import type { AnalysisResult, FunctionAnalysis, FunctionId } from "./model.js";
 
 export interface AnalyzeProjectOptions {
@@ -19,17 +20,26 @@ export interface AnalyzeProjectOptions {
   readonly heapProfilePath?: string;
   readonly pipelinePath?: string;
   readonly workloadLabel?: string;
+  /** Opt-in stage recorder (`--timings`); never affects the analysis result. */
+  readonly timings?: StageTimer;
 }
 
 export function analyzeProject(target: string, options: AnalyzeProjectOptions = {}): AnalysisResult {
-  const facade = createCompilerFacade(target, { workspaceReferences: options.workspaceReferences === true });
-  const functionIndex = collectFunctions(facade);
-  const callsByFunction = buildCallGraph(facade, functionIndex);
-  const directFunctions: FunctionAnalysis[] = functionIndex.definitions.map((definition) => {
+  const timer = options.timings;
+  const facade = measureStage(timer, "program", () => (
+    createCompilerFacade(target, { workspaceReferences: options.workspaceReferences === true })
+  ));
+  const functionIndex = measureStage(timer, "functions", () => collectFunctions(facade));
+  const callsByFunction = measureStage(timer, "callGraph", () => buildCallGraph(facade, functionIndex));
+  const directFunctions: FunctionAnalysis[] = measureStage(timer, "direct", () => functionIndex.definitions.map((definition) => {
     const projectFacade = definition.compilerFacade;
     const calls = callsByFunction.get(definition.id) ?? [];
-    const eligibility = evaluateEligibility(definition, calls, projectFacade);
-    const directEffects = inferDirectEffects(definition, calls, projectFacade);
+    const eligibility = accumulateStage(timer, "direct.eligibility", () => (
+      evaluateEligibility(definition, calls, projectFacade)
+    ));
+    const directEffects = accumulateStage(timer, "direct.effects", () => (
+      inferDirectEffects(definition, calls, projectFacade)
+    ));
     return {
       id: definition.id,
       name: definition.name,
@@ -44,41 +54,53 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
       effects: [],
       calls,
     };
-  });
-  const effectfulFunctions = propagateEffects(propagateEligibility(directFunctions));
+  }));
+  const eligibleFunctions = measureStage(timer, "propagation.eligibility", () => propagateEligibility(directFunctions));
+  const effectfulFunctions = measureStage(timer, "propagation.effects", () => propagateEffects(eligibleFunctions));
   const effectsByFunction = new Map(effectfulFunctions.map((functionAnalysis) => [functionAnalysis.id, functionAnalysis.effects]));
-  const allFunctions = effectfulFunctions.map((functionAnalysis) => {
+  const allFunctions = measureStage(timer, "scoring", () => effectfulFunctions.map((functionAnalysis) => {
     const definition = functionIndex.byId.get(functionAnalysis.id);
     if (!definition) {
       return functionAnalysis;
     }
     const projectFacade = definition.compilerFacade;
-    const opportunities = scoreOpportunities(definition, functionAnalysis.effects, projectFacade);
+    const opportunities = accumulateStage(timer, "scoring.opportunities", () => (
+      scoreOpportunities(definition, functionAnalysis.effects, projectFacade)
+    ));
     return {
       ...functionAnalysis,
       opportunities,
-      parallelism: analyzeParallelism(
+      parallelism: accumulateStage(timer, "scoring.parallelism", () => analyzeParallelism(
         definition,
         functionAnalysis.calls,
         functionAnalysis.effects,
         projectFacade,
         effectsByFunction,
-      ),
+      )),
       nativePriority: calculateNativePriority(functionAnalysis.suitability, opportunities),
     };
-  });
+  }));
 
-  const scopedFunctionIds = getTargetCallClosure(functionIndex.definitions, callsByFunction);
+  const scopedFunctionIds = measureStage(timer, "callClosure", () => (
+    getTargetCallClosure(functionIndex.definitions, callsByFunction)
+  ));
   let functions = allFunctions
     .filter((functionAnalysis) => scopedFunctionIds.has(functionAnalysis.id))
     .sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
-  let candidateIslands = findCandidateIslands(allFunctions, scopedFunctionIds);
+  let candidateIslands = measureStage(timer, "islands", () => (
+    findCandidateIslands(allFunctions, scopedFunctionIds, timer)
+  ));
   let cpuProfile: AnalysisResult["cpuProfile"];
   let allocationProfile: AnalysisResult["allocationProfile"];
 
   if (options.profilePath) {
-    const profile = loadV8CpuProfile(options.profilePath, facade.projectRoot, functions);
-    const profiled = attachCpuProfile(functions, candidateIslands, profile);
+    const profilePath = options.profilePath;
+    const profile = measureStage(timer, "profile.cpu.load", () => (
+      loadV8CpuProfile(profilePath, facade.projectRoot, functions)
+    ));
+    const profiled = measureStage(timer, "profile.cpu.attach", () => (
+      attachCpuProfile(functions, candidateIslands, profile)
+    ));
     functions = [...profiled.functions]
       .sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
     candidateIslands = [...profiled.candidateIslands];
@@ -86,8 +108,11 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
   }
 
   if (options.heapProfilePath) {
-    const profile = loadV8HeapProfile(options.heapProfilePath, facade.projectRoot, functions);
-    const profiled = attachHeapProfile(functions, profile);
+    const heapProfilePath = options.heapProfilePath;
+    const profile = measureStage(timer, "profile.heap.load", () => (
+      loadV8HeapProfile(heapProfilePath, facade.projectRoot, functions)
+    ));
+    const profiled = measureStage(timer, "profile.heap.attach", () => attachHeapProfile(functions, profile));
     functions = [...profiled.functions]
       .sort((left, right) => left.file.localeCompare(right.file) || left.line - right.line);
     allocationProfile = profiled.allocationProfile;
@@ -103,14 +128,14 @@ export function analyzeProject(target: string, options: AnalyzeProjectOptions = 
     ? { ...loadedPipeline, workloadLabel: options.workloadLabel }
     : loadedPipeline;
   const workloadLabel = options.workloadLabel ?? pipeline?.workloadLabel;
-  const acceleration = analyzeAcceleration({
+  const acceleration = measureStage(timer, "assessment", () => analyzeAcceleration({
     functions,
     candidateIslands,
     ...(pipeline ? { pipeline } : {}),
     ...(cpuProfile ? { cpuProfile } : {}),
     ...(allocationProfile ? { allocationProfile } : {}),
     ...(workloadLabel ? { workloadLabel } : {}),
-  });
+  }));
 
   return {
     projectName: basename(facade.projectRoot),

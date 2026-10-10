@@ -9,6 +9,7 @@ import type {
   RuntimeBoundaryKind,
 } from "./model.js";
 import { calculateNativePriority } from "./opportunities.js";
+import { accumulateStage, measureStage, type StageTimer } from "./timings.js";
 
 const SIZE_PENALTY_REFERENCE = 20;
 const BOUNDARY_COST_UNITS: Readonly<Record<RuntimeBoundaryKind, number>> = {
@@ -59,28 +60,34 @@ interface ComponentMetrics {
 export function findCandidateIslands(
   allFunctions: readonly FunctionAnalysis[],
   scopedFunctionIds: ReadonlySet<FunctionId>,
+  timer?: StageTimer,
 ): CandidateIsland[] {
-  const candidateFunctions = allFunctions.filter((functionAnalysis) => (
-    scopedFunctionIds.has(functionAnalysis.id)
-    && functionAnalysis.eligibility.kind !== "BLOCKED"
-  ));
-  const candidateIds = new Set(candidateFunctions.map((functionAnalysis) => functionAnalysis.id));
-  const functionById = new Map(allFunctions.map((functionAnalysis) => [functionAnalysis.id, functionAnalysis]));
-  const adjacency = new Map<FunctionId, Set<FunctionId>>(
-    candidateFunctions.map((functionAnalysis) => [functionAnalysis.id, new Set<FunctionId>()]),
-  );
+  const { candidateFunctions, functionById, adjacency } = measureStage(timer, "islands.adjacency", () => {
+    const candidateFunctions = allFunctions.filter((functionAnalysis) => (
+      scopedFunctionIds.has(functionAnalysis.id)
+      && functionAnalysis.eligibility.kind !== "BLOCKED"
+    ));
+    const candidateIds = new Set(candidateFunctions.map((functionAnalysis) => functionAnalysis.id));
+    const functionById = new Map(allFunctions.map((functionAnalysis) => [functionAnalysis.id, functionAnalysis]));
+    const adjacency = new Map<FunctionId, Set<FunctionId>>(
+      candidateFunctions.map((functionAnalysis) => [functionAnalysis.id, new Set<FunctionId>()]),
+    );
 
-  for (const functionAnalysis of candidateFunctions) {
-    for (const edge of functionAnalysis.calls) {
-      if (!edge.to || !candidateIds.has(edge.to)) {
-        continue;
+    for (const functionAnalysis of candidateFunctions) {
+      for (const edge of functionAnalysis.calls) {
+        if (!edge.to || !candidateIds.has(edge.to)) {
+          continue;
+        }
+        adjacency.get(functionAnalysis.id)?.add(edge.to);
+        adjacency.get(edge.to)?.add(functionAnalysis.id);
       }
-      adjacency.get(functionAnalysis.id)?.add(edge.to);
-      adjacency.get(edge.to)?.add(functionAnalysis.id);
     }
-  }
+    return { candidateFunctions, functionById, adjacency };
+  });
 
-  const componentMembers = findWeaklyConnectedComponents(candidateFunctions, adjacency, functionById);
+  const componentMembers = measureStage(timer, "islands.wcc", () => (
+    findWeaklyConnectedComponents(candidateFunctions, adjacency, functionById)
+  ));
   const componentByFunction = new Map<FunctionId, number>();
   componentMembers.forEach((members, componentIndex) => {
     for (const memberId of members) {
@@ -98,37 +105,39 @@ export function findCandidateIslands(
   const boundaryFunctions = componentMembers.map(() => new Set<FunctionId>());
   const internalCallers = new Map<FunctionId, Set<FunctionId>>();
 
-  for (const source of allFunctions) {
-    for (const edge of source.calls) {
-      const sourceComponent = componentByFunction.get(edge.from);
-      const targetComponent = edge.to ? componentByFunction.get(edge.to) : undefined;
+  measureStage(timer, "islands.boundaries", () => {
+    for (const source of allFunctions) {
+      for (const edge of source.calls) {
+        const sourceComponent = componentByFunction.get(edge.from);
+        const targetComponent = edge.to ? componentByFunction.get(edge.to) : undefined;
 
-      if (sourceComponent !== undefined && sourceComponent === targetComponent) {
-        internalEdges[sourceComponent] = (internalEdges[sourceComponent] ?? 0) + 1;
-        if (edge.to && edge.to !== edge.from) {
-          const callers = internalCallers.get(edge.to) ?? new Set<FunctionId>();
-          callers.add(edge.from);
-          internalCallers.set(edge.to, callers);
+        if (sourceComponent !== undefined && sourceComponent === targetComponent) {
+          internalEdges[sourceComponent] = (internalEdges[sourceComponent] ?? 0) + 1;
+          if (edge.to && edge.to !== edge.from) {
+            const callers = internalCallers.get(edge.to) ?? new Set<FunctionId>();
+            callers.add(edge.from);
+            internalCallers.set(edge.to, callers);
+          }
+          continue;
         }
-        continue;
-      }
 
-      if (targetComponent !== undefined) {
-        entryEdges[targetComponent] = (entryEdges[targetComponent] ?? 0) + 1;
-        boundaryFunctions[targetComponent]?.add(edge.from);
-        recordBoundary(targetComponent, edge.boundaryKind, boundaryKinds, boundaryCostUnits, effectiveEntryEdges);
-      }
-      if (sourceComponent !== undefined) {
-        exitEdges[sourceComponent] = (exitEdges[sourceComponent] ?? 0) + 1;
-        recordBoundary(sourceComponent, edge.boundaryKind, boundaryKinds, boundaryCostUnits, effectiveExitEdges);
-        if (edge.to) {
-          boundaryFunctions[sourceComponent]?.add(edge.to);
+        if (targetComponent !== undefined) {
+          entryEdges[targetComponent] = (entryEdges[targetComponent] ?? 0) + 1;
+          boundaryFunctions[targetComponent]?.add(edge.from);
+          recordBoundary(targetComponent, edge.boundaryKind, boundaryKinds, boundaryCostUnits, effectiveEntryEdges);
+        }
+        if (sourceComponent !== undefined) {
+          exitEdges[sourceComponent] = (exitEdges[sourceComponent] ?? 0) + 1;
+          recordBoundary(sourceComponent, edge.boundaryKind, boundaryKinds, boundaryCostUnits, effectiveExitEdges);
+          if (edge.to) {
+            boundaryFunctions[sourceComponent]?.add(edge.to);
+          }
         }
       }
     }
-  }
+  });
 
-  const components: CandidateIsland[] = componentMembers.map((members, componentIndex) => {
+  const components: CandidateIsland[] = measureStage(timer, "islands.components", () => componentMembers.map((members, componentIndex) => {
     const memberFunctions = members.flatMap((memberId) => {
       const member = functionById.get(memberId);
       return member ? [member] : [];
@@ -142,7 +151,9 @@ export function findCandidateIslands(
       opportunities.parallel = Math.max(opportunities.parallel, member.opportunities.parallel);
     }
     const nativePriority = calculateNativePriority(suitability, opportunities);
-    const articulation = findArticulationPoints(members, adjacency);
+    const articulation = accumulateStage(timer, "islands.components.articulation", () => (
+      findArticulationPoints(members, adjacency)
+    ));
     const largestArticulationImpact = articulation.largestImpact
       ? {
         ...articulation.largestImpact,
@@ -191,9 +202,9 @@ export function findCandidateIslands(
       members,
       ...qualityMetrics,
     };
-  });
+  }));
 
-  return components
+  return measureStage(timer, "islands.sort", () => components
     .sort((left, right) => {
       const scoreDifference = right.score - left.score;
       if (scoreDifference !== 0) {
@@ -201,10 +212,10 @@ export function findCandidateIslands(
       }
       return (left.members[0] ?? "").localeCompare(right.members[0] ?? "");
     })
-    .map((component, index) => ({ ...component, id: index + 1 }));
+    .map((component, index) => ({ ...component, id: index + 1 })));
 }
 
-function findWeaklyConnectedComponents(
+export function findWeaklyConnectedComponents(
   candidateFunctions: readonly FunctionAnalysis[],
   adjacency: ReadonlyMap<FunctionId, ReadonlySet<FunctionId>>,
   functionById: ReadonlyMap<FunctionId, FunctionAnalysis>,
@@ -247,7 +258,7 @@ function findWeaklyConnectedComponents(
   return components;
 }
 
-function findArticulationPoints(
+export function findArticulationPoints(
   members: readonly FunctionId[],
   adjacency: ReadonlyMap<FunctionId, ReadonlySet<FunctionId>>,
 ): { readonly count: number; readonly largestImpact: Omit<ArticulationImpact, "internalCallers"> | null } {

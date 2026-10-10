@@ -72,9 +72,13 @@ Aliases, dynamic keys, unresolved calls, and external state limit confidence. Ke
 
 Reports include self/inclusive CPU, sample share, matched coverage, and confidence. High confidence requires at least 80% matched sample time and 100 matched samples; medium requires at least 50% and 25; otherwise it is low. Package-scope coverage can overlap and must not be added.
 
+`cpuProfile.origins` groups sample time by the origin of the sampled leaf frame: `PROJECT`, `PACKAGE` (named after the innermost `node_modules` package), `NODE` (`node:` URLs), `NATIVE` (no URL), `GC`, `PROGRAM`, `IDLE`, or `OTHER`. `selfPercent` covers all samples; `unmatchedPercent` counts only samples whose stack contains no analyzed function. Because a sample counts as matched when any ancestor is analyzed, library time called from project code is matched coverage; the origin breakdown keeps that external leaf time visible.
+
 ### Allocation Profiles
 
 `--heap-profile` accepts Node/V8 `.heapprofile` JSON. `sample.size` represents sampled allocated bytes, not retained heap, RSS, or allocation rate. Self and inclusive allocation shares are separate; mapped ancestors receive inclusive bytes even when the sampled leaf is an unmapped runtime frame. Inclusive bytes overlap and must not be summed across functions.
+
+Memory-layout potential and `CHANGE_DATA_LAYOUT` use the **attributable** share instead of the inclusive one. A sample's bytes are attributable to the nearest analyzed frame above the leaf, unless a frame between them belongs to an external package or Node's module loader (`node:internal/modules/`). This keeps allocations made through runtime builtins (`Array.prototype.map`, `Buffer.alloc`) with their caller. It excludes orchestrators, whose bytes pass through deeper analyzed functions, and allocations inside dependencies or `require`, which the caller cannot reshape. Without attributable data, the self share is used.
 
 Allocation confidence is separate from CPU confidence. With zero matched function samples and low coverage, memory/layout potential remains `UNKNOWN`, not zero.
 
@@ -210,6 +214,53 @@ The N-API kernel used the real AX dictionary (3,463 terms, 3,441 simple ASCII te
 The five-run matrix was on one macOS arm64 host (Node 22.19, TypeScript 5.9.3). All compared base tables matched across five TS/native pairs except `def_use_chains`; TS-only runs varied from 14,325 to 14,476 rows, so that known nondeterministic AX output prevents claiming full database parity. The other compared semantic tables, including symbols, annotations, co-occurrences, imports, calls, and assignments, were exact after excluding generated metadata and time-dependent `co_changes.recency`.
 
 This manual runtime preload clears the provisional 1.2x end-to-end gate narrowly, but it is not production integration. No peak RSS, allocation, or GC data was measured. The extractor accepts a mutable dictionary `Set`; the prepared native cache assumes it stays unchanged during a build, so an integration must preserve the existing mutation contract. Full measurements and caveats are in [intentweave-mvp8-native-poc.json](../evaluation/intentweave-mvp8-native-poc.json); the reproducible harness is in [kwx-native-poc](../evaluation/kwx-native-poc/README.md).
+
+### Stage Timings
+
+`--timings <file>` writes a separate JSON file (not part of report schema v2) with per-stage wall time from `performance.now()` and `rss`/`heapUsed` before and after each top-level stage. Per-function work inside a stage (`direct.eligibility`, `direct.effects`, `scoring.*`, `islands.components.articulation`) is accumulated with a call count and no memory snapshots. The file also records CLI startup, report rendering, total time, and peak RSS from `process.resourceUsage()`. The JSON report is byte-identical with and without the flag.
+
+## CrankTS Self-Evaluation
+
+### MVP-9a CrankTS Self-Profile
+
+CrankTS analyzed IntentWeave (commit `6c28736`) from `dist/`: W1 is the full workspace with `--workspace-references` (13 project configs, 4,159 functions, 928 candidate islands), W2 is `packages/analyzer` (297 functions, 108 islands). Each workload got one warm-up and five measured runs in each of three separate modes: plain (wall, peak RSS, `--timings`), CPU-profiled (1 ms interval), and heap-profiled. The JSON report was byte-identical across all 18 runs per workload, which sets the parity baseline for MVP-9b.
+
+| W1 stage (median of 5) | Time | Share |
+| --- | ---: | ---: |
+| TS Program (`createCompilerFacade`) | 2,501 ms | 42.9% |
+| Call graph | 1,700 ms | 29.2% |
+| Direct eligibility + effects | 972 ms | 16.7% |
+| Opportunities + parallelism | 289 ms | 5.0% |
+| Function collection | 90 ms | 1.5% |
+| Eligibility + effect propagation | 18.7 ms | 0.32% |
+| Candidate islands (WCC, boundaries, Tarjan, sort) | 19.8 ms | 0.34% |
+| Call closure, assessment | 7.9 ms | 0.14% |
+| Report rendering | 49 ms | 0.85% |
+| CLI startup | 92 ms | 1.6% |
+
+The W1 wall median was 5.89 s (5.73 to 6.06 s) and peak RSS was 1.45 GB; CPU profiling added 17% wall time. The TypeScript-compiler-bound stages took 95.3% of the timed total, and 71.8% of CPU leaf time was in the `typescript` package, followed by GC at 12.4% and CrankTS code at 8.4%. Within the islands pass, Tarjan over 928 components took 4.1 ms and WCC 3.1 ms. W2 shows the same pattern at a smaller scale: graph passes 0.49% of total, TS-bound stages 86.7%, and startup 12%.
+
+CrankTS then analyzed its own `src/` against the median CPU and heap profiles. It assessed 264 functions: all of the graph kernels (`findCandidateIslands`, `findWeaklyConnectedComponents`, `findArticulationPoints`, `propagateEffects`, `propagateEligibility`) are `KEEP_TS`, with no `NATIVE_OFFLOAD` anywhere. The only self CPU hotspot above 0.5% is `isFunctionBoundary` (0.94%). The only non-`KEEP_TS` recommendations are two static `PARALLELIZE` hints on cold pipeline-descriptor validation. The first self-analysis also emitted `CHANGE_DATA_LAYOUT` for orchestrators (`runCli`, `analyzeProject`, `createCompilerFacade`, and the `measureStage` wrapper) and for `loadProjectCompiler`. These came from inclusive allocation share and from Node's module loader compiling `typescript.js`. The assessment now uses the attributable allocation share described above, which removed all of them; the recorded self-analysis uses that rule. The heap profile used Node's default 512 KiB sampling interval and has only about 50 samples, so allocation evidence is `MEDIUM` confidence at best.
+
+**Decision:** this is the third outcome of the plan's decision point. Every internal pass is cold, and the TypeScript compiler dominates. Even if the graph kernels cost nothing, W1 wall time would drop by only 0.7%, so the 5% wall gate is out of reach on W1. CrankTS records this as a `KEEP_TS` control case. MVP-9b keeps the Tarjan/WCC kernel cut and checks the kernel gate on its own using a larger replayed graph (W3), rather than relaxing the wall gate. Full data are in [crankts-mvp9a-self-profile.json](../evaluation/crankts-mvp9a-self-profile.json). [run-mvp9a.mjs](../evaluation/crankts-self-profile/run-mvp9a.mjs) and [summarize-mvp9a.mjs](../evaluation/crankts-self-profile/summarize-mvp9a.mjs) reproduce the protocol.
+
+### MVP-9b GRAPH_BATCH Crossover
+
+After MVP-9a, MVP-9b no longer aims to speed up CrankTS. It validates the `GRAPH_BATCH` offload shape in isolation: does a native batch kernel over a real graph representation beat TypeScript once transfer is included, and from what size? The kernel cut is WCC plus articulation points per component, the pure in-memory part of `findCandidateIslands`. String semantics stay in TypeScript: the file order ranking and the `FunctionId` tie-break both use `localeCompare`.
+
+The input is the real candidate graph exported from three analyses: W1 (3,679 nodes, 3,783 edges, 928 islands; the largest component has 1,520 nodes and 110 components have articulation points), W2 (248 nodes), and CrankTS `src/` (389 nodes). The export fails unless WCC over the replay reproduces every analyzed island's member list. W1 was replicated 1× to 100× (up to 367,900 nodes) as disjoint copies (`replicate`) and as copies bridged into one giant component (`bridged`); W2 and `src/` were also cut down to 12 nodes. The TypeScript side is CrankTS's real kernel from `dist/`; the native total includes `Map` → CSR preparation and result decoding. Each configuration ran in its own process, with one cold run and five measured runs. Results matched exactly (sha256 of the canonical result) in all 34 configurations.
+
+| Graph (replicate) | Nodes | TS kernel | Native total | Native call only | Speedup (total / call) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| W2 × 0.1 | 25 | 0.10 ms | 0.09 ms | 0.03 ms | 1.1x / 3.9x |
+| W2 | 248 | 0.48 ms | 0.24 ms | 0.05 ms | 2.0x / 10x |
+| W1 | 3,679 | 4.66 ms | 1.62 ms | 0.26 ms | 2.9x / 18x |
+| W1 × 10 | 36,790 | 51.7 ms | 17.9 ms | 1.6 ms | 2.9x / 32x |
+| W1 × 100 | 367,900 | 672 ms | 159 ms | 15.5 ms | 4.2x / 43x |
+
+The `bridged` topology gives the same picture: 3.0x on W1 and 5.0x at 100×. From about 40 nodes upward, the native path including transfer wins at every measured size. Below that, both paths take under 0.1 ms, so the ordering is timer noise (bridged, 12 nodes: 0.86x). Cold first runs favor native too: 8.1 ms vs. 1.9 ms on W1. This holds once ICU's collator is initialized; the first `localeCompare` in a process otherwise adds about 6 ms to whichever path runs first. Preparation dominates the native cost: on W1 it took 1.23 of the 1.62 ms, and at 100× it took 125 to 141 ms of 143 to 159 ms. Peak RSS shows no consistent difference (W1 × 100: 530 vs. 596 MB `replicate`, 702 vs. 599 MB `bridged`).
+
+**Result:** `GRAPH_BATCH` is confirmed as a working second offload shape: exact parity, a real graph representation, transfer included, and multiple sizes. There is no meaningful size threshold, because native wins from tens of nodes up. The advisor's gate for this shape must therefore be the kernel's share of wall time, not graph size. On W1 the kernel saves about 3 ms of 5.9 s (0.05%), so CrankTS's `KEEP_TS` verdict for itself stands. Because preparation is 75 to 90% of the native total, a lowering should construct CSR arrays where the graph is built instead of converting a `Map<string, Set<string>>` at the call site. That would move the gain toward the 18 to 43x call-only ratio. Full data are in [crankts-mvp9b-graph-crossover.json](../evaluation/crankts-mvp9b-graph-crossover.json), and the harness is in [graph-native-poc](../evaluation/graph-native-poc/README.md).
 
 ## Follow-up Validation Gates
 

@@ -67,8 +67,10 @@ function assessFunction(
   const nativeExecution = getNativePotential(functionAnalysis, boundaryRisk, hotness, options.cpuProfile?.confidence);
   const memoryLayout = dataLayoutHint?.level
     ?? getMemoryPotential(
-      observedAllocation?.sampledBytesTotalPercent,
-      observedAllocation?.sampleCountTotal,
+      // Inclusive bytes would credit orchestrators and dependency internals; layout advice targets
+      // allocations the function itself controls.
+      observedAllocation?.sampledBytesAttributablePercent ?? observedAllocation?.sampledBytesSelfPercent,
+      observedAllocation?.sampleCountAttributable ?? observedAllocation?.sampleCountSelf,
       functionAnalysis.opportunities.memory,
       options.allocationProfile?.confidence,
     );
@@ -99,6 +101,9 @@ function assessFunction(
         sampledAllocationBytesTotal: observedAllocation.sampledBytesTotal,
         allocationSelfSamplePercent: observedAllocation.sampledBytesSelfPercent,
         allocationInclusiveSamplePercent: observedAllocation.sampledBytesTotalPercent,
+        ...(observedAllocation.sampledBytesAttributablePercent !== undefined
+          ? { allocationAttributableSamplePercent: observedAllocation.sampledBytesAttributablePercent }
+          : {}),
         allocationSampleCountTotal: observedAllocation.sampleCountTotal,
       } : {}),
       ...(options.allocationProfile ? {
@@ -215,7 +220,7 @@ function assessFunctionRecommendations(
         `allocation-profile:${options.allocationProfile?.file ?? "missing"}`,
         ...(dataLayoutEvidence ? [`declared-hint:${dataLayoutEvidence}`] : []),
       ],
-      explanation: dataLayoutEvidence ?? "A large share of sampled allocated bytes maps to this function; inspect object shape and allocation sites.",
+      explanation: dataLayoutEvidence ?? "A large share of sampled allocated bytes is allocated directly by this function or its runtime builtins; inspect object shape and allocation sites.",
     });
   }
 

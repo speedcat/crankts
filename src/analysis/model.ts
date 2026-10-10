@@ -250,6 +250,7 @@ export interface FunctionAccelerationAssessment {
     readonly sampledAllocationBytesTotal?: number;
     readonly allocationSelfSamplePercent?: number;
     readonly allocationInclusiveSamplePercent?: number;
+    readonly allocationAttributableSamplePercent?: number;
     readonly allocationSampleCountTotal?: number;
     readonly allocationProfileConfidence?: EvidenceConfidence;
     readonly allocationMatchedSampledPercent?: number;
@@ -370,6 +371,14 @@ export interface AllocationObservation {
   readonly sampledBytesTotalPercent: number;
   readonly sampleCountSelf: number;
   readonly sampleCountTotal: number;
+  /**
+   * Bytes for which this function is the nearest analyzed frame and no frame in between belongs to
+   * an external package or Node's module loader: its own allocations plus runtime/builtin callees.
+   * Excludes bytes that pass through other analyzed functions (orchestrators), dependencies, or `require`.
+   */
+  readonly sampledBytesAttributable?: number;
+  readonly sampledBytesAttributablePercent?: number;
+  readonly sampleCountAttributable?: number;
 }
 
 export interface CpuProfileSummary {
@@ -381,6 +390,30 @@ export interface CpuProfileSummary {
   readonly matchedSampleCount: number;
   readonly timeUnit: "microseconds";
   readonly confidence: EvidenceConfidence;
+  /**
+   * Sample time grouped by the origin of the sampled (leaf) frame. `unmatched*` only counts
+   * samples whose stack contains no analyzed function, so external hotspots stay attributable.
+   */
+  readonly origins?: readonly CpuProfileOrigin[];
+}
+
+export type CpuProfileOriginKind =
+  | "PROJECT"
+  | "PACKAGE"
+  | "NODE"
+  | "NATIVE"
+  | "GC"
+  | "PROGRAM"
+  | "IDLE"
+  | "OTHER";
+
+export interface CpuProfileOrigin {
+  readonly origin: string;
+  readonly kind: CpuProfileOriginKind;
+  readonly selfMicros: number;
+  readonly selfPercent: number;
+  readonly unmatchedMicros: number;
+  readonly unmatchedPercent: number;
 }
 
 export interface AllocationProfileSummary {

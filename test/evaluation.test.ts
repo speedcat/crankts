@@ -110,3 +110,60 @@ describe("IntentWeave evaluation labels", () => {
     expect(evidence.limitations).toContain("No Rust CPU profiler or allocation/heap profile was captured.");
   });
 });
+describe("CrankTS MVP-9a self-profile evidence", () => {
+  const selfProfilePath = fileURLToPath(new URL("../evaluation/crankts-mvp9a-self-profile.json", import.meta.url));
+
+  it("records a deterministic KEEP_TS outcome consistent with the measured stage shares", () => {
+    const evidence = JSON.parse(readFileSync(selfProfilePath, "utf8")) as {
+      schemaVersion: number;
+      protocol: { measuredRuns: number };
+      workloads: Record<string, {
+        analysis: { deterministicReport: boolean };
+        timings: { stageGroups: Record<string, { percentOfTotal: number }> };
+        hotspots: { graphKernels: Array<{ name: string; actions: string[] }> };
+      }>;
+      decision: { kernelGatePercent: number; islandsPercent: number; propagationPercent: number; outcome: string };
+    };
+    const w1 = evidence.workloads.w1;
+
+    expect(evidence.schemaVersion).toBe(1);
+    expect(evidence.protocol.measuredRuns).toBe(5);
+    expect(Object.values(evidence.workloads).every((workload) => workload.analysis.deterministicReport)).toBe(true);
+    expect(evidence.decision.islandsPercent).toBe(w1?.timings.stageGroups.islands?.percentOfTotal);
+    expect(evidence.decision.propagationPercent).toBe(w1?.timings.stageGroups.propagation?.percentOfTotal);
+    expect(evidence.decision.islandsPercent).toBeLessThan(evidence.decision.kernelGatePercent);
+    expect(evidence.decision.propagationPercent).toBeLessThan(evidence.decision.kernelGatePercent);
+    expect(evidence.decision.outcome).toMatch(/^KEEP_TS control case/);
+    expect(w1?.hotspots.graphKernels.flatMap((kernel) => kernel.actions)).not.toContain("NATIVE_OFFLOAD");
+  });
+});
+
+describe("CrankTS MVP-9b GRAPH_BATCH crossover evidence", () => {
+  const crossoverPath = fileURLToPath(new URL("../evaluation/crankts-mvp9b-graph-crossover.json", import.meta.url));
+
+  it("records exact parity and a native win at every non-trivial size, including transfer", () => {
+    const evidence = JSON.parse(readFileSync(crossoverPath, "utf8")) as {
+      allParity: boolean;
+      measurements: Array<{
+        topology: string;
+        nodes: number;
+        parity: boolean;
+        typescript: { kernelMs: { median: number } };
+        native: { totalMs: { median: number }; callMs: { median: number } };
+      }>;
+      crossover: Record<string, { nativeWinsFromNodes: number | null }>;
+    };
+
+    expect(evidence.allParity).toBe(true);
+    expect(evidence.measurements.every((row) => row.parity)).toBe(true);
+    expect(Math.max(...evidence.measurements.map((row) => row.nodes))).toBeGreaterThanOrEqual(100_000);
+    for (const row of evidence.measurements.filter((measurement) => measurement.nodes >= 40)) {
+      expect(row.native.totalMs.median, `${row.topology} ${row.nodes}`).toBeLessThan(row.typescript.kernelMs.median);
+      expect(row.native.callMs.median).toBeLessThan(row.native.totalMs.median);
+    }
+    for (const crossover of Object.values(evidence.crossover)) {
+      expect(crossover.nativeWinsFromNodes).not.toBeNull();
+      expect(crossover.nativeWinsFromNodes).toBeLessThanOrEqual(40);
+    }
+  });
+});

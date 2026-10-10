@@ -1,0 +1,1536 @@
+{
+  "schemaVersion": 1,
+  "project": "CrankTS",
+  "comparisonType": "mvp9a-crankts-self-profile",
+  "capturedAt": "2026-10-10",
+  "environment": {
+    "node": "22.19.0",
+    "typescript": "5.9.3",
+    "host": "darwin-arm64",
+    "crankts": "0.1.0",
+    "build": "dist/ (tsc), no tsx"
+  },
+  "protocol": {
+    "warmupRuns": 1,
+    "measuredRuns": 5,
+    "modes": {
+      "plain": "wall + peak RSS (/usr/bin/time -l) + --timings",
+      "cpu": "--cpu-prof --cpu-prof-interval 1000",
+      "heap": "--heap-prof (default sampling interval)"
+    },
+    "selfAnalysis": "crankts analyze src/ --profile <median cpu run> --heap-profile <median heap run>",
+    "stageGroups": {
+      "typescriptCompilerBound": [
+        "program",
+        "functions",
+        "callGraph",
+        "direct",
+        "scoring"
+      ],
+      "graphPasses": [
+        "propagation.eligibility",
+        "propagation.effects",
+        "callClosure",
+        "islands"
+      ],
+      "islands": [
+        "islands"
+      ],
+      "propagation": [
+        "propagation.eligibility",
+        "propagation.effects"
+      ],
+      "assessment": [
+        "assessment"
+      ],
+      "report": [
+        "report"
+      ],
+      "startup": [
+        "startup"
+      ]
+    }
+  },
+  "workloads": {
+    "w1": {
+      "label": "IntentWeave full workspace",
+      "command": "node dist/cli.js analyze ../intentweave --workspace-references --format json",
+      "analysis": {
+        "functions": 4159,
+        "candidateIslands": 928,
+        "projectConfigsLoaded": 13,
+        "deterministicReport": true,
+        "reportSha256": "a5c707d76a1b26227bf837f0bb01717e54edf0d331038fb4a0ebc307e3e09a20"
+      },
+      "wallSeconds": {
+        "plain": {
+          "median": 5.89,
+          "min": 5.73,
+          "max": 6.06
+        },
+        "cpu": {
+          "median": 6.91,
+          "min": 6.68,
+          "max": 7.09
+        },
+        "heap": {
+          "median": 6.07,
+          "min": 5.89,
+          "max": 6.36
+        }
+      },
+      "peakRssMegabytes": {
+        "plain": {
+          "median": 1445.33,
+          "min": 1230.13,
+          "max": 1450.9
+        },
+        "cpu": {
+          "median": 1457.96,
+          "min": 1384.3,
+          "max": 1519.71
+        },
+        "heap": {
+          "median": 1389.13,
+          "min": 1238.73,
+          "max": 1453.97
+        }
+      },
+      "timings": {
+        "medianTotalMs": 5824.28,
+        "stageGroups": {
+          "typescriptCompilerBound": {
+            "medianMs": 5551.56,
+            "percentOfTotal": 95.32
+          },
+          "graphPasses": {
+            "medianMs": 40.58,
+            "percentOfTotal": 0.7
+          },
+          "islands": {
+            "medianMs": 19.76,
+            "percentOfTotal": 0.34
+          },
+          "propagation": {
+            "medianMs": 18.71,
+            "percentOfTotal": 0.32
+          },
+          "assessment": {
+            "medianMs": 5.74,
+            "percentOfTotal": 0.1
+          },
+          "report": {
+            "medianMs": 49.38,
+            "percentOfTotal": 0.85
+          },
+          "startup": {
+            "medianMs": 91.99,
+            "percentOfTotal": 1.58
+          }
+        },
+        "stages": [
+          {
+            "name": "startup",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 91.99,
+            "minMs": 91.22,
+            "maxMs": 214.95,
+            "percentOfTotal": 1.58
+          },
+          {
+            "name": "program",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 2501.12,
+            "minMs": 2392.61,
+            "maxMs": 2521.62,
+            "percentOfTotal": 42.94,
+            "medianRssDeltaBytes": 893468672
+          },
+          {
+            "name": "functions",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 90.23,
+            "minMs": 89.2,
+            "maxMs": 91.26,
+            "percentOfTotal": 1.55,
+            "medianRssDeltaBytes": 8880128
+          },
+          {
+            "name": "callGraph",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 1699.99,
+            "minMs": 1670.82,
+            "maxMs": 1760.64,
+            "percentOfTotal": 29.19,
+            "medianRssDeltaBytes": 155238400
+          },
+          {
+            "name": "direct.eligibility",
+            "kind": "accumulated",
+            "calls": 4159,
+            "medianMs": 614.4,
+            "minMs": 603.13,
+            "maxMs": 671.68,
+            "percentOfTotal": 10.55
+          },
+          {
+            "name": "direct.effects",
+            "kind": "accumulated",
+            "calls": 4159,
+            "medianMs": 352.31,
+            "minMs": 350.34,
+            "maxMs": 466.51,
+            "percentOfTotal": 6.05
+          },
+          {
+            "name": "direct",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 971.69,
+            "minMs": 958.98,
+            "maxMs": 1141.65,
+            "percentOfTotal": 16.68,
+            "medianRssDeltaBytes": 46956544
+          },
+          {
+            "name": "propagation.eligibility",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 9.99,
+            "minMs": 8.21,
+            "maxMs": 11.92,
+            "percentOfTotal": 0.17,
+            "medianRssDeltaBytes": 1409024
+          },
+          {
+            "name": "propagation.effects",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 8.72,
+            "minMs": 8.31,
+            "maxMs": 9.28,
+            "percentOfTotal": 0.15,
+            "medianRssDeltaBytes": 1376256
+          },
+          {
+            "name": "scoring.opportunities",
+            "kind": "accumulated",
+            "calls": 4159,
+            "medianMs": 109.94,
+            "minMs": 106.69,
+            "maxMs": 113.89,
+            "percentOfTotal": 1.89
+          },
+          {
+            "name": "scoring.parallelism",
+            "kind": "accumulated",
+            "calls": 4159,
+            "medianMs": 172.66,
+            "minMs": 169.96,
+            "maxMs": 182.95,
+            "percentOfTotal": 2.96
+          },
+          {
+            "name": "scoring",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 288.53,
+            "minMs": 281.49,
+            "maxMs": 293.99,
+            "percentOfTotal": 4.95,
+            "medianRssDeltaBytes": 7421952
+          },
+          {
+            "name": "callClosure",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 2.11,
+            "minMs": 2,
+            "maxMs": 2.19,
+            "percentOfTotal": 0.04,
+            "medianRssDeltaBytes": 180224
+          },
+          {
+            "name": "islands.adjacency",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 2.53,
+            "minMs": 2.46,
+            "maxMs": 4.18,
+            "percentOfTotal": 0.04,
+            "medianRssDeltaBytes": 278528
+          },
+          {
+            "name": "islands.wcc",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 3.14,
+            "minMs": 3.07,
+            "maxMs": 4.94,
+            "percentOfTotal": 0.05,
+            "medianRssDeltaBytes": 32768
+          },
+          {
+            "name": "islands.boundaries",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 3.18,
+            "minMs": 3.13,
+            "maxMs": 5.27,
+            "percentOfTotal": 0.05,
+            "medianRssDeltaBytes": 16384
+          },
+          {
+            "name": "islands.components.articulation",
+            "kind": "accumulated",
+            "calls": 928,
+            "medianMs": 4.14,
+            "minMs": 4.12,
+            "maxMs": 4.36,
+            "percentOfTotal": 0.07
+          },
+          {
+            "name": "islands.components",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 7.49,
+            "minMs": 7.44,
+            "maxMs": 7.94,
+            "percentOfTotal": 0.13,
+            "medianRssDeltaBytes": 131072
+          },
+          {
+            "name": "islands.sort",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 1.11,
+            "minMs": 1.07,
+            "maxMs": 1.14,
+            "percentOfTotal": 0.02,
+            "medianRssDeltaBytes": 81920
+          },
+          {
+            "name": "islands",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 19.76,
+            "minMs": 19.44,
+            "maxMs": 20.6,
+            "percentOfTotal": 0.34,
+            "medianRssDeltaBytes": 1228800
+          },
+          {
+            "name": "assessment",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 5.74,
+            "minMs": 5.45,
+            "maxMs": 6.07,
+            "percentOfTotal": 0.1,
+            "medianRssDeltaBytes": 655360
+          },
+          {
+            "name": "report",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 49.38,
+            "minMs": 46.81,
+            "maxMs": 59.93,
+            "percentOfTotal": 0.85,
+            "medianRssDeltaBytes": 140247040
+          }
+        ]
+      },
+      "cpuProfile": {
+        "profile": "w1-cpu-3.cpuprofile",
+        "totalSampleMs": 6601.21,
+        "sampleCount": 6830,
+        "matchedSamplePercent": 85.51,
+        "confidence": "HIGH",
+        "origins": [
+          {
+            "origin": "typescript",
+            "kind": "PACKAGE",
+            "selfMicros": 4736123,
+            "selfPercent": 71.75,
+            "unmatchedMicros": 36998,
+            "unmatchedPercent": 0.56
+          },
+          {
+            "origin": "(garbage collector)",
+            "kind": "GC",
+            "selfMicros": 820367,
+            "selfPercent": 12.43,
+            "unmatchedMicros": 820367,
+            "unmatchedPercent": 12.43
+          },
+          {
+            "origin": "project",
+            "kind": "PROJECT",
+            "selfMicros": 553464,
+            "selfPercent": 8.38,
+            "unmatchedMicros": 0,
+            "unmatchedPercent": 0
+          },
+          {
+            "origin": "(native)",
+            "kind": "NATIVE",
+            "selfMicros": 242752,
+            "selfPercent": 3.68,
+            "unmatchedMicros": 5042,
+            "unmatchedPercent": 0.08
+          },
+          {
+            "origin": "node",
+            "kind": "NODE",
+            "selfMicros": 231917,
+            "selfPercent": 3.51,
+            "unmatchedMicros": 77500,
+            "unmatchedPercent": 1.17
+          },
+          {
+            "origin": "(idle)",
+            "kind": "IDLE",
+            "selfMicros": 11125,
+            "selfPercent": 0.17,
+            "unmatchedMicros": 11125,
+            "unmatchedPercent": 0.17
+          },
+          {
+            "origin": "(program)",
+            "kind": "PROGRAM",
+            "selfMicros": 5460,
+            "selfPercent": 0.08,
+            "unmatchedMicros": 5460,
+            "unmatchedPercent": 0.08
+          }
+        ],
+        "note": "matchedSamplePercent counts stacks containing any CrankTS function; TypeScript compiler frames called from CrankTS are therefore 'matched'. origins[].selfPercent attributes leaf time instead."
+      },
+      "allocationProfile": {
+        "profile": "w1-heap-1.heapprofile",
+        "totalSampledMegabytes": 48.56,
+        "sampleCount": 55,
+        "matchedSampledPercent": 58.04,
+        "confidence": "MEDIUM"
+      },
+      "hotspots": {
+        "bySelfCpu": [
+          {
+            "name": "isFunctionBoundary",
+            "file": "src/analysis/functions.ts",
+            "line": 119,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 62,
+            "inclusiveCpuMs": 118.58,
+            "selfPercent": 0.94,
+            "inclusivePercent": 1.8,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "renderJsonReport",
+            "file": "src/report/json.ts",
+            "line": 39,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 53.38,
+            "inclusiveCpuMs": 54.63,
+            "selfPercent": 0.81,
+            "inclusivePercent": 0.83,
+            "actions": []
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/eligibility.ts",
+            "line": 249,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 34.29,
+            "inclusiveCpuMs": 459.46,
+            "selfPercent": 0.52,
+            "inclusivePercent": 6.96,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/effects.ts",
+            "line": 156,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 29.63,
+            "inclusiveCpuMs": 326.79,
+            "selfPercent": 0.45,
+            "inclusivePercent": 4.95,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/parallelism.ts",
+            "line": 47,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 17.21,
+            "inclusiveCpuMs": 162.91,
+            "selfPercent": 0.26,
+            "inclusivePercent": 2.47,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "addCallEdges",
+            "file": "src/analysis/call-graph.ts",
+            "line": 64,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 16.17,
+            "inclusiveCpuMs": 1784.41,
+            "selfPercent": 0.24,
+            "inclusivePercent": 27.03,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/opportunities.ts",
+            "line": 155,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 16.13,
+            "inclusiveCpuMs": 49.75,
+            "selfPercent": 0.24,
+            "inclusivePercent": 0.75,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "recordCallEffects",
+            "file": "src/analysis/effects.ts",
+            "line": 268,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 14.13,
+            "inclusiveCpuMs": 100.58,
+            "selfPercent": 0.21,
+            "inclusivePercent": 1.52,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/call-graph.ts",
+            "line": 41,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 13.46,
+            "inclusiveCpuMs": 1849.25,
+            "selfPercent": 0.2,
+            "inclusivePercent": 28.01,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "getEdgeKind",
+            "file": "src/analysis/call-graph.ts",
+            "line": 280,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 10.71,
+            "inclusiveCpuMs": 143.67,
+            "selfPercent": 0.16,
+            "inclusivePercent": 2.18,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ],
+        "byInclusiveCpu": [
+          {
+            "name": "runCli",
+            "file": "src/index.ts",
+            "line": 31,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 5636.26,
+            "selfPercent": 0,
+            "inclusivePercent": 85.38,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "analyzeProject",
+            "file": "src/analysis/analyze-project.ts",
+            "line": 27,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 5550.26,
+            "selfPercent": 0,
+            "inclusivePercent": 84.08,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "measureStage",
+            "file": "src/analysis/timings.ts",
+            "line": 99,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 2.5,
+            "inclusiveCpuMs": 5550.22,
+            "selfPercent": 0.04,
+            "inclusivePercent": 84.08,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "createCompilerFacade",
+            "file": "src/compiler/compiler-facade.ts",
+            "line": 42,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 2275.47,
+            "selfPercent": 0.02,
+            "inclusivePercent": 34.47,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "createFacadeFromConfig",
+            "file": "src/compiler/compiler-facade.ts",
+            "line": 76,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 2266.51,
+            "selfPercent": 0.02,
+            "inclusivePercent": 34.33,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "collectReferencedFacades",
+            "file": "src/compiler/compiler-facade.ts",
+            "line": 121,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 2189.3,
+            "selfPercent": 0,
+            "inclusivePercent": 33.17,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/call-graph.ts",
+            "line": 41,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 13.46,
+            "inclusiveCpuMs": 1849.25,
+            "selfPercent": 0.2,
+            "inclusivePercent": 28.01,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "buildCallGraph",
+            "file": "src/analysis/call-graph.ts",
+            "line": 29,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.29,
+            "inclusiveCpuMs": 1844.58,
+            "selfPercent": 0.02,
+            "inclusivePercent": 27.94,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "addCallEdges",
+            "file": "src/analysis/call-graph.ts",
+            "line": 64,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 16.17,
+            "inclusiveCpuMs": 1784.41,
+            "selfPercent": 0.24,
+            "inclusivePercent": 27.03,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "resolveTarget",
+            "file": "src/analysis/call-graph.ts",
+            "line": 354,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 7.67,
+            "inclusiveCpuMs": 1413.95,
+            "selfPercent": 0.12,
+            "inclusivePercent": 21.42,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ],
+        "graphKernels": [
+          {
+            "name": "propagateEffects",
+            "file": "src/analysis/effects.ts",
+            "line": 203,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 4.96,
+            "inclusiveCpuMs": 4.96,
+            "selfPercent": 0.08,
+            "inclusivePercent": 0.08,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "propagateEligibility",
+            "file": "src/analysis/eligibility.ts",
+            "line": 73,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 3.79,
+            "inclusiveCpuMs": 7.54,
+            "selfPercent": 0.06,
+            "inclusivePercent": 0.11,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findCandidateIslands",
+            "file": "src/analysis/islands.ts",
+            "line": 60,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 19.63,
+            "selfPercent": 0,
+            "inclusivePercent": 0.3,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findWeaklyConnectedComponents",
+            "file": "src/analysis/islands.ts",
+            "line": 218,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 2.5,
+            "selfPercent": 0,
+            "inclusivePercent": 0.04,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findArticulationPoints",
+            "file": "src/analysis/islands.ts",
+            "line": 261,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 2.25,
+            "inclusiveCpuMs": 2.25,
+            "selfPercent": 0.03,
+            "inclusivePercent": 0.03,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ]
+      },
+      "allocationSites": [
+        {
+          "name": "collectReferencedFacades",
+          "file": "src/compiler/compiler-facade.ts",
+          "line": 121,
+          "sampledMegabytesSelf": 0.53,
+          "selfPercent": 1.09,
+          "inclusivePercent": 12.99
+        },
+        {
+          "name": "renderJsonReport",
+          "file": "src/report/json.ts",
+          "line": 39,
+          "sampledMegabytesSelf": 0.53,
+          "selfPercent": 1.08,
+          "inclusivePercent": 1.08
+        }
+      ],
+      "selfAssessment": {
+        "functionsAssessed": 414,
+        "actionCounts": {
+          "KEEP_TS:MEDIUM": 264,
+          "PARALLELIZE:HIGH": 2
+        },
+        "nonKeepTs": [
+          {
+            "name": "callback@92",
+            "functionId": "src/analysis/islands.ts:3086",
+            "action": "PARALLELIZE",
+            "level": "HIGH",
+            "confidence": "LOW",
+            "eligibility": "CONDITIONAL",
+            "explanation": "Function-local dependence heuristics found a parallel work candidate; validate aliases and runtime overhead before implementation."
+          },
+          {
+            "name": "validatePipelineDescriptor",
+            "functionId": "src/analysis/pipeline.ts:1917",
+            "action": "PARALLELIZE",
+            "level": "HIGH",
+            "confidence": "LOW",
+            "eligibility": "CONDITIONAL",
+            "explanation": "Function-local dependence heuristics found a parallel work candidate; validate aliases and runtime overhead before implementation."
+          }
+        ]
+      }
+    },
+    "w2": {
+      "label": "IntentWeave analyzer package",
+      "command": "node dist/cli.js analyze ../intentweave/packages/analyzer --format json",
+      "analysis": {
+        "functions": 297,
+        "candidateIslands": 108,
+        "deterministicReport": true,
+        "reportSha256": "6c48bf5a6e2be2a90dec6c44833bd586321bcf0c2c95e9c66fa4e8550dfc9a60"
+      },
+      "wallSeconds": {
+        "plain": {
+          "median": 0.78,
+          "min": 0.77,
+          "max": 0.88
+        },
+        "cpu": {
+          "median": 0.97,
+          "min": 0.95,
+          "max": 0.98
+        },
+        "heap": {
+          "median": 0.83,
+          "min": 0.81,
+          "max": 0.83
+        }
+      },
+      "peakRssMegabytes": {
+        "plain": {
+          "median": 262.14,
+          "min": 261.69,
+          "max": 263.27
+        },
+        "cpu": {
+          "median": 296.91,
+          "min": 296.14,
+          "max": 297.12
+        },
+        "heap": {
+          "median": 263.75,
+          "min": 263.39,
+          "max": 265.75
+        }
+      },
+      "timings": {
+        "medianTotalMs": 763.06,
+        "stageGroups": {
+          "typescriptCompilerBound": {
+            "medianMs": 661.23,
+            "percentOfTotal": 86.66
+          },
+          "graphPasses": {
+            "medianMs": 3.75,
+            "percentOfTotal": 0.49
+          },
+          "islands": {
+            "medianMs": 2.41,
+            "percentOfTotal": 0.32
+          },
+          "propagation": {
+            "medianMs": 1.13,
+            "percentOfTotal": 0.15
+          },
+          "assessment": {
+            "medianMs": 0.71,
+            "percentOfTotal": 0.09
+          },
+          "report": {
+            "medianMs": 2.97,
+            "percentOfTotal": 0.39
+          },
+          "startup": {
+            "medianMs": 91.88,
+            "percentOfTotal": 12.04
+          }
+        },
+        "stages": [
+          {
+            "name": "startup",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 91.88,
+            "minMs": 91.79,
+            "maxMs": 93.27,
+            "percentOfTotal": 12.04
+          },
+          {
+            "name": "program",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 374.99,
+            "minMs": 372.83,
+            "maxMs": 381.62,
+            "percentOfTotal": 49.14,
+            "medianRssDeltaBytes": 116342784
+          },
+          {
+            "name": "functions",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 15.59,
+            "minMs": 15.46,
+            "maxMs": 15.87,
+            "percentOfTotal": 2.04,
+            "medianRssDeltaBytes": 2326528
+          },
+          {
+            "name": "callGraph",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 159.14,
+            "minMs": 157.45,
+            "maxMs": 235.7,
+            "percentOfTotal": 20.86,
+            "medianRssDeltaBytes": 17252352
+          },
+          {
+            "name": "direct.eligibility",
+            "kind": "accumulated",
+            "calls": 297,
+            "medianMs": 56.36,
+            "minMs": 55.07,
+            "maxMs": 103.65,
+            "percentOfTotal": 7.39
+          },
+          {
+            "name": "direct.effects",
+            "kind": "accumulated",
+            "calls": 297,
+            "medianMs": 28.56,
+            "minMs": 27.39,
+            "maxMs": 73.11,
+            "percentOfTotal": 3.74
+          },
+          {
+            "name": "direct",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 84.93,
+            "minMs": 83.05,
+            "maxMs": 177.34,
+            "percentOfTotal": 11.13,
+            "medianRssDeltaBytes": 2867200
+          },
+          {
+            "name": "propagation.eligibility",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.64,
+            "minMs": 0.61,
+            "maxMs": 0.76,
+            "percentOfTotal": 0.08,
+            "medianRssDeltaBytes": 49152
+          },
+          {
+            "name": "propagation.effects",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.49,
+            "minMs": 0.48,
+            "maxMs": 0.55,
+            "percentOfTotal": 0.06,
+            "medianRssDeltaBytes": 32768
+          },
+          {
+            "name": "scoring.opportunities",
+            "kind": "accumulated",
+            "calls": 297,
+            "medianMs": 9.28,
+            "minMs": 8.75,
+            "maxMs": 10.59,
+            "percentOfTotal": 1.22
+          },
+          {
+            "name": "scoring.parallelism",
+            "kind": "accumulated",
+            "calls": 297,
+            "medianMs": 16.65,
+            "minMs": 15.74,
+            "maxMs": 17.78,
+            "percentOfTotal": 2.18
+          },
+          {
+            "name": "scoring",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 26.58,
+            "minMs": 25.65,
+            "maxMs": 27.53,
+            "percentOfTotal": 3.48,
+            "medianRssDeltaBytes": 2162688
+          },
+          {
+            "name": "callClosure",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.21,
+            "minMs": 0.19,
+            "maxMs": 0.21,
+            "percentOfTotal": 0.03,
+            "medianRssDeltaBytes": 0
+          },
+          {
+            "name": "islands.adjacency",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.28,
+            "minMs": 0.26,
+            "maxMs": 0.3,
+            "percentOfTotal": 0.04,
+            "medianRssDeltaBytes": 0
+          },
+          {
+            "name": "islands.wcc",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.22,
+            "minMs": 0.2,
+            "maxMs": 0.23,
+            "percentOfTotal": 0.03,
+            "medianRssDeltaBytes": 0
+          },
+          {
+            "name": "islands.boundaries",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.31,
+            "minMs": 0.3,
+            "maxMs": 0.33,
+            "percentOfTotal": 0.04,
+            "medianRssDeltaBytes": 0
+          },
+          {
+            "name": "islands.components.articulation",
+            "kind": "accumulated",
+            "calls": 108,
+            "medianMs": 0.5,
+            "minMs": 0.48,
+            "maxMs": 0.53,
+            "percentOfTotal": 0.07
+          },
+          {
+            "name": "islands.components",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 1.17,
+            "minMs": 1.14,
+            "maxMs": 1.25,
+            "percentOfTotal": 0.15,
+            "medianRssDeltaBytes": 49152
+          },
+          {
+            "name": "islands.sort",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.15,
+            "minMs": 0.14,
+            "maxMs": 0.16,
+            "percentOfTotal": 0.02,
+            "medianRssDeltaBytes": 16384
+          },
+          {
+            "name": "islands",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 2.41,
+            "minMs": 2.31,
+            "maxMs": 2.58,
+            "percentOfTotal": 0.32,
+            "medianRssDeltaBytes": 114688
+          },
+          {
+            "name": "assessment",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 0.71,
+            "minMs": 0.65,
+            "maxMs": 0.8,
+            "percentOfTotal": 0.09,
+            "medianRssDeltaBytes": 65536
+          },
+          {
+            "name": "report",
+            "kind": "stage",
+            "calls": 1,
+            "medianMs": 2.97,
+            "minMs": 2.76,
+            "maxMs": 3.01,
+            "percentOfTotal": 0.39,
+            "medianRssDeltaBytes": 1703936
+          }
+        ]
+      },
+      "cpuProfile": {
+        "profile": "w2-cpu-2.cpuprofile",
+        "totalSampleMs": 910.04,
+        "sampleCount": 986,
+        "matchedSamplePercent": 84.55,
+        "confidence": "HIGH",
+        "origins": [
+          {
+            "origin": "typescript",
+            "kind": "PACKAGE",
+            "selfMicros": 605916,
+            "selfPercent": 66.58,
+            "unmatchedMicros": 8792,
+            "unmatchedPercent": 0.97
+          },
+          {
+            "origin": "node",
+            "kind": "NODE",
+            "selfMicros": 164042,
+            "selfPercent": 18.03,
+            "unmatchedMicros": 80125,
+            "unmatchedPercent": 8.8
+          },
+          {
+            "origin": "project",
+            "kind": "PROJECT",
+            "selfMicros": 71252,
+            "selfPercent": 7.83,
+            "unmatchedMicros": 0,
+            "unmatchedPercent": 0
+          },
+          {
+            "origin": "(garbage collector)",
+            "kind": "GC",
+            "selfMicros": 42499,
+            "selfPercent": 4.67,
+            "unmatchedMicros": 42499,
+            "unmatchedPercent": 4.67
+          },
+          {
+            "origin": "(native)",
+            "kind": "NATIVE",
+            "selfMicros": 19666,
+            "selfPercent": 2.16,
+            "unmatchedMicros": 2541,
+            "unmatchedPercent": 0.28
+          },
+          {
+            "origin": "(program)",
+            "kind": "PROGRAM",
+            "selfMicros": 6666,
+            "selfPercent": 0.73,
+            "unmatchedMicros": 6666,
+            "unmatchedPercent": 0.73
+          }
+        ],
+        "note": "matchedSamplePercent counts stacks containing any CrankTS function; TypeScript compiler frames called from CrankTS are therefore 'matched'. origins[].selfPercent attributes leaf time instead."
+      },
+      "allocationProfile": {
+        "profile": "w2-heap-2.heapprofile",
+        "totalSampledMegabytes": 51.17,
+        "sampleCount": 60,
+        "matchedSampledPercent": 54.82,
+        "confidence": "MEDIUM"
+      },
+      "hotspots": {
+        "bySelfCpu": [
+          {
+            "name": "visit",
+            "file": "src/analysis/effects.ts",
+            "line": 156,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 6.63,
+            "inclusiveCpuMs": 31.33,
+            "selfPercent": 0.73,
+            "inclusivePercent": 3.44,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "isFunctionBoundary",
+            "file": "src/analysis/functions.ts",
+            "line": 119,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 6.5,
+            "inclusiveCpuMs": 11.88,
+            "selfPercent": 0.71,
+            "inclusivePercent": 1.3,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/call-graph.ts",
+            "line": 41,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 3.75,
+            "inclusiveCpuMs": 181.25,
+            "selfPercent": 0.41,
+            "inclusivePercent": 19.92,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "renderJsonReport",
+            "file": "src/report/json.ts",
+            "line": 39,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 2.5,
+            "inclusiveCpuMs": 2.5,
+            "selfPercent": 0.27,
+            "inclusivePercent": 0.27,
+            "actions": []
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/opportunities.ts",
+            "line": 155,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 2.08,
+            "inclusiveCpuMs": 5,
+            "selfPercent": 0.23,
+            "inclusivePercent": 0.55,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/parallelism.ts",
+            "line": 47,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.88,
+            "inclusiveCpuMs": 18.58,
+            "selfPercent": 0.21,
+            "inclusivePercent": 2.04,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "getImportedModule",
+            "file": "src/analysis/eligibility.ts",
+            "line": 352,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.42,
+            "inclusiveCpuMs": 40.5,
+            "selfPercent": 0.16,
+            "inclusivePercent": 4.45,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "getCallName",
+            "file": "src/analysis/effects.ts",
+            "line": 408,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.29,
+            "inclusiveCpuMs": 1.29,
+            "selfPercent": 0.14,
+            "inclusivePercent": 0.14,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "analyzeLoop",
+            "file": "src/analysis/parallelism.ts",
+            "line": 70,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.29,
+            "inclusiveCpuMs": 9.33,
+            "selfPercent": 0.14,
+            "inclusivePercent": 1.03,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "addBlocker",
+            "file": "src/analysis/eligibility.ts",
+            "line": 43,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.29,
+            "inclusiveCpuMs": 1.29,
+            "selfPercent": 0.14,
+            "inclusivePercent": 0.14,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ],
+        "byInclusiveCpu": [
+          {
+            "name": "runCli",
+            "file": "src/index.ts",
+            "line": 31,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 769.42,
+            "selfPercent": 0.14,
+            "inclusivePercent": 84.55,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "analyzeProject",
+            "file": "src/analysis/analyze-project.ts",
+            "line": 27,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 764.42,
+            "selfPercent": 0,
+            "inclusivePercent": 84,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "measureStage",
+            "file": "src/analysis/timings.ts",
+            "line": 99,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 764.42,
+            "selfPercent": 0,
+            "inclusivePercent": 84,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "createCompilerFacade",
+            "file": "src/compiler/compiler-facade.ts",
+            "line": 42,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 432.59,
+            "selfPercent": 0,
+            "inclusivePercent": 47.53,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "createFacadeFromConfig",
+            "file": "src/compiler/compiler-facade.ts",
+            "line": 76,
+            "eligibility": "BLOCKED",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 432.59,
+            "selfPercent": 0.14,
+            "inclusivePercent": 47.53,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "buildCallGraph",
+            "file": "src/analysis/call-graph.ts",
+            "line": 29,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 182.5,
+            "selfPercent": 0.14,
+            "inclusivePercent": 20.05,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "visit",
+            "file": "src/analysis/call-graph.ts",
+            "line": 41,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 3.75,
+            "inclusiveCpuMs": 181.25,
+            "selfPercent": 0.41,
+            "inclusivePercent": 19.92,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "addCallEdges",
+            "file": "src/analysis/call-graph.ts",
+            "line": 64,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 174.75,
+            "selfPercent": 0,
+            "inclusivePercent": 19.2,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "accumulateStage",
+            "file": "src/analysis/timings.ts",
+            "line": 103,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 129.38,
+            "selfPercent": 0,
+            "inclusivePercent": 14.22,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "resolveTarget",
+            "file": "src/analysis/call-graph.ts",
+            "line": 354,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 1.25,
+            "inclusiveCpuMs": 129.21,
+            "selfPercent": 0.14,
+            "inclusivePercent": 14.2,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ],
+        "graphKernels": [
+          {
+            "name": "propagateEffects",
+            "file": "src/analysis/effects.ts",
+            "line": 203,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 0,
+            "selfPercent": 0,
+            "inclusivePercent": 0,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "propagateEligibility",
+            "file": "src/analysis/eligibility.ts",
+            "line": 73,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 0,
+            "selfPercent": 0,
+            "inclusivePercent": 0,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findCandidateIslands",
+            "file": "src/analysis/islands.ts",
+            "line": 60,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 1.29,
+            "selfPercent": 0,
+            "inclusivePercent": 0.14,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findWeaklyConnectedComponents",
+            "file": "src/analysis/islands.ts",
+            "line": 218,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 0,
+            "selfPercent": 0,
+            "inclusivePercent": 0,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          },
+          {
+            "name": "findArticulationPoints",
+            "file": "src/analysis/islands.ts",
+            "line": 261,
+            "eligibility": "CONDITIONAL",
+            "selfCpuMs": 0,
+            "inclusiveCpuMs": 0,
+            "selfPercent": 0,
+            "inclusivePercent": 0,
+            "actions": [
+              "KEEP_TS:MEDIUM"
+            ]
+          }
+        ]
+      },
+      "allocationSites": [
+        {
+          "name": "collectFunctions",
+          "file": "src/analysis/functions.ts",
+          "line": 30,
+          "sampledMegabytesSelf": 0.52,
+          "selfPercent": 1.03,
+          "inclusivePercent": 2.05
+        }
+      ],
+      "selfAssessment": {
+        "functionsAssessed": 414,
+        "actionCounts": {
+          "KEEP_TS:MEDIUM": 264,
+          "PARALLELIZE:HIGH": 2
+        },
+        "nonKeepTs": [
+          {
+            "name": "callback@92",
+            "functionId": "src/analysis/islands.ts:3086",
+            "action": "PARALLELIZE",
+            "level": "HIGH",
+            "confidence": "LOW",
+            "eligibility": "CONDITIONAL",
+            "explanation": "Function-local dependence heuristics found a parallel work candidate; validate aliases and runtime overhead before implementation."
+          },
+          {
+            "name": "validatePipelineDescriptor",
+            "functionId": "src/analysis/pipeline.ts:1917",
+            "action": "PARALLELIZE",
+            "level": "HIGH",
+            "confidence": "LOW",
+            "eligibility": "CONDITIONAL",
+            "explanation": "Function-local dependence heuristics found a parallel work candidate; validate aliases and runtime overhead before implementation."
+          }
+        ]
+      }
+    }
+  },
+  "decision": {
+    "workload": "w1",
+    "kernelGatePercent": 15,
+    "islandsPercent": 0.34,
+    "propagationPercent": 0.32,
+    "graphPassesPercent": 0.7,
+    "typescriptCompilerBoundPercent": 95.32,
+    "typescriptPackageSelfCpuPercent": 71.75,
+    "maxWallGainFromGraphKernelPercent": 0.7,
+    "outcome": "KEEP_TS control case; scale graph kernel to W3 and check the kernel gate in isolation; wall gate not reachable on W1"
+  }
+}

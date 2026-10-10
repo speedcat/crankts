@@ -53,6 +53,9 @@ pnpm dev analyze ../intentweave/packages/analyzer --pipeline evaluation/intentwe
 
 # Include transitive TypeScript project references (opt-in)
 pnpm dev analyze . --workspace-references
+
+# Write per-stage wall time and memory of the analysis itself to a separate file
+pnpm dev analyze . --timings timings.json
 ```
 
 Project-reference analysis creates a separate TypeScript program and checker per referenced project, then joins source-resolved calls using stable workspace-relative IDs. The default remains single-project analysis. Imports whose implementation is available only through declaration files remain external boundaries.
@@ -114,6 +117,8 @@ iw index build --depth full --sink-metrics /tmp/iw-sink-metrics.json --output /t
 ```
 
 The metrics option bypasses the native backend and writes a JSON report outside the index database. Full details and caveats are in [the evaluation history](docs/analysis-and-evaluation.md#mvp-7b-sqlite-sink-measurement).
+
+CrankTS is also its own negative control. Profiling it on the full IntentWeave workspace showed 95% of wall time in TypeScript-compiler-bound stages and 0.7% in its graph passes, and its self-assessment kept every graph kernel `KEEP_TS`. A separate native WCC/Tarjan kernel matched exactly and was 2.9x faster on the real graph including transfer (4.2x at 100× scale), but that saves about 3 ms of 5.9 s. The `GRAPH_BATCH` shape works; offloading it inside CrankTS would not matter. Details: [MVP-9a](evaluation/crankts-mvp9a-self-profile.json), [MVP-9b](evaluation/crankts-mvp9b-graph-crossover.json).
 
 These experiments support an evidence-led workflow, not blind TypeScript-to-Rust translation. When native offload is justified, CrankTS is intended to perform the qualified transformation itself.
 
