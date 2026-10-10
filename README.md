@@ -67,6 +67,9 @@ CrankTS separates a TypeScript program conceptually into different execution dom
                     TypeScript Application
                              │
                              ▼
+
+                            Every call edge also carries a runtime `boundaryKind`, orthogonal to its syntactic call `kind`: `LOCAL_DIRECT`, `LOCAL_METHOD`, `LOCAL_CALLBACK`, `LOCAL_CONSTRUCTOR`, `STDLIB_PURE`, `STDLIB_COLLECTION`, `STDLIB_RUNTIME`, `NODE_IO`, `DATABASE`, `NETWORK`, `PROCESS`, `EXTERNAL_TYPED`, `EXTERNAL_UNKNOWN`, `DYNAMIC`, or `UNRESOLVED`. Island reports retain raw entry/exit counts, count effective edges only when their diagnostic cost is non-zero, and show the boundary-kind histogram.
+
                       CrankTS Analyzer
                              │
               ┌──────────────┴──────────────┐
@@ -922,3 +925,149 @@ CLI orchestration, filesystem access, configuration loading, database access and
 This dogfood phase should answer the central CrankTS hypothesis:
 
 > Can static analysis identify the small subset of a large TypeScript backend where native execution would materially improve CPU throughput, memory consumption or multicore utilization without requiring a full Rust rewrite?
+
+---
+
+# Current Implementation Status
+
+The current v0.1 MVP is an analysis-only CLI. It loads a TypeScript project, inventories functions, resolves in-project calls, classifies typed/runtime-boundary call edges and blockers, propagates eligibility and effects, estimates CPU/memory/parallel opportunity, groups candidate components, and can optionally attach a Node/V8 CPU profile. It never executes the target program.
+
+```bash
+pnpm install
+pnpm dev analyze [target]
+pnpm build
+node dist/cli.js analyze [target]
+```
+
+`target` may be a file or directory; it defaults to the current directory. CrankTS loads the nearest `tsconfig.json`, resolves the full project, and reports target functions together with their transitively resolved local callees. It uses the project's declared and installed TypeScript compiler when available, otherwise its bundled compiler.
+
+The text report shows compiler provenance, `SUPPORTED` / `CONDITIONAL` / `BLOCKED` counts, candidate membership, edge counts, boundary ratio, member/boundary eligibility mix, articulation impact, size diagnostic, blocker explanations, effects, opportunity axes, and Native Priority. Eligibility and effects propagate over resolved in-project call edges, including recursive components; unresolved/external calls retain their direct diagnostics. Candidate components are weakly connected components over supported and conditional functions. No split heuristics are applied.
+
+Static suitability starts at 100, subtracts 15 for each distinct conditional blocker category, and is 0 if any blocking signal is present. Direct effects use conservative syntax and common Node.js API heuristics; transitive effects are unions across resolved calls. CPU, memory, and parallel opportunity are independent syntax/effect heuristics, not measurements.
+
+For each function, Native Priority is:
+
+```text
+round(staticSuitability × max(cpuOpportunity, memoryOpportunity, parallelOpportunity) / 100)
+```
+
+For a candidate island, CrankTS uses the lowest member suitability and the maximum member score on each opportunity axis, then applies the same formula. Candidate quality metrics are diagnostic only and do not change priority or WCC membership:
+
+- `internalEdges`, `entryEdges`, and `exitEdges` count resolved calls inside and across the component boundary. An unresolved/external call from a member is an exit edge.
+- `boundaryRatio = (entryEdges + exitEdges) / (internalEdges + entryEdges + exitEdges)`; it is `0` when the denominator is empty.
+- `eligibilityMix` counts component members; `boundaryEligibilityMix` counts unique known functions adjacent across the boundary. Unknown external endpoints are not included in the latter.
+- Articulation points are calculated on the undirected projection of resolved internal calls using Tarjan's algorithm. `largestArticulationImpact` is the removed node's count outside the largest remaining part, along with resulting part count, largest-part size, and distinct internal callers.
+- `sizePenalty = max(0, memberCount - 20)` is a visible review signal only; 20 is a diagnostic reference, not a calibrated threshold.
+- A shared-helper warning is emitted when the largest-impact articulation also has at least two distinct internal callers. It never triggers an automatic split.
+
+There is no boundary-cost penalty or component-splitting heuristic yet. Analysis does not execute or modify project source files.
+
+Machine-readable output uses a versioned JSON schema. `--min-score` filters candidate islands in the report; function summaries continue to describe the complete selected analysis scope. `--verbose` adds typed call-edge details to text output.
+
+```bash
+pnpm dev analyze test/fixtures/basic --format json
+pnpm dev analyze test/fixtures/basic --verbose
+pnpm dev analyze test/fixtures/basic --min-score 70
+pnpm dev analyze src/ --profile ingest.cpuprofile
+```
+
+Call edges retain their syntactic `kind` and add a separate runtime `boundaryKind`: `LOCAL_DIRECT`, `LOCAL_METHOD`, `LOCAL_CALLBACK`, `LOCAL_CONSTRUCTOR`, `STDLIB_PURE`, `STDLIB_COLLECTION`, `STDLIB_RUNTIME`, `NODE_IO`, `DATABASE`, `NETWORK`, `PROCESS`, `EXTERNAL_TYPED`, `EXTERNAL_UNKNOWN`, `DYNAMIC`, or `UNRESOLVED`. The report summarizes raw and effective entry/exit edges plus counts by boundary kind. Effective counts omit kinds with zero diagnostic cost. Boundary cost units and `LOW` / `MEDIUM` / `HIGH` risk are experimental diagnostics only; they do not modify Native Priority.
+
+Current diagnostic units per crossing edge are: local calls/callbacks and pure/collection standard-library calls `0`; standard runtime and typed external `1`; Node I/O and unknown external `4`; database/process/unresolved `6`; network/dynamic `8`. Risk is `HIGH` if any database, network, process, dynamic, or unresolved edge is present; otherwise `MEDIUM` for Node I/O, unknown external, or at least 8 aggregate units; otherwise `LOW`. These are review aids, not calibrated native-transition costs.
+
+`--profile` accepts Node/V8 `.cpuprofile` JSON with aligned `samples` and `timeDeltas`. CrankTS matches frames to project functions by source path and function name, with common `dist`/`build` JavaScript paths mapped back to `src` TypeScript paths. Source maps, inline/eval frames, and call counts are not inferred. Reports show function/island self CPU, inclusive CPU, sample share, matched-profile coverage, and confidence. When a profile is present, candidate presentation order uses observed island self CPU with static priority as a tie-breaker; `nativePriority` itself is unchanged. High confidence currently requires at least 80% matched sample time and 100 matched samples; medium requires at least 50% and 25 samples; otherwise confidence is low. This is CPU evidence only; heap/allocation profiles are not supported.
+
+The provisional IntentWeave source-review labels are available as machine-readable data in [evaluation/intentweave-index-top16.json](evaluation/intentweave-index-top16.json). They are not profiler-backed ground truth.
+
+No `.cpuprofile` was present in the IntentWeave workspace during this review. The profile-ingestion path is validated with deterministic synthetic V8 samples only; a real IW hotness ranking remains pending an actual captured profile.
+
+Run the fixture suite and static checks with:
+
+```bash
+pnpm test
+pnpm typecheck
+pnpm build
+```
+
+### Initial IntentWeave Dogfood
+
+Read-only package-level analyses were run on 2026-10-10 with Node 22.19 and the project's TypeScript 5.9.3:
+
+| Target | Wall time | Functions (supported / conditional / blocked) | Candidate islands / largest |
+| --- | ---: | ---: | ---: |
+| `packages/index/src` | ~1.7 s | 1,739 (487 / 1,057 / 195) | 334 / 283 |
+| `packages/analyzer/src` | ~0.8 s | 270 (74 / 149 / 47) | 105 / 20 |
+
+### Existing IntentWeave Rust/TypeScript Comparison
+
+IntentWeave already has an end-to-end comparison harness in `packages/cli/src/commands/indexBuildParity.test.ts`. It builds isolated workspaces through the TypeScript path (`--no-native`) and Rust `cari-build`, then compares indexed files, exported functions, and selected SQLite table counts. The Rust CLI documents the same six stage boundaries as the TypeScript pipeline and can emit per-stage timings with `--verbose`.
+
+The existing parity test passed on a tiny fixture and printed `nativeMs=1388`, `tsMs=494`, `ratio=2.81`; Rust was slower for this small input, where process startup and full-pipeline fixed costs dominate. This is a useful correctness/benchmark harness blueprint, not evidence that Rust is slower on a representative repository. It also benchmarks the whole index build, not an individual CrankTS candidate, and does not measure peak RSS or allocations. A realistic comparison should reuse its isolated inputs/output databases, validate full normalized DB parity, run repeated warm/cold samples, capture stage timings and peak RSS, then profile the specific TypeScript candidate separately. No CrankTS score weights were changed from this result.
+
+#### Rust Port Split vs CrankTS Signals
+
+The native implementation is a whole-pipeline `cari-build` subprocess selected instead of the TypeScript fallback; it is not a set of N-API islands. The table compares its ported stages to the corresponding TypeScript source files analyzed by CrankTS. These are stage-level correlations, not proof that the Rust stages were selected because of CrankTS-like scoring.
+
+| Rust stage | TypeScript counterpart | Functions | Priority ≥70 | Highest priority | Read against actual split |
+| --- | --- | ---: | ---: | --- | --- |
+| AX | `analyzer/src/stages/ax.ts` + AX helpers | 64 | 0 | 53 `correctPredicateViolations` | Under-ranked by current opportunity heuristics; the port also covers parsing and filesystem traversal. |
+| KWX | `analyzer/src/stages/in.ts`, `kwg/kwxStage.ts`, `heuristicExtractor.ts` | 37 | 2 | 85 `aggregateEntities` | Strong compute/data-volume alignment. |
+| COX | `analyzer/src/kwg/coxStage.ts` | 5 | 1 | 70 `computeDocumentEdges` | Direct alignment with collection-pair computation. |
+| TCG | `analyzer/src/tcg/{tcx,coc,hot,own,stl}Stage.ts` | 37 | 3 | 81 `computeGini` | Several local compute stages rank highly; git-history loading remains I/O-bound. |
+| IDF | `index/src/idf.ts` | 1 | 0 | 47 `computeIdf` | Small isolated scoring stage; below the current cutoff. |
+| Annotate | `index/src/annotator.ts` | 12 | 0 | 52 `annotate` | Per-mention matching is conditional and allocation-heavy, but not highly ranked. |
+| Write | `index/src/writer.ts` | 47 | 0 | 67 `snapshotConformance` | Mostly SQLite persistence and schema work; low native-island signal is plausible. |
+
+The stage map and counts are stored in [evaluation/intentweave-rust-split.json](evaluation/intentweave-rust-split.json). The earlier Top-16 candidates are mostly query/report code outside the `cari-build` pipeline, so comparing those candidates directly to this Rust split would be an apples-to-oranges evaluation.
+
+The AX function count covers the analyzer AX implementation and helpers; TypeScript file discovery/orchestration (`discoverFiles` and `buildFromPaths`) lives in `packages/index/src/facade.ts` and is recorded separately in the stage-map JSON. Rust folds filesystem walking into its AX stage.
+
+In the index package, 16 of 334 candidate islands scored at least 70. The largest component is conditional, scored 55, and has 1,354 raw exit edges. A separate connectivity check found 59 articulation functions in it; the highest-impact ones include query entry points, and no single function has unusually high fan-in. The analyzer package's largest component is 20 functions.
+
+For the 16 priority-70 index candidates, there are 1,142 raw exits and 439 effective exits. Their boundary-kind histogram includes 24 `LOCAL_DIRECT`, 650 `STDLIB_COLLECTION`, 33 `STDLIB_PURE`, 6 `STDLIB_RUNTIME`, 152 `DATABASE`, 188 `EXTERNAL_TYPED`, and 93 `EXTERNAL_UNKNOWN` directed boundary appearances. Twelve candidates are `HIGH` risk and four are `MEDIUM`; the largest graph-analysis candidate has 271 raw exits but 49 effective exits and `MEDIUM` risk. No real IW `.cpuprofile` was supplied for this review.
+
+These results confirm that WCC can group large regions, but do not yet establish a reliable automatic split rule. Components remain unsplit candidate regions; scores and edge boundaries should guide further review, not be read as measured performance. Each package was analyzed using its own `tsconfig.json`: the monorepo root config is a solution config with no source files, so source-level calls across package references are outside these per-package call graphs.
+
+### Index Top-16 Source Review
+
+The 16 `packages/index/src` candidates with priority at least 70 were manually reviewed against their entry-point implementations. These are provisional source-review labels, not profiler-backed ground truth; machine-readable labels and reason tokens live in [evaluation/intentweave-index-top16.json](evaluation/intentweave-index-top16.json). `S/C/B` means supported/conditional/blocked members; `I/E/X` means internal/entry/exit call edges. Boundary ratio is the diagnostic ratio defined above. Components remain unchanged and unsplit.
+
+| # | Main region | Priority | Members | S/C/B | I/E/X | Raw/Effective exits | Risk | Boundary | Largest articulation (impact) | Size penalty | Review |
+| ---: | --- | ---: | ---: | --- | --- | ---: | --- | ---: | --- | ---: | --- |
+| 1 | `analyzeFocusInsights` | 70 | 74 | 42/32/0 | 95/0/271 | 271/49 | MEDIUM | 0.740 | `analyzeFocusInsights` (37) | 54 | `GOOD_NATIVE_CANDIDATE` |
+| 2 | `insightsBook` graph renderer | 70 | 17 | 7/10/0 | 16/0/43 | 43/13 | MEDIUM | 0.729 | `buildFileLevel` (10) | 0 | `BAD_CANDIDATE` |
+| 3 | `reportFromDb` | 70 | 12 | 5/7/0 | 11/0/49 | 49/32 | HIGH | 0.817 | `reportFromDb` (8) | 0 | `BAD_CANDIDATE` |
+| 4 | `testIntentFromDb` | 70 | 6 | 2/4/0 | 5/0/19 | 19/10 | HIGH | 0.792 | `testIntentFromDb` (4) | 0 | `MAYBE` |
+| 5 | `traceFromDb` | 70 | 5 | 2/3/0 | 4/0/30 | 30/12 | HIGH | 0.882 | `traceFromDb` (3) | 0 | `MAYBE` |
+| 6 | `ruleCoverageFromDb` | 70 | 7 | 2/5/0 | 7/0/40 | 40/16 | HIGH | 0.851 | `ruleCoverageFromDb` (5) | 0 | `BAD_CANDIDATE` |
+| 7 | `testCoverageFromDb` | 70 | 16 | 7/9/0 | 18/0/81 | 81/29 | HIGH | 0.818 | `testCoverageFromDb` (12) | 0 | `MAYBE` |
+| 8 | `mentionsOfFromDb` | 70 | 7 | 1/6/0 | 6/0/21 | 21/10 | HIGH | 0.778 | `mentionsOfFromDb` (5) | 0 | `BAD_CANDIDATE` |
+| 9 | `parseArchitectureYaml` | 70 | 6 | 0/6/0 | 17/0/39 | 39/27 | MEDIUM | 0.696 | `parseArchitectureYaml` (4) | 0 | `BAD_CANDIDATE` |
+| 10 | `consistency` / `livingScore` / `verify` | 70 | 31 | 19/12/0 | 36/3/122 | 122/48 | HIGH | 0.776 | `computeSpecCoverage` (13) | 11 | `MAYBE` |
+| 11 | `deadFeaturesFromDb` | 70 | 6 | 3/3/0 | 5/0/49 | 49/21 | HIGH | 0.907 | `deadFeaturesFromDb` (4) | 0 | `MAYBE` |
+| 12 | `diagramEntityCheck` / `resolveComponent` | 70 | 26 | 13/13/0 | 33/0/137 | 137/58 | HIGH | 0.806 | `diagramEntityCheckFromDb` (13) | 6 | `BAD_CANDIDATE` |
+| 13 | `impactFromDb` | 70 | 15 | 8/7/0 | 14/0/58 | 58/20 | HIGH | 0.806 | `impactFromDb` (10) | 0 | `MAYBE` |
+| 14 | `interfaceConformanceFromDb` | 70 | 8 | 4/4/0 | 8/0/36 | 36/23 | HIGH | 0.818 | `interfaceConformanceFromDb` (6) | 0 | `MAYBE` |
+| 15 | `nameLayers` | 70 | 10 | 4/6/0 | 9/0/26 | 26/5 | MEDIUM | 0.743 | `nameLayers` (5) | 0 | `BAD_CANDIDATE` |
+| 16 | `checkSequenceDiagram` | 70 | 38 | 22/16/0 | 44/1/121 | 121/66 | HIGH | 0.735 | `checkSequenceDiagram` (19) | 18 | `BAD_CANDIDATE` |
+
+Review reasons:
+
+- **#1 GOOD:** in-memory graph/layer analysis repeatedly scans node and edge collections; cluster computations are independent and data-heavy. The callback-heavy WCC inflates the 74-member size and 0.740 boundary ratio, so a profile should confirm that this work is actually hot.
+- **#2 BAD:** graph layout and SVG/DOM rendering are presentation work, not a native compute island.
+- **#3 BAD:** SQL aggregates and report-table scans dominate.
+- **#4 MAYBE:** scans test descriptions and symbol names, then applies string-pattern matching; could be data-heavy, but database reads may dominate.
+- **#5 MAYBE:** performs graph BFS, but issues database queries while expanding the frontier and caps the default result at 50 nodes.
+- **#6 BAD:** performs SQLite lookups for rule participants; predominantly database I/O.
+- **#7 MAYBE:** scans symbols/imports and builds cross-reference maps; potentially data-heavy, but read/DB cost needs profiling.
+- **#8 BAD:** performs a small number of SQLite lookups followed by bounded deduplication and sorting.
+- **#9 BAD:** parses a small architecture configuration; likely a trivial helper cluster rather than a sustained workload.
+- **#10 MAYBE:** includes relationship conflict comparisons and derived scores, but also broad database reads, 122 exits, and a size penalty of 11.
+- **#11 MAYBE:** combines whole-index scans with set-based signal matching; may become data-heavy on large indexes, but current evidence points to DB-bound work.
+- **#12 BAD:** performs repeated SQLite lookups per component/alias; mostly I/O with many exits.
+- **#13 MAYBE:** contains reverse-import BFS and data joins for co-change/document impact; graph work may matter at scale, but the entry point is DB-backed.
+- **#14 MAYBE:** compares class/interface members and signatures after database scans; data-heavy CPU work is plausible, not measured.
+- **#15 BAD:** constructs prompts and calls an external LLM; async/network latency dominates.
+- **#16 BAD:** checks diagram edges against calls/imports in SQLite; diagrams are bounded input and the work is mostly I/O.
+
+Calibration result: this selected set has no score spread; all 16 candidates score exactly 70. The source review yields 1 `GOOD_NATIVE_CANDIDATE`, 7 `MAYBE`, and 8 `BAD_CANDIDATE`. That is a useful false-positive warning for the current cutoff, but not enough data to fit score coefficients. I have not changed priority. In particular, raw boundary ratio alone would penalize the promising graph-analysis candidate, and the current edge count includes many callback and standard-library calls that may not map one-to-one to runtime transitions. A scoring change should wait for edge-kind-aware boundary costs, a broader labeled sample, and profiler evidence.

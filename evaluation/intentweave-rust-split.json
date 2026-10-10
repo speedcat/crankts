@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "project": "IntentWeave",
+  "comparisonType": "pipeline-stage-map",
+  "priorityCalibrationApplied": false,
+  "reviewedAt": "2026-10-10",
+  "groundTruth": false,
+  "analysis": {
+    "cranktsVersion": "0.1.0",
+    "typescriptVersion": "5.9.3",
+    "nodeVersion": "22.19.0",
+    "analysisTargets": ["packages/analyzer/src", "packages/index/src"]
+  },
+  "runtimeSplit": {
+    "type": "whole-pipeline-cli-backend",
+    "nativeBinary": "packages/cari-native/src/main.rs",
+    "typescriptFallback": "packages/index/src/facade.ts#buildFromPaths",
+    "selection": "iw index build uses cari-build when an eligible binary is present; --no-native forces the TypeScript pipeline; failed native builds fall back to TypeScript.",
+    "outputContract": "Both paths write the same SQLite index schema for existing consumers.",
+    "rustStages": ["AX", "KWX", "COX", "TCG", "IDF", "Annotate", "Write"]
+  },
+  "stages": [
+    {
+      "stage": "AX",
+      "rustSource": "packages/cari-native/src/ax/",
+      "typescriptSources": ["packages/analyzer/src/stages/ax.ts", "packages/analyzer/src/stages/ax-helpers.ts", "packages/analyzer/src/stages/ref.ts", "packages/analyzer/src/stages/languageRegistry.ts"],
+      "typescriptOrchestrationSources": ["packages/index/src/facade.ts#discoverFiles", "packages/index/src/facade.ts#buildFromPaths"],
+      "typescriptOrchestrationSources": ["packages/index/src/facade.ts#discoverFiles", "packages/index/src/facade.ts#buildFromPaths"],
+      "cranktsFunctions": 64,
+      "eligibility": { "supported": 17, "conditional": 35, "blocked": 12 },
+      "priority70Plus": 0,
+      "highestPriority": 53,
+      "highestFunction": "correctPredicateViolations"
+    },
+    {
+      "stage": "KWX",
+      "rustSource": "packages/cari-native/src/kwx/",
+      "typescriptSources": ["packages/analyzer/src/stages/in.ts", "packages/analyzer/src/kwg/kwxStage.ts", "packages/analyzer/src/kwg/heuristicExtractor.ts"],
+      "cranktsFunctions": 37,
+      "eligibility": { "supported": 7, "conditional": 30, "blocked": 0 },
+      "priority70Plus": 2,
+      "highestPriority": 85,
+      "highestFunction": "aggregateEntities"
+    },
+    {
+      "stage": "COX",
+      "rustSource": "packages/cari-native/src/cox/",
+      "typescriptSources": ["packages/analyzer/src/kwg/coxStage.ts"],
+      "cranktsFunctions": 5,
+      "eligibility": { "supported": 0, "conditional": 5, "blocked": 0 },
+      "priority70Plus": 1,
+      "highestPriority": 70,
+      "highestFunction": "computeDocumentEdges"
+    },
+    {
+      "stage": "TCG",
+      "rustSource": "packages/cari-native/src/tcg/",
+      "typescriptSources": ["packages/analyzer/src/tcg/tcxStage.ts", "packages/analyzer/src/tcg/cocStage.ts", "packages/analyzer/src/tcg/hotStage.ts", "packages/analyzer/src/tcg/ownStage.ts", "packages/analyzer/src/tcg/stlStage.ts"],
+      "cranktsFunctions": 37,
+      "eligibility": { "supported": 20, "conditional": 14, "blocked": 3 },
+      "priority70Plus": 3,
+      "highestPriority": 81,
+      "highestFunction": "computeGini"
+    },
+    {
+      "stage": "IDF",
+      "rustSource": "packages/cari-native/src/idf/",
+      "typescriptSources": ["packages/index/src/idf.ts"],
+      "cranktsFunctions": 1,
+      "eligibility": { "supported": 0, "conditional": 1, "blocked": 0 },
+      "priority70Plus": 0,
+      "highestPriority": 47,
+      "highestFunction": "computeIdf"
+    },
+    {
+      "stage": "Annotate",
+      "rustSource": "packages/cari-native/src/annotate/", 
+      "typescriptSources": ["packages/index/src/annotator.ts"],
+      "cranktsFunctions": 12,
+      "eligibility": { "supported": 4, "conditional": 8, "blocked": 0 },
+      "priority70Plus": 0,
+      "highestPriority": 52,
+      "highestFunction": "annotate"
+    },
+    {
+      "stage": "Write",
+      "rustSource": "packages/cari-native/src/writer/",
+      "typescriptSources": ["packages/index/src/writer.ts"],
+      "cranktsFunctions": 47,
+      "eligibility": { "supported": 5, "conditional": 38, "blocked": 4 },
+      "priority70Plus": 0,
+      "highestPriority": 67,
+      "highestFunction": "snapshotConformance"
+    }
+  ],
+  "parityHarness": {
+    "source": "packages/cli/src/commands/indexBuildParity.test.ts",
+    "checks": ["indexed file paths", "exported functions", "selected SQLite table counts", "native failure fallback and claims-history preservation"],
+    "performanceAssertion": false,
+    "observedTinyFixtureRun": {
+      "nativeMilliseconds": 1388,
+      "typescriptMilliseconds": 494,
+      "nativeToTypescriptRatio": 2.81,
+      "interpretation": "The native CLI is slower on this tiny fixture; startup/fixed costs dominate. This is not representative repository-scale performance evidence."
+    }
+  },
+  "comparisonNotes": [
+    "CrankTS sees strong opportunity signals in KWX, COX, and parts of TCG, which overlap the Rust-offloaded stages.",
+    "The actual native choice is a whole-pipeline subprocess backend, not function-level extraction or an N-API island.",
+    "AX, IDF, Annotate, and Write are also ported even though their analyzed TypeScript source did not produce priority-70 candidates; this may reflect end-to-end boundary avoidance, but is not proof of native value.",
+    "The top-16 source-review candidates are mostly query/report code outside the cari-build pipeline and must not be compared directly to this stage split.",
+    "No numeric CrankTS priority calibration was performed from this mapping or the tiny-fixture parity timing."
+  ]
+}

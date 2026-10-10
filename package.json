@@ -1,0 +1,31 @@
+{
+  "name": "crankts",
+  "version": "0.1.0",
+  "description": "Static analysis for TypeScript native execution candidates",
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.28.0",
+  "bin": {
+    "crankts": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.4"
+  }
+}
