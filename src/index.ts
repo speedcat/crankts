@@ -17,6 +17,16 @@ export type * from "./lowering/contract.js";
 export { deriveSignatureRepresentation, representType } from "./lowering/representation.js";
 export type { Representation, SignatureRepresentation, TransferCost } from "./lowering/representation.js";
 export { GRAPH_ISLANDS_CONTRACT, KWX_ASCII_SCAN_CONTRACT, REFERENCE_CONTRACTS } from "./lowering/reference-contracts.js";
+export type * from "./lowering/ir.js";
+export { printIrModule } from "./lowering/ir.js";
+export { lowerKernel } from "./lowering/lower.js";
+export type { LoweringDiagnostic, LoweringOptions, LoweringResult } from "./lowering/lower.js";
+export { verifyIrModule } from "./lowering/verify.js";
+export type { IrVerification, VerifyDiagnostic } from "./lowering/verify.js";
+export { interpretIr, KernelTrap } from "./lowering/interpret.js";
+export type { InterpretOptions } from "./lowering/interpret.js";
+export { deriveKernelContract } from "./lowering/derive-contract.js";
+export type { DeriveContractRequest, DerivedContract } from "./lowering/derive-contract.js";
 
 type OutputFormat = "text" | "json";
 

@@ -54,7 +54,7 @@ export const KWX_ASCII_SCAN_CONTRACT: KernelContract = {
     // Flat [dictionary index, UTF-16 offset, UTF-16 length] triples, as in the PoC addon.
     type: { kind: "typedArray", element: "u32" },
     sourceType: "AsciiTermMatch[]",
-    ordering: { kind: "TRAVERSAL_ORDER", description: "token order in text, then dictionary order within a token" },
+    ordering: { kind: "TRAVERSAL_ORDER", description: "first match per term, in term-index (dictionary) order" },
   }],
   batching: { granularity: "ITEM", callsPerPrepare: "MANY" },
   fallback: {

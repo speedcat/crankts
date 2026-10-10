@@ -172,5 +172,5 @@ describe("workspace project-reference analysis", () => {
     }
     expect(JSON.parse(cliOutput).functions.map((functionAnalysis: { name: string }) => functionAnalysis.name))
       .toContain("twice");
-  });
+  }, 30_000); // Builds several TypeScript programs; under parallel test load this exceeds the 5 s default.
 });
