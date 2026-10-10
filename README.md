@@ -129,7 +129,7 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | Milestone | Deliverable |
 | --- | --- |
 | Analysis and validation | Measure native KWX RSS/GC and preserve mutable-dictionary semantics before integration; extend workspace-reference coverage for package methods/constructors; keep worker and sink claims tied to repeated parity-tested runs. |
-| **v0.2: Deterministic Extraction** | Explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
+| **v0.2: Deterministic Extraction** | Done: kernel contracts, boundary representations, and reference contracts for both PoCs ([lowering](docs/lowering.md)). Next: explicitly select and qualify a region in a small supported subset; emit a complete native implementation, stable TS-facing wrapper, and native boundary for one backend; retain TS fallback and generate parity tests and a repeatable benchmark harness. |
 | **v0.3: Automatic Offload** | Introduce a stable Native IR and Rust/N-API backend; gate automatic region selection on proof, workload evidence, and boundary costs; integrate builds and reversible call-path replacement with validation and rollback. |
 
 This is not arbitrary TypeScript-to-Rust translation. Other backends, including WebAssembly and native JIT, remain longer-term options.

@@ -12,6 +12,11 @@ export { renderTextReport } from "./report/text.js";
 export { StageTimer } from "./analysis/timings.js";
 export type * from "./analysis/model.js";
 export type { StageTiming, StageTimingsReport } from "./analysis/timings.js";
+export { SUPPORTED_KERNEL_SHAPES, validateKernelContract } from "./lowering/contract.js";
+export type * from "./lowering/contract.js";
+export { deriveSignatureRepresentation, representType } from "./lowering/representation.js";
+export type { Representation, SignatureRepresentation, TransferCost } from "./lowering/representation.js";
+export { GRAPH_ISLANDS_CONTRACT, KWX_ASCII_SCAN_CONTRACT, REFERENCE_CONTRACTS } from "./lowering/reference-contracts.js";
 
 type OutputFormat = "text" | "json";
 

@@ -306,6 +306,8 @@ MVP-9a is complete: the graph passes are cold on W1 (0.7% of wall), so the outco
 
 MVP-9b is complete as a crossover test (9b.1 to 9b.3). Native WCC/Tarjan matches exactly and wins from about 40 nodes up: 2.9x on W1 including transfer, 4.2 to 5.0x at 100×, and 18 to 43x call only. `GRAPH_BATCH` is therefore confirmed as a shape; its advisor gate is the kernel's wall share, not graph size. CSR preparation is 75 to 90% of the native cost. The CrankTS self-offload ends here. Per [review.md](review.md), the next steps are external candidate discovery (Knip, where `KEEP_TS` is also an allowed outcome) and, in parallel, v0.2a (`PREPARED_STATE` from KWX).
 
+v0.2 now follows the sequence at the end of [review.md](review.md), which supersedes MVP-9c and v0.2a/b above. **v0.2.0 is done:** `src/lowering/` contains the Kernel Contract with fail-closed validation, the boundary representation analysis, and reference contracts for KWX and MVP-9b; see [lowering.md](lowering.md). That covers the planned MVP-9c lowering contract. One correction to v0.2a above: invalidating a handle by checking `Set` identity and size is unsound, so the KWX contract uses `WRAP_MUTATORS`. Next is v0.2.1, a small Kernel IR, together with discharging the reference contracts' `UNPROVEN` obligations.
+
 ## Open Points
 
 - **Workload size:** resolved. W1 is too small for any graph-kernel wall gain (0.7%), and MVP-9b replaced W3 with scaled replays of the real graph.
