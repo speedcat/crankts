@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "subject": "typeorm",
+  "repository": "https://github.com/typeorm/typeorm.git",
+  "release": "1.1.2",
+  "commit": "a0ea55323662dcd3cff1fa5ab6153be43ded80a7",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "osVersion": "26.0",
+    "architecture": "arm64",
+    "model": "Mac15,13",
+    "memoryBytes": 17179869184
+  },
+  "install": [
+    "corepack pnpm@10.34.5 install --frozen-lockfile",
+    "npm install --prefix crankts-workloads --package-lock=true --ignore-scripts"
+  ],
+  "workspaceLockfile": {
+    "path": "pnpm-lock.yaml",
+    "sha256": "1c64af7e28cabeb5e063851bf7710d7e4b0b1083714ab704ce2b5a0e3683d22a"
+  },
+  "workloadLoader": {
+    "package": "tsx",
+    "version": "4.20.6",
+    "packageLockSha256": "fa1c8858f447ad26b1f879f9ca6e136ff5bd02f9b83edd467138eb7f742862c8"
+  },
+  "databaseFixture": {
+    "path": "crankts-workloads/fixtures/commerce.sqlite",
+    "sha256": "b3ca3394cbcad40d1811f36f1e89ddb60c4959dd70e61e2a2b956c572c43ccd9",
+    "bytes": 90931200,
+    "accounts": 2500,
+    "orders": 500000,
+    "orderLines": 1000000,
+    "selectorBuckets": 16384,
+    "generationCommand": "TSX_TSCONFIG_PATH=./packages/typeorm/tsconfig.json node --import=./crankts-workloads/node_modules/tsx/dist/loader.mjs ./crankts-workloads/typeorm-workloads.mjs prepare-query-fixture"
+  },
+  "subjectTestSetup": {
+    "path": "packages/typeorm/ormconfig.json",
+    "ignoredBySubjectGit": true,
+    "contents": [
+      {
+        "skip": false,
+        "type": "better-sqlite3",
+        "database": "temp/crankts-typeorm-tests.sqlite",
+        "logging": false
+      }
+    ]
+  },
+  "subjectTests": {
+    "compile": {
+      "command": "corepack pnpm --filter typeorm run compile",
+      "result": "passed"
+    },
+    "focused": {
+      "command": "node_modules/.bin/mocha --no-config --reporter dot --timeout 90000 ./build/compiled/test/functional/query-builder/select/query-builder-select.test.js",
+      "result": "passed",
+      "tests": 42
+    },
+    "sqliteSuite": {
+      "command": "node_modules/.bin/mocha --config .mocharc.json --reporter dot --grep 'RedisQueryResultCache Integration' --invert",
+      "result": "passed",
+      "passing": 3092,
+      "pending": 176,
+      "excluded": "Redis/Testcontainers integration requires Docker credential helper docker-credential-desktop, unavailable on this host"
+    }
+  },
+  "workloads": [
+    {
+      "name": "metadata-bootstrap-600-entities",
+      "entities": 600,
+      "metricsPerEntity": 16,
+      "baseline": {
+        "runsMs": [8375.4, 13022.61, 17824.96, 14369.05, 18148.47],
+        "medianMs": 14369.05,
+        "checksum": "bc60801bcaa771e4195ff155a952892aeaccc055f28ef5895540f4a452bcfa9b"
+      }
+    },
+    {
+      "name": "relational-insert-500000-orders",
+      "database": "better-sqlite3 :memory:",
+      "accounts": 2500,
+      "orders": 500000,
+      "orderLines": 1000000,
+      "baseline": {
+        "runsMs": [9463.76, 9714.8, 9446.71, 9830.25, 9467.15],
+        "medianMs": 9467.15,
+        "checksum": "73aeebd515a9c867c6791933b292f5d284f8e5dd2b4d4f1ad0de3400e2c3080b"
+      }
+    },
+    {
+      "name": "joined-hydration-20000-varied-queries",
+      "databaseFixture": "crankts-workloads/fixtures/commerce.sqlite",
+      "queries": 20000,
+      "distinctBucketValues": 16384,
+      "joinedRelations": ["account", "lines"],
+      "baseline": {
+        "runsMs": [5787.1, 5656.64, 5452.89, 5582.03, 5763.87],
+        "medianMs": 5656.64,
+        "checksum": "e8b1e842f2ecc3295d0e19230d8b2526c18513220385fb902cccf529354324b0"
+      }
+    }
+  ],
+  "deviations": []
+}

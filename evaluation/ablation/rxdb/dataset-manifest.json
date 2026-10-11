@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "subject": "rxdb",
+  "repository": "https://github.com/pubkey/rxdb.git",
+  "release": "17.6.0",
+  "commit": "9d60a86373730211c291f8c25668fca7aa531887",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "osVersion": "26.0",
+    "architecture": "arm64",
+    "model": "Mac15,13",
+    "memoryBytes": 17179869184
+  },
+  "install": [
+    "npm install --ignore-scripts --package-lock=true",
+    "npm run build:plugins"
+  ],
+  "lockfile": {
+    "path": "package-lock.json",
+    "sha256": "c7e0fb7d185dc9d3b5972a6c0ad3ce8ac5dc25c7a785abc020f8adc07627d1be"
+  },
+  "workloadLoader": {
+    "package": "tsx",
+    "version": "4.23.15"
+  },
+  "subjectTests": {
+    "parallel": {
+      "command": "npm run test:fast:memory",
+      "result": "failed",
+      "passing": 478,
+      "failing": 1,
+      "failure": "EADDRINUSE on port 18678 in replication-websocket.test.ts under Mocha parallel workers"
+    },
+    "serial": {
+      "command": "DEFAULT_STORAGE=memory NODE_ENV=fast node_modules/.bin/mocha --config ./config/.mocharc.cjs --require ./test_tmp/helper/parallel-setup.js --ignore test_tmp/unit/init.test.js ./test_tmp/unit/*.test.js ./test_tmp/unit/database-lifecycle.js",
+      "result": "passed",
+      "tests": 1442
+    }
+  },
+  "workloads": [
+    {
+      "name": "bulk-insert-750000-records",
+      "storage": "getRxStorageMemory",
+      "records": 750000,
+      "index": ["region", "score"],
+      "seed": "record index with fixed modular arithmetic",
+      "baseline": {
+        "runsMs": [19854.69, 11004.23, 18744.78, 20500.12, 10842.35],
+        "medianMs": 18744.78,
+        "checksum": "21d11648b536446b4497fa040fed7e83604e514ec2e1f80801e0c5fd5d4beed5"
+      }
+    },
+    {
+      "name": "indexed-sorted-queries-20000",
+      "storage": "getRxStorageMemory",
+      "seedRecords": 750000,
+      "queries": 20000,
+      "query": "region and score lower bound, sorted by score, limited to 64",
+      "baseline": {
+        "runsMs": [10347.33, 11939.81, 12681.53, 9481.78, 8549.42],
+        "medianMs": 10347.33,
+        "checksum": "bedafca346e055d78545d59e0b11e617227a37b07f1bb1c9529b4cd9ebaef412"
+      }
+    },
+    {
+      "name": "live-query-10000-record-inserts",
+      "storage": "getRxStorageMemory",
+      "changes": 10000,
+      "query": "region-03 sorted by score, limited to 64",
+      "baseline": {
+        "runsMs": [5524.55, 5426.55, 5651.84, 5336.42, 5453.28],
+        "medianMs": 5453.28,
+        "checksum": "c852b67d6b335fd099fa5b73c2012b9bf34abbdb18d533f83f1ddac58d4d0c47"
+      }
+    }
+  ],
+  "deviations": [
+    "The repository's parallel fast-memory test command has a port collision on this host; its exact serial counterpart passes all tests."
+  ]
+}

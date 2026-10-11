@@ -218,7 +218,8 @@ function loadProjectCompiler(projectRoot: string): LoadedCompiler {
 
       if (projectTypescriptPath !== bundledTypescriptPath || hasProjectInstallation) {
         const projectTypescript = projectRequire("typescript") as typeof ts;
-        // TypeScript 7 (the Go port) ships no JavaScript compiler/checker API: analyze with the bundled 5.x.
+        // TypeScript 7 (the Go port) ships no JavaScript compiler/checker API, and releases before 5.0 lack node
+        // predicates the analysis uses (`isTypeAssertionExpression`, ...): analyze with the bundled 5.x.
         if (hasCompilerApi(projectTypescript)) {
           return {
             typescript: projectTypescript,
@@ -241,7 +242,9 @@ function loadProjectCompiler(projectRoot: string): LoadedCompiler {
 function hasCompilerApi(candidate: typeof ts): boolean {
   return typeof candidate.createProgram === "function"
     && typeof candidate.getParsedCommandLineOfConfigFile === "function"
-    && typeof candidate.createCompilerHost === "function";
+    && typeof candidate.createCompilerHost === "function"
+    // Added in TypeScript 5.0 (renamed from `isTypeAssertion`); a project on 3.x or 4.x would crash the analysis.
+    && typeof candidate.isTypeAssertionExpression === "function";
 }
 
 function packageDeclaresTypeScript(packagePath: string): boolean {

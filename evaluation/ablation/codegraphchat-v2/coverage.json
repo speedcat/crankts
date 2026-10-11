@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "codegraphchat-v2-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "24.21.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      4.71,
+      4.29,
+      7.24
+    ]
+  },
+  "subject": {
+    "name": "codegraphchat-v2",
+    "version": "c35c76b5a22032b6ebe733adf7b720ad6f85bcf2",
+    "description": "Workspace validation of 128 branching 2,048-state capture graphs; this revision has no repository-index or query command",
+    "analyzedFunctions": 0
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "none"
+  },
+  "workloads": [
+    {
+      "workload": "capture-graph-workspace-validation",
+      "degraded": "The pinned CLI lacks repository indexing and queries; this validation substitute runs below the protocol's five-second minimum.",
+      "wallMs": 1334,
+      "profiledMs": 1272,
+      "attribution": {
+        "UNATTRIBUTED": 100
+      },
+      "topOrigins": [
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 54.03
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 3.39
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 11.34
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 10.62
+        },
+        {
+          "origin": "thread-stream",
+          "kind": "PACKAGE",
+          "percent": 16.39
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 1.16
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 1.04
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.69
+        },
+        {
+          "origin": "get-tsconfig",
+          "kind": "PACKAGE",
+          "percent": 0.05
+        },
+        {
+          "origin": "chalk",
+          "kind": "PACKAGE",
+          "percent": 0.05
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 0
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 0
+        },
+        {
+          "step": "top call sites (0)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        }
+      ],
+      "phenomena": [],
+      "lowerBlockers": [],
+      "callSites": []
+    }
+  ]
+}

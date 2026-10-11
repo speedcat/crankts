@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "subject": "pdf-lib",
+  "repository": "https://github.com/Hopding/pdf-lib.git",
+  "release": "v1.17.1",
+  "commit": "4beebbef7a261ed0be089bb1d63a5b6e28cc488a",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "osVersion": "26.0",
+    "architecture": "arm64",
+    "model": "Mac15,13",
+    "memoryBytes": 17179869184
+  },
+  "install": [
+    "corepack yarn@1.22.22 install --frozen-lockfile --ignore-scripts",
+    "npm install --prefix crankts-workloads --package-lock=true --ignore-scripts"
+  ],
+  "workloadLoader": {
+    "package": "tsx",
+    "version": "4.20.6",
+    "packageLockSha256": "8a8573940cd6bf83cbaba46e8f2ababd11ecd344e19ae7e3152f12207f0c92f7"
+  },
+  "subjectTests": {
+    "command": "corepack yarn@1.22.22 test",
+    "result": "passed",
+    "suites": 65,
+    "tests": 620
+  },
+  "workloads": [
+    {
+      "name": "create-report-500-page",
+      "input": {
+        "pages": 500,
+        "lineItemsPerPage": 64,
+        "font": "assets/fonts/ubuntu/Ubuntu-R.ttf",
+        "fontSha256": "52c1afa489ae7bfd893af6cdd9f1af258005703600449e70d338caabcff507e5",
+        "image": "assets/images/cat_riding_unicorn_resized.jpg",
+        "imageSha256": "88df7833e052f36310c3baa6ebcd628e566af52b2e9f435d202462924b38205c",
+        "seed": "page and row indices with fixed modular arithmetic"
+      },
+      "baseline": {
+        "runs": 5,
+        "medianMs": 5337.36,
+        "checksum": "9119338c58cf02ef442c38afa52cf55ed312600e93a090f18127ade86ea9c4be"
+      }
+    },
+    {
+      "name": "modify-large-existing-pdf",
+      "input": {
+        "sourcePdf": "assets/pdfs/with_large_page_count.pdf",
+        "sourcePdfSha256": "88fdd9804ab81135c16af4dbfb4bb84aea638eb934f5ee92eabc9e5b288c1f45",
+        "lineItemsPerPage": 32,
+        "font": "assets/fonts/ubuntu/Ubuntu-R.ttf",
+        "fontSha256": "52c1afa489ae7bfd893af6cdd9f1af258005703600449e70d338caabcff507e5",
+        "image": "assets/images/cat_riding_unicorn_resized.jpg",
+        "imageSha256": "88df7833e052f36310c3baa6ebcd628e566af52b2e9f435d202462924b38205c",
+        "seed": "page and row indices with fixed modular arithmetic"
+      },
+      "baseline": {
+        "runs": 5,
+        "medianMs": 7105.62,
+        "checksum": "28fbe45d495148a7893738cb2ba57d9026bcc2a10d80e682bbca2b4266aa87a3"
+      }
+    }
+  ],
+  "deviations": []
+}

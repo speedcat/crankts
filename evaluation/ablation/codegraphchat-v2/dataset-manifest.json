@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "subject": "codegraphchat-v2",
+  "repository": "https://github.com/speedcat/codegraphchat-v2.git",
+  "commit": "c35c76b5a22032b6ebe733adf7b720ad6f85bcf2",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "osVersion": "26.0",
+    "architecture": "arm64",
+    "model": "Mac15,13",
+    "memoryBytes": 17179869184
+  },
+  "install": [
+    "corepack pnpm@10.34.5 install --frozen-lockfile --ignore-scripts"
+  ],
+  "workspaceLockfile": {
+    "path": "pnpm-lock.yaml",
+    "sha256": "5567915314a8f97643299face6acd2506a8c5d4be661f144e3d12a79205cdca2"
+  },
+  "workloadRuntime": {
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  },
+  "dataset": {
+    "path": "crankts-workloads/fixtures/",
+    "artifactCount": 128,
+    "statesPerArtifact": 2048,
+    "transitionsPerArtifact": 4096,
+    "totalStates": 262144,
+    "totalTransitions": 524288,
+    "approximateDirectorySize": "222M",
+    "contentSha256": "377fbd8b4ede232d776b7d40fa4eee02e22b4e19021c51ea1aaae6e6f39bd5b5",
+    "indexFile": "crankts-workloads/fixtures/dataset-index.json",
+    "indexFileSha256": "e433043cdc1cf5bc9fe22572603d0cef54f86df964058e892ef5570b4872b104"
+  },
+  "workload": {
+    "name": "capture-graph-workspace-validation",
+    "operation": "Pinned CLI validateDirectory handler over deterministic linked state-machine capture graphs",
+    "baseline": {
+      "runsMs": [2408.29, 1289.81, 1313.64, 1291.7, 1281.44],
+      "medianMs": 1291.7,
+      "checksum": "00f1f86f48df4b4559ff8e3c74f604154c019b31067ed15df96a8a2ac9b348fe"
+    }
+  },
+  "subjectTests": {
+    "command": "corepack pnpm exec vitest run test/entry-transition-resource-validation.spec.ts",
+    "result": "failed",
+    "passing": 3,
+    "failing": 1,
+    "failure": "Existing assertion expects 'entry->submitted'; implementation returns 'entry → submitted'."
+  },
+  "deviations": [
+    "The pinned cg CLI has no repository-index or query command. Its documented cg run calls a server API, and the repository's own graph-fetch benchmark requires Neo4j and existing chat turns.",
+    "Used a deterministic capture-graph validation workload as the nearest local operation; it is not equivalent to repository indexing or query.",
+    "The five-run median is below the protocol's five-second minimum. Mark this subject degraded and do not count it as a protocol-compliant ablation subject."
+  ]
+}

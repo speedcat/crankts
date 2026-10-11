@@ -113,7 +113,7 @@ for (const [index, workload] of study.workloads.entries()) {
   const base = join(bundleRoot, study.name, slug(workload.name));
   const summary = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", summaryScript, profile, study.cwd], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   if (summary.status !== 0) throw new Error(`profile summary failed: ${summary.stderr}`);
-  const workloadText = `# Workload\n\n${workload.name}\n\nCommand (run from \`${study.cwd}\`):\n\n\`\`\`sh\nnode ${workload.args.join(" ")}\n\`\`\`\n${workload.env ? `\nEnvironment: \`${JSON.stringify(workload.env)}\`\n` : ""}`;
+  const workloadText = `# Workload\n\n${workload.name}${workload.degraded ? `\n\nStatus: degraded - ${workload.degraded}` : ""}\n\nRun from this isolated workload's subject copy:\n\n\`\`\`sh\nnode ${workload.args.join(" ")}\n\`\`\`\n${workload.env ? `\nEnvironment: \`${JSON.stringify(workload.env)}\`\n` : ""}`;
   const evidence = evidenceOf(analysis, phenomena);
   const hypotheses = hypothesesOf(analysis, phenomena);
   for (const arm of ["P", "E", "H"] as const) {

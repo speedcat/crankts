@@ -124,7 +124,13 @@ Amdahl screening from the existing profiles (`evaluation/coverage/parallel-scree
 - **Reading for track P:**
   - No native thread-pool backend is warranted: where parallel work exists, `worker_threads` reach it, and the units are coarse (per source or file).
   - Pipeline-level parallelism in async code is a real advisor topic that CrankTS cannot see today. It needs a stage view (async roots, idle share, serial sinks), which belongs to track A.
-  - The closed-source project is a candidate for that: a ceiling of 1.4–1.7×, unvalidated.
+  - The closed-source project is a candidate for that: a ceiling of 1.4–1.7×, unvalidated. This is a **lower bound**, measured with the local configuration: inline executor, single-writer SQLite. In production it runs with Postgres, several ingester replicas, and process-level workers. There the serial SQLite share leaves the critical path, and the ceiling depends on the deployment instead:
+    - the source as the partition unit (the largest source is the critical path)
+    - wave dependencies between workers
+    - the database's write capacity
+  - A CPU profile of one configuration cannot give the production ceiling. The stage view must report stages and their sinks separately, so that Amdahl can be computed per deployment scenario.
+  - **Measured with Postgres** (local container, N ingester processes over disjoint sources, emulating pods): more ingesters help only up to 2 (1.3×) and then get slower. The database needs 2–3× the application's CPU per entity and is bound by WAL writes. Most of its work is visible only inside the database: a post-insert full-text enrichment `UPDATE` rewrites every row with new entries in all eight indexes, so the database work doubles. Locally this is pessimistic (shared cores, Docker storage), but it moves the question from "how many workers" to "how much database work per entity".
+  - **For CrankTS:** this cost is outside the process. The CPU profile shows only the client waiting on I/O, so neither attribution nor the evidence probe can see it. A `CROSS_BOUNDARY_COST` view (database statements joined to call sites, e.g. via `pg_stat_statements`) would be the evidence feature; like the stage view, it belongs to track A after the ablation.
 
 ## Ground-Truth Findings and Discovery Provenance
 

@@ -61,6 +61,22 @@ Whoever prepares a subject must not read its profile or look for performance pro
 
 5. **Baseline harness:** a script `<repo>/crankts-workloads/measure.sh <workload>` that runs the workload 5 times and prints the median wall time and the checksum. Agents and scoring use the same harness.
 
+## 2b. Pre-Flight Checks (before the first run)
+
+Added after a review of the first preparation, which found E and H bundles with no content. Run all of these; do not start a session until they pass.
+
+1. **The E and H material has content.** In every `crankts-evidence.json`:
+   - `runtimeByAttributionTarget` is not 100% `UNATTRIBUTED`
+   - `callSites` is not empty
+   - `selfTimeByOrigin` lists a project origin (not only `other`)
+
+   An empty analysis means the analysis root does not contain the sources the profile ran, or the project's TypeScript is too old for the analyzer. Use the subject's real project root (for a monorepo the package that holds the sources; for solution-style `tsconfig.json` files add `workspaceReferences: true`), not a synthetic project folder next to it.
+2. **P is clean.** The P arm contains no CrankTS output. Also remove incidental mentions of the tool name from all arms: the folder name `crankts-workloads`, the document author string, and absolute paths such as `crankts-eval` inside the profile.
+3. **A defined test command per subject.** The prompt says "subject tests pass"; give each workspace a fixed, fast, offline command (`crankts-workloads/test.sh`) that runs in the sandbox. Browser suites and suites that need database servers do not run offline. The command must be identical in all arms and pass on the baseline.
+4. **The sandbox works as intended.** In one workspace, check with `/sandbox policy` that network and unsandboxed fallback are off, and that reads outside the workspace fail for: other projects, loose files in the workspace parent, `~/Documents`, `~/Desktop`, `~/Downloads`. A denylist of sibling folders does not cover files and folders created later.
+5. **Workspaces match the bundles** byte for byte, each has one baseline commit and a clean tree, and `measure.sh` runs and prints a checksum.
+6. **Record** model, effort, Copilot Chat version, and who scores, in the run map before the first run.
+
 ## 3. Agent Runs
 
 **Isolation:**

@@ -231,4 +231,19 @@ describe("call-site attribution and acceleration coverage", () => {
     expect(analysis.typescript.source).toBe("bundled");
     expect(analysis.functions.map((fn) => fn.name)).toEqual(["add"]);
   });
+
+  it("falls back to the bundled compiler when the project's TypeScript predates the APIs the analysis uses (3.x, 4.x)", () => {
+    const root = temporary();
+    mkdirSync(join(root, "src"));
+    mkdirSync(join(root, "node_modules/typescript"), { recursive: true });
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "ts3-project", devDependencies: { typescript: "3.9.5" } }));
+    writeFileSync(join(root, "node_modules/typescript/package.json"), JSON.stringify({ name: "typescript", version: "3.9.5", main: "index.js" }));
+    // The old compiler has the program API but not `isTypeAssertionExpression` (added in 5.0 as a rename of `isTypeAssertion`).
+    writeFileSync(join(root, "node_modules/typescript/index.js"), "module.exports = { version: '3.9.5', createProgram() {}, getParsedCommandLineOfConfigFile() {}, createCompilerHost() {}, isTypeAssertion() {} };\n");
+    writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true }, include: ["src"] }));
+    writeFileSync(join(root, "src/index.ts"), "export function add(left: number, right: number): number {\n  return <number>left + right;\n}\n");
+    const analysis = analyzeProject(root);
+    expect(analysis.typescript.source).toBe("bundled");
+    expect(analysis.functions.map((fn) => fn.name)).toEqual(["add"]);
+  });
 });

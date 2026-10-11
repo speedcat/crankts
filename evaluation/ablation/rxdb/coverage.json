@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "rxdb-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "24.21.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      3.19,
+      4.4,
+      7.81
+    ]
+  },
+  "subject": {
+    "name": "rxdb",
+    "version": "17.6.0 (9d60a86373730211c291f8c25668fca7aa531887)",
+    "description": "In-memory RxDB storage with 750k indexed records, repeated sorted queries, and a live query",
+    "analyzedFunctions": 0
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "none"
+  },
+  "workloads": [
+    {
+      "workload": "bulk-insert-750000-records",
+      "wallMs": 6609,
+      "profiledMs": 6418,
+      "attribution": {
+        "UNATTRIBUTED": 100
+      },
+      "topOrigins": [
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 66.12
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 26.48
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.59
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 4.26
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.9
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 0.61
+        },
+        {
+          "origin": "mingo",
+          "kind": "PACKAGE",
+          "percent": 0.13
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.06
+        },
+        {
+          "origin": "rxjs",
+          "kind": "PACKAGE",
+          "percent": 0.05
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 0
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 0
+        },
+        {
+          "step": "top call sites (0)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        }
+      ],
+      "phenomena": [],
+      "lowerBlockers": [],
+      "callSites": []
+    },
+    {
+      "workload": "indexed-sorted-queries-20000",
+      "wallMs": 5651,
+      "profiledMs": 5471,
+      "attribution": {
+        "UNATTRIBUTED": 100
+      },
+      "topOrigins": [
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 72.81
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 16.35
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 6.55
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.72
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 1.38
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 0.7
+        },
+        {
+          "origin": "mingo",
+          "kind": "PACKAGE",
+          "percent": 0.17
+        },
+        {
+          "origin": "rxjs",
+          "kind": "PACKAGE",
+          "percent": 0.06
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.06
+        },
+        {
+          "origin": "custom-idle-queue",
+          "kind": "PACKAGE",
+          "percent": 0.02
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 0
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 0
+        },
+        {
+          "step": "top call sites (0)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        }
+      ],
+      "phenomena": [],
+      "lowerBlockers": [],
+      "callSites": []
+    },
+    {
+      "workload": "live-query-10000-record-inserts",
+      "wallMs": 5248,
+      "profiledMs": 5202,
+      "attribution": {
+        "UNATTRIBUTED": 100
+      },
+      "topOrigins": [
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 95.38
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 1.75
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.87
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.56
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 0.66
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 0.24
+        },
+        {
+          "origin": "mingo",
+          "kind": "PACKAGE",
+          "percent": 0.17
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.17
+        },
+        {
+          "origin": "rxjs",
+          "kind": "PACKAGE",
+          "percent": 0.06
+        },
+        {
+          "origin": "broadcast-channel",
+          "kind": "PACKAGE",
+          "percent": 0.01
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 0
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 0
+        },
+        {
+          "step": "top call sites (0)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        }
+      ],
+      "phenomena": [],
+      "lowerBlockers": [],
+      "callSites": []
+    }
+  ]
+}
