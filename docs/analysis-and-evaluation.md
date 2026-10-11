@@ -74,6 +74,70 @@ Reports include self/inclusive CPU, sample share, matched coverage, and confiden
 
 `cpuProfile.origins` groups sample time by the origin of the sampled leaf frame: `PROJECT`, `PACKAGE` (named after the innermost `node_modules` package), `NODE` (`node:` URLs), `NATIVE` (no URL), `GC`, `PROGRAM`, `IDLE`, or `OTHER`. `selfPercent` covers all samples; `unmatchedPercent` counts only samples whose stack contains no analyzed function. Because a sample counts as matched when any ancestor is analyzed, library time called from project code is matched coverage; the origin breakdown keeps that external leaf time visible.
 
+### Call-Site Attribution and Native-Addon Time (v0.2.6d)
+
+Every sample is billed to the innermost analyzed function on its stack: the function's **call site**. That is where hoisting, caching, or batching would act, even when the time is spent in a dependency. `observedCpu.callSite` splits it into targets:
+
+| Target | Meaning |
+| --- | --- |
+| `FUNCTION_SELF` | the function's own JavaScript, including builtins and regexes it runs directly |
+| `EXTERNAL_DEPENDENCY` | JavaScript (and regexes) of packages it calls |
+| `EXTERNAL_NATIVE` | native addon time |
+| `IO` | `fs`, network, and process bindings |
+| `RUNTIME` | other Node internals and wasm |
+| `UNANALYZED_PROJECT` | project code the analysis did not match |
+
+`entries` lists the dependency functions the call site called directly into, with their time and its **compile-like** part: time under frames named `parse*`, `compile*`, `makeRe`, `toRegex`, `scan*`, `tokenize*`, `lex*`, or `expand*`. `cpuProfile.attribution` sums the targets over the profile; `unattributedPercent` is the startup, module-loading, GC, and idle time that has no analyzed caller.
+
+**N-API calls have no profile frame.** Their time is the self time of the JavaScript frame that called them. CrankTS separates it in two ways:
+
+- **Project frames:** a function's self ticks (V8 `positionTicks`) on lines where it calls a declaration from a native-addon package become `EXTERNAL_NATIVE`. Addon packages are recognized from their manifest: `napi`, `gypfile`, or `binary` fields, `node-gyp-build`/`bindings`/`prebuild-install`/`node-addon-api` dependencies, or per-platform binding packages.
+- **Addon package frames:** their ticks on lines that call the binding (`binding.x(…)`, `parseSyncBinding(…)`) also become `EXTERNAL_NATIVE`. This is a textual check, because packages are not type-checked.
+
+The advisor now derives hotness from `FUNCTION_SELF`, not from raw self time. A frame waiting in Rust is not a native-offload candidate. The report shows `ownCpuSamplePercent` and `causedCpuSamplePercent` next to the raw `cpuSamplePercent`.
+
+### Invariant-Work Detection and Input-Signature Profiling (v0.2.6d)
+
+`HOIST_INVARIANT_WORK` is recognized for profiled call sites; nothing is transformed. A candidate is a call that builds reusable state each time its function runs:
+
+| Kind | Example |
+| --- | --- |
+| `REGEXP` | `new RegExp(…)` |
+| `RETURNS_FUNCTION` | a matcher factory |
+| `PACKAGE_INSTANCE` | `new` of a dependency class |
+| `COMPILE_LIKE_DEPENDENCY` | a dependency entry whose profiled time is at least half compile-like |
+
+Its inputs are classified with the checker:
+
+| Class | Inputs |
+| --- | --- |
+| `STATIC_INVARIANT` | literals, imports, literal module constants, readonly fields |
+| `LOOP_INVARIANT` | nothing declared or assigned inside the enclosing loop |
+| `PARAM_DEPENDENT` | parameters, other calls, or mutable module state |
+| `VARIANT` | mutable locals |
+
+Repetition is what makes hoisting pay, so the advisor requires evidence for it:
+
+- **`LOOP_INVARIANT`** repeats by construction: HIGH confidence.
+- **`STATIC_INVARIANT`** needs at least 2 measured calls: HIGH confidence.
+- **Runtime-dependent inputs** need a measured **reuse ratio** ≥ 0.75 (each input used four times on average), over the whole argument list or one substantial argument path: MEDIUM confidence.
+
+Without that evidence the recommendation stays at LOW confidence and LOW level: it is reported, not recommended. The level is the call's own cost × the share of calls a cache would serve: its compile-like time, its dependency entry's time, or a project callee's inclusive time.
+
+**Input-signature profiling** measures repetition without modifying the source:
+
+```bash
+crankts analyze <project> --profile run.cpuprofile --probe-inputs probe/
+CRANKTS_SIGNATURES_OUT=signatures.json node --import probe/probe.mjs <program>
+crankts analyze <project> --profile run.cpuprofile --input-signatures signatures.json
+```
+
+A load hook serves patched copies in which the probed calls' arguments become `...__cranktsSig(site, [args])`. The callee, `this`, and the argument values are unchanged. The probe records:
+
+- the call count
+- the distinct fingerprints of the whole argument list
+- the distinct fingerprints per argument path (`args[i]` and one level of properties), counted only for substantial values: fingerprints of at least 200 characters, such as pattern lists or source text, not option flags
+
 ### Allocation Profiles
 
 `--heap-profile` accepts Node/V8 `.heapprofile` JSON. `sample.size` represents sampled allocated bytes, not retained heap, RSS, or allocation rate. Self and inclusive allocation shares are separate; mapped ancestors receive inclusive bytes even when the sampled leaf is an unmapped runtime frame. Inclusive bytes overlap and must not be summed across functions.
@@ -92,7 +156,7 @@ Sink adapters are `SQLITE`, `BETTER_SQLITE3`, `NODE_SQLITE`, and `GENERIC`, with
 
 ### Deterministic Recommendations
 
-Assessments separate `feasibility`, `staticOpportunity`, `observedWorkload`, and `optimizationPotential`. Actions are `KEEP_TS`, `OPTIMIZE_ALGORITHM`, `PARALLELIZE`, `CHANGE_DATA_LAYOUT`, `MOVE_OFF_EVENT_LOOP`, `NATIVE_OFFLOAD`, `BATCH_IO`, and `REMOVE_SERIALIZED_SINK`; only evidence-backed rules emit an action.
+Assessments separate `feasibility`, `staticOpportunity`, `observedWorkload`, and `optimizationPotential`. Actions are `KEEP_TS`, `OPTIMIZE_ALGORITHM`, `PARALLELIZE`, `CHANGE_DATA_LAYOUT`, `MOVE_OFF_EVENT_LOOP`, `NATIVE_OFFLOAD`, `BATCH_IO`, `REMOVE_SERIALIZED_SINK`, and `HOIST_INVARIANT_WORK` (v0.2.6d, recognition only). Only evidence-backed rules emit an action.
 
 Algorithm/layout manifest hints are declared evidence, not inferred facts. Self-CPU review bands are 20% (`VERY_HIGH`), 10% (`HIGH`), and 2% (`MEDIUM`), all provisional. Low coverage caps native potential and remains attached to provisional recommendations. No recommendation currently triggers generation or execution.
 

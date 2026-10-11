@@ -6,8 +6,9 @@ import { createCompilerFacade } from "../compiler/compiler-facade.js";
 import { emitRustCrate, RustBackendError } from "./backend-rust.js";
 import { validateKernelContract, type ContractDiagnostic, type KernelContract, type SupportedKernelShape } from "./contract.js";
 import { deriveKernelContract } from "./derive-contract.js";
+import { analyzeIntegers } from "./integer-analysis.js";
 import { printIrModule, type IrModule } from "./ir.js";
-import { lowerKernel, type LoweringDiagnostic } from "./lower.js";
+import { kernelFunctionOf, lowerKernel, type KernelFunction, type LoweringDiagnostic } from "./lower.js";
 import type { VerifyDiagnostic } from "./verify.js";
 import { emitTypeScriptWrapper } from "./wrapper-ts.js";
 import { planRegionExtraction, type LineRange, type RegionPlan } from "./region.js";
@@ -405,7 +406,27 @@ function extractBatched(request: ExtractRequest, alias: string): ExtractResult {
   if (!derived.ok) {
     return { ok: false, stage: "verify", messages: derived.errors.map(formatVerifyDiagnostic) };
   }
-  const contract: KernelContract = { ...derived.contract, source: `${sourceFile}#${plan.function}` };
+  // TOTAL_ORDER_KEY: the numeric comparator keys must be exact integers in the kernel (no NaN, no rounding).
+  const integers = analyzeIntegers(execute.module);
+  const unprovenKeys = plan.orderKeys.filter((key) => !integers.localInt(plan.batchName, key));
+  if (unprovenKeys.length > 0) {
+    return { ok: false, stage: "verify", messages: [`TOTAL_ORDER_KEY unproven: comparator keys ${unprovenKeys.join(", ")} are not provably exact integers`] };
+  }
+  const contract: KernelContract = {
+    ...derived.contract,
+    source: `${sourceFile}#${plan.function}`,
+    proofObligations: [
+      ...derived.contract.proofObligations,
+      ...(plan.orderKeys.length > 0 ? [{
+        kind: "TOTAL_ORDER_KEY" as const,
+        subject: `${plan.batchName} comparator keys`,
+        status: "PROVEN" as const,
+        evidence: `integer analysis: ${plan.orderKeys.join(", ")} are exact integers (|v| <= 2^53), so differences are never NaN`,
+      }] : []),
+      ...patched.obligations,
+    ],
+    typescriptSemantics: [...derived.contract.typescriptSemantics, ...plan.typescriptSemantics],
+  };
   const validation = validateKernelContract(contract);
   if (!validation.lowerable) {
     return {
@@ -466,11 +487,12 @@ function lowerTarget(target: string): Lowered {
   const candidates = collectFunctions(facade).definitions.filter((definition) => (
     definition.absoluteFile === file && definition.name === name
   ));
-  const declaration = candidates
-    .map((definition) => ({ definition, node: definition.node }))
-    .find((candidate): candidate is { definition: typeof candidate.definition; node: ts.FunctionDeclaration } => (
-      candidate.definition.compilerFacade.typescript.isFunctionDeclaration(candidate.node)
-    ));
+  const typescriptApi = candidates[0]?.compilerFacade.typescript;
+  const declaration = typescriptApi ? candidates
+    .map((definition) => ({ definition, node: kernelFunctionOf(typescriptApi, definition.node) }))
+    .find((candidate): candidate is { definition: typeof candidate.definition; node: KernelFunction } => (
+      candidate.node !== undefined && !typescriptApi.isMethodDeclaration(candidate.node)
+    )) : undefined;
   if (!declaration) {
     return {
       ok: false,
@@ -478,13 +500,16 @@ function lowerTarget(target: string): Lowered {
         ok: false,
         stage: "select",
         messages: [candidates.length > 0
-          ? `${name} in ${file} is not a function declaration`
+          ? `${name} in ${file} is not a function declaration or const arrow function`
           : `no function ${name} found in ${file}`],
       },
     };
   }
   const typescript = declaration.definition.compilerFacade.typescript;
-  const exported = declaration.node.modifiers?.some((modifier) => modifier.kind === typescript.SyntaxKind.ExportKeyword) ?? false;
+  // Exported function declaration, or `export const name = (…) => …`.
+  const exportHolder = typescript.isFunctionDeclaration(declaration.node) ? declaration.node : declaration.node.parent?.parent?.parent;
+  const exported = exportHolder !== undefined && typescript.canHaveModifiers(exportHolder)
+    && (typescript.getModifiers(exportHolder)?.some((modifier) => modifier.kind === typescript.SyntaxKind.ExportKeyword) ?? false);
   if (!exported) {
     return {
       ok: false,

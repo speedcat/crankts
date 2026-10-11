@@ -217,10 +217,14 @@ function loadProjectCompiler(projectRoot: string): LoadedCompiler {
       const hasProjectInstallation = existsSync(join(projectRoot, "node_modules", "typescript"));
 
       if (projectTypescriptPath !== bundledTypescriptPath || hasProjectInstallation) {
-        return {
-          typescript: projectRequire("typescript") as typeof ts,
-          source: "project",
-        };
+        const projectTypescript = projectRequire("typescript") as typeof ts;
+        // TypeScript 7 (the Go port) ships no JavaScript compiler/checker API: analyze with the bundled 5.x.
+        if (hasCompilerApi(projectTypescript)) {
+          return {
+            typescript: projectTypescript,
+            source: "project",
+          };
+        }
       }
     } catch {
       // A declared but unavailable project compiler falls back to CrankTS's compiler.
@@ -231,6 +235,13 @@ function loadProjectCompiler(projectRoot: string): LoadedCompiler {
     typescript: bundledTypescript,
     source: "bundled",
   };
+}
+
+/** The parts of the TypeScript API CrankTS needs (absent from TypeScript 7's JavaScript package). */
+function hasCompilerApi(candidate: typeof ts): boolean {
+  return typeof candidate.createProgram === "function"
+    && typeof candidate.getParsedCommandLineOfConfigFile === "function"
+    && typeof candidate.createCompilerHost === "function";
 }
 
 function packageDeclaresTypeScript(packagePath: string): boolean {

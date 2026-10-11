@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import type * as ts from "typescript";
 import { collectFunctions } from "../analysis/functions.js";
 import { createCompilerFacade } from "../compiler/compiler-facade.js";
+import type { ProofObligation } from "./contract.js";
 import { applyEdits, relativeImportEdits, type Edit } from "./region.js";
 
 /**
@@ -59,7 +60,19 @@ export interface BatchInternPlan {
    * batched into one `f__batch` call before the statement, and the graph's producer seals G (upstream
    * packing) right after its declaration, once G is proven immutable for the rest of the function.
    */
-  readonly patchedSource: (integrationImport: string, patchedFile: string) => { readonly text: string; readonly diagnostics: readonly string[] };
+  readonly patchedSource: (integrationImport: string, patchedFile: string) => {
+    readonly text: string;
+    readonly diagnostics: readonly string[];
+    /** IMMUTABLE_AFTER_CAPTURE per batched call site, IMMUTABLE_DURING_HANDLE per sealed graph. */
+    readonly obligations: readonly ProofObligation[];
+  };
+  /**
+   * Locals of the batch kernel holding the numeric comparator keys of each candidate. Extraction proves
+   * them exact integers with the integer analysis (TOTAL_ORDER_KEY), so `a - b` never yields NaN.
+   */
+  readonly orderKeys: readonly string[];
+  /** Comparator semantics kept in TypeScript (id terms resolved by the adapter on ties). */
+  readonly typescriptSemantics: readonly string[];
 }
 
 export type BatchInternResult =
@@ -109,6 +122,8 @@ class BatchPass {
   private readonly renames = new Map<ts.Symbol, string>();
   private temp = 0;
   private readonly replacements = new Map<ts.Node, string>();
+  private readonly orderKeys: string[] = [];
+  private readonly keptSemantics: string[] = [];
   /** Frame fields assigned through a frame binding; the others are captured when the binding is made. */
   private readonly mutatedFrameFields = new Set<string>();
 
@@ -206,6 +221,8 @@ class BatchPass {
           .map((statement) => ({ specifier: (statement.moduleSpecifier as ts.StringLiteral).text, text: statement.getText(this.sourceFile) })),
         sourceDirectory: dirname(this.sourceFile.fileName),
         patchedSource: (integrationImport, patchedFile) => this.patchCallSites(integrationImport, patchedFile),
+        orderKeys: this.orderKeys,
+        typescriptSemantics: this.keptSemantics,
       },
     };
   }
@@ -703,6 +720,8 @@ class BatchPass {
         const right = side(term.right);
         if (left && right) {
           numeric.push(`(${left} - ${right})`);
+          // The candidate side is a kernel local; its integer proof (TOTAL_ORDER_KEY) is checked after lowering.
+          for (const local of [left, right]) if (/^__\w+$/.test(local) && !this.orderKeys.includes(local)) this.orderKeys.push(local);
           continue;
         }
       }
@@ -711,6 +730,8 @@ class BatchPass {
         const field = term.expression.expression.name.text;
         if (best.fields.find((entry) => entry.name === field)?.id && side(term.expression.expression) && side(term.arguments[0] as ts.Node)) {
           idTerms += 1;
+          const semantics = `${best.name}: \`${term.getText(this.sourceFile)}\` resolved in TypeScript among numerically tied candidates`;
+          if (!this.keptSemantics.includes(semantics)) this.keptSemantics.push(semantics);
           continue;
         }
       }
@@ -718,7 +739,8 @@ class BatchPass {
       return undefined;
     }
     if (numeric.length === 0) return undefined;
-    return numeric.reduceRight((rest, term) => `(${term} !== 0 && ${term} === ${term} ? ${term} : ${rest})`);
+    // `a || b` on numbers; the keys are proven exact integers (TOTAL_ORDER_KEY), so 0 is the only falsy value.
+    return numeric.reduceRight((rest, term) => `(${term} !== 0 ? ${term} : ${rest})`);
   }
 
   // --- normalizations ---------------------------------------------------------------------------
@@ -837,9 +859,10 @@ class BatchPass {
 
   // --- call-site batching and upstream sealing ----------------------------------------------------
 
-  private patchCallSites(integrationImport: string, patchedFile: string): { text: string; diagnostics: string[] } {
+  private patchCallSites(integrationImport: string, patchedFile: string): { text: string; diagnostics: string[]; obligations: ProofObligation[] } {
     const t = this.t;
     const diagnostics: string[] = [];
+    const obligations: ProofObligation[] = [];
     const name = this.fn.name?.text ?? "";
     const self = this.fn.name ? this.checker.getSymbolAtLocation(this.fn.name) : undefined;
     const membersPosition = this.fn.parameters.findIndex((parameter) => parameter.name.getText(this.sourceFile) === this.members);
@@ -861,7 +884,26 @@ class BatchPass {
             end: site.statement.getStart(this.sourceFile),
             text: `const ${batch} = __cranktsBatch.${name}Batch(${name}, ${site.groups.getText(this.sourceFile)}, ${site.graph.getText(this.sourceFile)});\n${indentText}`,
           });
-          edits.push({ start: node.getStart(this.sourceFile), end: node.getEnd(), text: `(${batch}[${site.index}] as ReturnType<typeof ${name}>)` });
+          // The group is compared with the batch's captured copy where the result is used; a changed group
+          // recomputes with the original (IMMUTABLE_AFTER_CAPTURE, GUARDED).
+          const args = node.arguments.map((argument) => argument.getText(this.sourceFile)).join(", ");
+          edits.push({
+            start: node.getStart(this.sourceFile),
+            end: node.getEnd(),
+            text: `__cranktsBatch.take(${batch}, ${site.index}, ${site.group}, () => ${name}(${args}))`,
+          });
+          obligations.push({
+            kind: "IMMUTABLE_AFTER_CAPTURE",
+            subject: `${name} group ${site.group} (line ${this.line(node)})`,
+            status: "GUARDED",
+            runtimeGuard: "at use, the group must equal the copy captured by the batch call (same length, identical ids); otherwise the original runs for that group",
+          });
+          obligations.push({
+            kind: "IMMUTABLE_AFTER_CAPTURE",
+            subject: `${name} graph ${site.graph.text} (line ${this.line(node)})`,
+            status: "PROVEN",
+            evidence: `${site.graph.text} is a const whose producer leaves no other alias; inside the batched statement it is only passed as ReadonlyMap`,
+          });
           const graphSymbol = this.checker.getSymbolAtLocation(site.graph);
           if (graphSymbol && !sealed.has(graphSymbol)) {
             sealed.add(graphSymbol);
@@ -870,6 +912,12 @@ class BatchPass {
               diagnostics.push(`graph ${site.graph.text} is not sealed (per-call packing instead): ${seal}`);
             } else {
               edits.push({ start: seal.getEnd(), end: seal.getEnd(), text: `\n${" ".repeat(this.column(seal))}__cranktsBatch.sealGraph(${site.graph.text});` });
+              obligations.push({
+                kind: "IMMUTABLE_DURING_HANDLE",
+                subject: `sealed graph ${site.graph.text} (line ${this.line(seal)})`,
+                status: "PROVEN",
+                evidence: "const binding; every later reference is a ReadonlyMap<_, ReadonlySet<_>> argument or the batched call; producer locals are only built and returned",
+              });
             }
           }
         }
@@ -885,12 +933,13 @@ class BatchPass {
         ...relativeImportEdits(this.sourceFile, dirname(this.sourceFile.fileName), dirname(patchedFile), { t }),
       ]),
       diagnostics,
+      obligations,
     };
   }
 
   /** `GROUPS.map((group, index) => ... f(group, G) ...)` with GROUPS and G bound before the statement. */
   private batchSite(call: ts.CallExpression, membersPosition: number, graphPosition: number):
-    { statement: ts.Statement; groups: ts.Identifier; graph: ts.Identifier; index: string; call: ts.CallExpression } | string {
+    { statement: ts.Statement; groups: ts.Identifier; graph: ts.Identifier; group: string; index: string; call: ts.CallExpression } | string {
     const t = this.t;
     const membersArgument = call.arguments[membersPosition];
     const graph = call.arguments[graphPosition];
@@ -939,7 +988,12 @@ class BatchPass {
     for (const use of groupSymbol ? this.referencesIn(groupSymbol, callbackBody) : []) {
       if (!this.isNonMutatingArrayUse(use, call)) return `group ${groupParameter.name.text} may be mutated at line ${this.line(use)}`;
     }
-    return { statement: statement as ts.Statement, groups, graph, index: indexParameter.name.text, call };
+    // Hoisting also needs G unchanged through the statement even if it cannot be sealed: no producer alias.
+    if (graphSymbol) {
+      const producer = this.producerAliasFree(graphSymbol);
+      if (producer !== undefined) return `${graph.text}: ${producer}`;
+    }
+    return { statement: statement as ts.Statement, groups, graph, group: groupParameter.name.text, index: indexParameter.name.text, call };
   }
 
   private isNonMutatingArrayUse(use: ts.Identifier, call: ts.CallExpression): boolean {
@@ -979,6 +1033,35 @@ class BatchPass {
         return `reference at line ${this.line(use)} is not a ReadonlyMap<_, ReadonlySet<_>> argument`;
       }
     }
+    const producer = this.producerAliasFree(graph);
+    if (producer !== undefined) return producer;
+    return statement;
+  }
+
+  /** In G's declaring statement, graph-typed locals are only built and returned: no other alias survives it. */
+  private producerAliasFree(graph: ts.Symbol): string | undefined {
+    const t = this.t;
+    const declaration = graph.valueDeclaration;
+    if (!declaration) return "no declaration";
+    let statement: ts.Node = declaration;
+    while (statement.parent && !t.isBlock(statement.parent)) statement = statement.parent;
+    if (!t.isVariableStatement(statement) || !(statement.declarationList.flags & t.NodeFlags.Const)) return "must be a const binding";
+    // G and its sets are created here (`new Map`, `new Set`), not aliases of maps or sets that live on.
+    if (t.isVariableDeclaration(declaration) && !(declaration.initializer && t.isNewExpression(declaration.initializer))) {
+      return "must be initialized with `new Map(...)` (or returned by a producer that builds it)";
+    }
+    let aliased: string | undefined;
+    const findSetAliases = (node: ts.Node): void => {
+      if (t.isTypeNode(node)) return;
+      if (t.isIdentifier(node) && !t.isPropertyAccessExpression(node.parent) && !(t.isVariableDeclaration(node.parent) && node.parent.name === node)
+        && !(t.isNewExpression(node.parent) && node.parent.expression === node)) {
+        const type = this.checker.typeToString(this.checker.getTypeAtLocation(node));
+        if (/^(Readonly)?Set</.test(type)) aliased ??= `the set ${node.text} at line ${this.line(node)} may alias storage outside the producer`;
+      }
+      node.forEachChild(findSetAliases);
+    };
+    findSetAliases(statement);
+    if (aliased) return aliased;
     const graphLocals = new Set<ts.Symbol>();
     const collect = (node: ts.Node): void => {
       if (t.isVariableDeclaration(node) && t.isIdentifier(node.name)) {
@@ -1000,7 +1083,7 @@ class BatchPass {
         if (!builds && !returned) return `local graph ${local.getName()} escapes at line ${this.line(use)}`;
       }
     }
-    return statement;
+    return undefined;
   }
 
   private referencesIn(symbol: ts.Symbol, scope: ts.Node): ts.Identifier[] {

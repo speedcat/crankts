@@ -112,14 +112,14 @@ ${decode}
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { ${kernel} } from "./packed.js";
-import { pack${pascal(kernel)}, PackingGuard, unpack${pascal(kernel)}, type PackedBatch } from "./adapters.js";
+import { pack${pascal(kernel)}, PackingGuard, sameIds, unpack${pascal(kernel)}, type PackedBatch } from "./adapters.js";
 
 export { sealedGraphStats, sealGraph } from "./adapters.js";
 
 ${wrapperRuntime(library, envVariable, false)}
 
 /** Batches served by the packed TypeScript (no addon) and packing guards that ran the original per group. */
-export const packedStatus = { packedTypeScriptCalls: 0, packingGuards: 0 };
+export const packedStatus = { packedTypeScriptCalls: 0, packingGuards: 0, captureGuards: 0 };
 
 type Original = (...args: never[]) => unknown;
 type Groups = readonly (readonly string[])[];
@@ -148,7 +148,14 @@ export const variants = {
   unpack: unpack${pascal(kernel)},
 };
 
-export function ${name}Batch<F extends Original>(original: F, groups: Groups, graph: Graph): ReturnType<F>[] {
+/** One batch: the per-group results and the groups as captured when the batch ran. */
+export interface BatchResult<T> {
+  readonly results: readonly T[];
+  readonly captured: readonly (readonly string[])[];
+}
+
+export function ${name}Batch<F extends Original>(original: F, groups: Groups, graph: Graph): BatchResult<ReturnType<F>> {
+  const captured = groups.map((group) => group.slice());
   const perGroup = (): ReturnType<F>[] => groups.map((group) => (original as unknown as (...values: unknown[]) => ReturnType<F>)(group, graph));
   let packed: PackedBatch;
   try {
@@ -156,7 +163,7 @@ export function ${name}Batch<F extends Original>(original: F, groups: Groups, gr
   } catch (error) {
     if (error instanceof PackingGuard) {
       packedStatus.packingGuards += 1;
-      return perGroup();
+      return { results: perGroup(), captured };
     }
     throw error;
   }
@@ -165,14 +172,25 @@ export function ${name}Batch<F extends Original>(original: F, groups: Groups, gr
     try {
       const result = kernel(...packed.args) as ArrayLike<number>;
       nativeStatus.nativeCalls += 1;
-      return unpack${pascal(kernel)}(result, packed.ids) as ReturnType<F>[];
+      return { results: unpack${pascal(kernel)}(result, packed.ids) as ReturnType<F>[], captured };
     } catch (error) {
       handleNativeFailure(error, "${kernel}");
-      return perGroup();
+      return { results: perGroup(), captured };
     }
   }
   packedStatus.packedTypeScriptCalls += 1;
-  return unpack${pascal(kernel)}(${kernel}(...packed.args), packed.ids) as ReturnType<F>[];
+  return { results: unpack${pascal(kernel)}(${kernel}(...packed.args), packed.ids) as ReturnType<F>[], captured };
+}
+
+/**
+ * IMMUTABLE_AFTER_CAPTURE guard: the batched result of group \`index\` is used only if the group still equals
+ * the copy captured by the batch call; otherwise \`recompute\` (the original call) runs for that group.
+ */
+export function take<T>(batch: BatchResult<T>, index: number, group: readonly string[], recompute: () => T): T {
+  const captured = batch.captured[index];
+  if (captured !== undefined && index < batch.results.length && sameIds(captured, group)) return batch.results[index] as T;
+  packedStatus.captureGuards += 1;
+  return recompute();
 }
 `;
 

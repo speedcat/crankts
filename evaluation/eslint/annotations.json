@@ -1,0 +1,222 @@
+{
+  "linter/source-code-visitor.js:4354": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules. The self-lint workload spends 10-18% of the runtime inside the rules of eslint-plugin-jsdoc (comment-parser, jsdoccomment), which are third-party rule code."
+  },
+  "languages/js/index.js:8039": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Parse via espree/acorn once per file (distinct sources); Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+  },
+  "linter/linter.js:17395": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/index.js:1721": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Scope analysis via eslint-scope/esrecurse once per file; Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+  },
+  "linter/esquery.js:13063": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "CHANGE_ALGORITHM"
+    ],
+    "missingEvidence": [
+      "whether selector matching dominates over node-type prefiltering that already exists",
+      "per-selector-type cost split"
+    ],
+    "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
+  },
+  "languages/js/source-code/token-store/cursors.js:1854": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/source-code-traverser.js:9431": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+  },
+  "linter/source-code-traverser.js:5235": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "PREPARE_STATE"
+    ],
+    "missingEvidence": [
+      "whether per-node-type listener lists are already cached (a hit rate)"
+    ],
+    "note": "calculateSelectorMatches per node type: a cacheable index of selectors by node type if not already memoized."
+  },
+  "linter/linter.js:19095": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/linter.js:32475": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "eslint/eslint-helpers.js:10696": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/source-code-visitor.js:1305": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+  },
+  "config/flat-config-schema.js:3829": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "eslint/eslint.js:38474": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "shared/traverser.js:3106": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Recursive AST walk over dynamic nodes with `this`-bound state; per-node dispatch."
+  },
+  "linter/source-code-traverser.js:8821": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+  },
+  "languages/js/source-code/token-store/index.js:1316": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "PACK_DATA"
+    ],
+    "missingEvidence": [
+      "tokens are objects with many fields; a columnar index would change every token consumer"
+    ],
+    "note": "createIndexMap builds range-to-index maps over the token array once per file (token starts/ends are integers): a packed-array candidate, but small (<2%) and a large producer change."
+  },
+  "linter/interpolate.js:997": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/index.js:10121": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/code-path-analysis/code-path-analyzer.js:10752": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/code-path-analysis/code-path-analyzer.js:14463": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "shared/logging.js:285": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "config/config.js:12014": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "HOIST_INVARIANT_WORK"
+    ],
+    "missingEvidence": [
+      "ajv schema compile per validator: repeated schemas across calls (the code caches validators by key; check the hit rate)"
+    ],
+    "note": "getOrCreateValidator compiles JSON schemas (ajv) for rule options; schemas are per rule, compiled once if cached."
+  },
+  "linter/code-path-analysis/code-path-analyzer.js:19718": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/source-code/source-code.js:35215": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "config/config.js:1984": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/sort-keys.js:3854": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/source-code/source-code.js:35373": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-octal-escape.js:745": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/source-code/token-store/cursor.js:1811": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/source-code/source-code.js:21523": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-useless-assignment.js:16826": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-useless-assignment.js:16187": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "languages/js/source-code/source-code.js:2908": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "PACK_DATA"
+    ],
+    "missingEvidence": [
+      "merge of two token/comment arrays by range start; only worthwhile if a columnar token layout exists"
+    ],
+    "note": "sortedMerge of tokens and comments."
+  },
+  "rules/no-unused-vars.js:21262": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-redeclare.js:1583": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-useless-assignment.js:8066": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/constructor-super.js:7464": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "config/config.js:18782": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/func-style.js:1875": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-control-regex.js:1231": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-use-before-define.js:11354": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-unmodified-loop-condition.js:8403": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/require-atomic-updates.js:2685": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "rules/no-misleading-character-class.js:9611": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  },
+  "linter/file-report.js:9231": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+  }
+}

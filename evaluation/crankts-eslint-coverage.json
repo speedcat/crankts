@@ -1,0 +1,3781 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "eslint-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      5.63,
+      13.3,
+      16.43
+    ]
+  },
+  "subject": {
+    "name": "eslint",
+    "version": "10.12.0",
+    "description": "ESLint linting its own code with its repository config, and real JS corpora with all core or recommended rules",
+    "analyzedFunctions": 4136
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "/Users/benjaminbecker/Workspace/crankts/evaluation/eslint/annotations.json"
+  },
+  "workloads": [
+    {
+      "workload": "eslint (self, repo config)",
+      "wallMs": 6212,
+      "profiledMs": 6109,
+      "attribution": {
+        "IO": 0.91,
+        "EXTERNAL_DEPENDENCY": 54.03,
+        "UNANALYZED_PROJECT": 3.12,
+        "FUNCTION_SELF": 17.08,
+        "RUNTIME": 1.71,
+        "UNATTRIBUTED": 23.25
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 19.73
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 11.92
+        },
+        {
+          "origin": "eslint-plugin-jsdoc",
+          "kind": "PACKAGE",
+          "percent": 11.79
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 10.21
+        },
+        {
+          "origin": "@es-joy/jsdoccomment",
+          "kind": "PACKAGE",
+          "percent": 7.07
+        },
+        {
+          "origin": "comment-parser",
+          "kind": "PACKAGE",
+          "percent": 5.33
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 3.99
+        },
+        {
+          "origin": "enhanced-resolve",
+          "kind": "PACKAGE",
+          "percent": 3.66
+        },
+        {
+          "origin": "eslint-plugin-unicorn",
+          "kind": "PACKAGE",
+          "percent": 3.1
+        },
+        {
+          "origin": "esquery",
+          "kind": "PACKAGE",
+          "percent": 3.21
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 76.75
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 17.08
+        },
+        {
+          "step": "top call sites (12)",
+          "percent": 61.6
+        },
+        {
+          "step": "human-plausible",
+          "percent": 4.19
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 0.25,
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 45.06
+        },
+        {
+          "reason": "other: type Object: struct field constructor: struct field apply mu",
+          "percent": 4.2
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 3.47
+        },
+        {
+          "reason": "other: type RuleDefinition<RuleDefinitionTypeOptions>: struct field",
+          "percent": 3.27
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 3.26
+        },
+        {
+          "reason": "class instances",
+          "percent": 0.97
+        },
+        {
+          "reason": "async or generator",
+          "percent": 0.7
+        },
+        {
+          "reason": "other: type Function: struct field apply must be a required, non-me",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "linter/source-code-visitor.js:4354",
+          "name": "SourceCodeVisitor.callSync",
+          "attributedPercent": 41.18,
+          "ownPercent": 1.51,
+          "byTarget": {
+            "FUNCTION_SELF": 1.51,
+            "EXTERNAL_DEPENDENCY": 38.78,
+            "IO": 0.58,
+            "RUNTIME": 0.37,
+            "UNANALYZED_PROJECT": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-plugin-jsdoc",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.39
+            },
+            {
+              "origin": "@es-joy/jsdoccomment",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.86
+            },
+            {
+              "origin": "comment-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 5.97
+            },
+            {
+              "origin": "enhanced-resolve",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.88
+            },
+            {
+              "origin": "eslint-plugin-unicorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.08
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules. The self-lint workload spends 10-18% of the runtime inside the rules of eslint-plugin-jsdoc (comment-parser, jsdoccomment), which are third-party rule code."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:8039",
+          "name": "parse",
+          "attributedPercent": 3.47,
+          "ownPercent": 0.03,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.49,
+            "FUNCTION_SELF": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "acorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.8
+            },
+            {
+              "origin": "espree",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.68
+            },
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Parse via espree/acorn once per file (distinct sources); Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/linter.js:17395",
+          "name": "createRuleListeners",
+          "attributedPercent": 3.27,
+          "ownPercent": 0.38,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.05,
+            "FUNCTION_SELF": 0.38,
+            "RUNTIME": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-plugin-jsdoc",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.38
+            },
+            {
+              "origin": "semver",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.72
+            },
+            {
+              "origin": "eslint-plugin-n",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.26
+            },
+            {
+              "origin": "eslint-plugin-eslint-plugin",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.18
+            },
+            {
+              "origin": "eslint-plugin-unicorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type RuleDefinition<RuleDefinitionTypeOptions>: struct field meta must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:1721",
+          "name": "analyzeScope",
+          "attributedPercent": 3.26,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.21
+          },
+          "topExternal": [
+            {
+              "origin": "esrecurse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.52
+            },
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.69
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ASTNode: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Scope analysis via eslint-scope/esrecurse once per file; Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/esquery.js:13063",
+          "name": "matches",
+          "attributedPercent": 3.11,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.02,
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "whether selector matching dominates over node-type prefiltering that already exists",
+              "per-selector-type cost split"
+            ],
+            "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/cursors.js:1854",
+          "name": "CursorFactory.createBaseCursor",
+          "attributedPercent": 2.09,
+          "ownPercent": 0.57,
+          "byTarget": {
+            "FUNCTION_SELF": 0.57,
+            "UNANALYZED_PROJECT": 1.61
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 1.61
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:9431",
+          "name": "applyStep",
+          "attributedPercent": 1.09,
+          "ownPercent": 1.07,
+          "byTarget": {
+            "FUNCTION_SELF": 1.07,
+            "EXTERNAL_DEPENDENCY": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            },
+            {
+              "origin": "eslint-plugin-eslint-plugin",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            },
+            {
+              "origin": "eslint-plugin-regexp",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:5235",
+          "name": "ESQueryHelper.calculateSelectors",
+          "attributedPercent": 1.08,
+          "ownPercent": 1,
+          "byTarget": {
+            "FUNCTION_SELF": 1
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PREPARE_STATE"
+            ],
+            "missingEvidence": [
+              "whether per-node-type listener lists are already cached (a hit rate)"
+            ],
+            "note": "calculateSelectorMatches per node type: a cacheable index of selectors by node type if not already memoized."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/linter.js:19095",
+          "name": "runRules",
+          "attributedPercent": 0.97,
+          "ownPercent": 0.48,
+          "byTarget": {
+            "FUNCTION_SELF": 0.48,
+            "UNANALYZED_PROJECT": 0.24,
+            "EXTERNAL_DEPENDENCY": 0.26
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.24
+            },
+            {
+              "origin": "eslint-plugin-jsdoc",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.08
+            },
+            {
+              "origin": "eslint-plugin-unicorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            },
+            {
+              "origin": "eslint-plugin-regexp",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            },
+            {
+              "origin": "eslint-plugin-eslint-plugin",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.03
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type SourceCode: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/linter.js:32475",
+          "name": "Linter.#flatVerifyWithoutProcessors",
+          "attributedPercent": 0.71,
+          "ownPercent": 0.44,
+          "byTarget": {
+            "FUNCTION_SELF": 0.44,
+            "UNANALYZED_PROJECT": 0.17
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.17
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "eslint/eslint-helpers.js:10696",
+          "name": "entryFilter",
+          "attributedPercent": 0.7,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.57,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "@eslint/config-array",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.22
+            },
+            {
+              "origin": "minimatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.21
+            },
+            {
+              "origin": "@eslint/object-schema",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.13
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            },
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-visitor.js:1305",
+          "name": "setListenerRuleId",
+          "attributedPercent": 0.7,
+          "ownPercent": 0.7,
+          "byTarget": {
+            "FUNCTION_SELF": 0.7
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Function: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "config/flat-config-schema.js:3829",
+          "name": "normalizeRuleOptions",
+          "attributedPercent": 0.6,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 0.6,
+            "FUNCTION_SELF": 0
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.6
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | number | any[]: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "all core rules: eslint tests",
+      "wallMs": 3291,
+      "profiledMs": 3209,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 29.56,
+        "FUNCTION_SELF": 43.67,
+        "RUNTIME": 2.01,
+        "UNANALYZED_PROJECT": 5.72,
+        "IO": 0.24,
+        "UNATTRIBUTED": 18.79
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 47.37
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 16.34
+        },
+        {
+          "origin": "acorn",
+          "kind": "PACKAGE",
+          "percent": 10.06
+        },
+        {
+          "origin": "esquery",
+          "kind": "PACKAGE",
+          "percent": 6.71
+        },
+        {
+          "origin": "esrecurse",
+          "kind": "PACKAGE",
+          "percent": 4.39
+        },
+        {
+          "origin": "espree",
+          "kind": "PACKAGE",
+          "percent": 3.69
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 3.3
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 2.39
+        },
+        {
+          "origin": "eslint-scope",
+          "kind": "PACKAGE",
+          "percent": 1.79
+        },
+        {
+          "origin": "debug",
+          "kind": "PACKAGE",
+          "percent": 0.73
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 81.21
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 43.67
+        },
+        {
+          "step": "top call sites (25)",
+          "percent": 59.47
+        },
+        {
+          "step": "human-plausible",
+          "percent": 13.76
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 0.52,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 15.58
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 12.12
+        },
+        {
+          "reason": "other: type Object: struct field constructor: struct field apply mu",
+          "percent": 11.98
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 8.61
+        },
+        {
+          "reason": "class instances",
+          "percent": 3.14
+        },
+        {
+          "reason": "other: type LintResult[]: array element struct field messages: arra",
+          "percent": 2.7
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got struct",
+          "percent": 1.43
+        },
+        {
+          "reason": "other: type Function: struct field apply must be a required, non-me",
+          "percent": 1.07
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.61
+        },
+        {
+          "reason": "other: type RuleDefinition<RuleDefinitionTypeOptions>: struct field",
+          "percent": 0.5
+        },
+        {
+          "reason": "other: type Ajv: struct field validate must be a required, non-meth",
+          "percent": 0.49
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "languages/js/index.js:8039",
+          "name": "parse",
+          "attributedPercent": 14.03,
+          "ownPercent": 0.04,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 13.99,
+            "FUNCTION_SELF": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "acorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 9.94
+            },
+            {
+              "origin": "espree",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 4.01
+            },
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Parse via espree/acorn once per file (distinct sources); Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/esquery.js:13063",
+          "name": "matches",
+          "attributedPercent": 6.53,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 6.93,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 6.93
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "whether selector matching dominates over node-type prefiltering that already exists",
+              "per-selector-type cost split"
+            ],
+            "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:1721",
+          "name": "analyzeScope",
+          "attributedPercent": 5.81,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 5.81
+          },
+          "topExternal": [
+            {
+              "origin": "esrecurse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 4.39
+            },
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.42
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ASTNode: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Scope analysis via eslint-scope/esrecurse once per file; Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:9431",
+          "name": "applyStep",
+          "attributedPercent": 5.1,
+          "ownPercent": 5.77,
+          "byTarget": {
+            "FUNCTION_SELF": 5.77,
+            "EXTERNAL_DEPENDENCY": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.08
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:5235",
+          "name": "ESQueryHelper.calculateSelectors",
+          "attributedPercent": 4.84,
+          "ownPercent": 4.59,
+          "byTarget": {
+            "FUNCTION_SELF": 4.59
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PREPARE_STATE"
+            ],
+            "missingEvidence": [
+              "whether per-node-type listener lists are already cached (a hit rate)"
+            ],
+            "note": "calculateSelectorMatches per node type: a cacheable index of selectors by node type if not already memoized."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-visitor.js:4354",
+          "name": "SourceCodeVisitor.callSync",
+          "attributedPercent": 3.06,
+          "ownPercent": 2.68,
+          "byTarget": {
+            "FUNCTION_SELF": 2.68,
+            "UNANALYZED_PROJECT": 0.24
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.24
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules. The self-lint workload spends 10-18% of the runtime inside the rules of eslint-plugin-jsdoc (comment-parser, jsdoccomment), which are third-party rule code."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "eslint/eslint.js:38474",
+          "name": "format",
+          "attributedPercent": 2.7,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 1.02,
+            "UNANALYZED_PROJECT": 1.68
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 1.68
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 1.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type LintResult[]: array element struct field messages: array element struct field endColumn must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/traverser.js:3106",
+          "name": "Traverser._traverse",
+          "attributedPercent": 1.75,
+          "ownPercent": 1.89,
+          "byTarget": {
+            "FUNCTION_SELF": 1.89
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive AST walk over dynamic nodes with `this`-bound state; per-node dispatch."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:8821",
+          "name": "SourceCodeTraverser.traverseSync",
+          "attributedPercent": 1.72,
+          "ownPercent": 1.74,
+          "byTarget": {
+            "FUNCTION_SELF": 1.74,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/index.js:1316",
+          "name": "createIndexMap",
+          "attributedPercent": 1.57,
+          "ownPercent": 1.72,
+          "byTarget": {
+            "FUNCTION_SELF": 1.72
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token[]: array element has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PACK_DATA"
+            ],
+            "missingEvidence": [
+              "tokens are objects with many fields; a columnar index would change every token consumer"
+            ],
+            "note": "createIndexMap builds range-to-index maps over the token array once per file (token starts/ends are integers): a packed-array candidate, but small (<2%) and a large producer change."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/interpolate.js:997",
+          "name": "interpolate",
+          "attributedPercent": 1.43,
+          "ownPercent": 0.82,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.59,
+            "FUNCTION_SELF": 0.82
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.59
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got struct"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/linter.js:19095",
+          "name": "runRules",
+          "attributedPercent": 1.37,
+          "ownPercent": 0.95,
+          "byTarget": {
+            "FUNCTION_SELF": 0.95,
+            "UNANALYZED_PROJECT": 0.5
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.5
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type SourceCode: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:10121",
+          "name": "createSourceCode",
+          "attributedPercent": 1.13,
+          "ownPercent": 0.19,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.94,
+            "FUNCTION_SELF": 0.19
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.94
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-visitor.js:1305",
+          "name": "setListenerRuleId",
+          "attributedPercent": 1.07,
+          "ownPercent": 0.96,
+          "byTarget": {
+            "FUNCTION_SELF": 0.96
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Function: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:10752",
+          "name": "processCodePathToEnter",
+          "attributedPercent": 0.93,
+          "ownPercent": 0.65,
+          "byTarget": {
+            "FUNCTION_SELF": 0.65,
+            "EXTERNAL_DEPENDENCY": 0.27
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.27
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:14463",
+          "name": "processCodePathToExit",
+          "attributedPercent": 0.85,
+          "ownPercent": 0.45,
+          "byTarget": {
+            "FUNCTION_SELF": 0.45,
+            "EXTERNAL_DEPENDENCY": 0.41
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.41
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/logging.js:285",
+          "name": "info",
+          "attributedPercent": 0.61,
+          "ownPercent": 0.37,
+          "byTarget": {
+            "FUNCTION_SELF": 0.37,
+            "RUNTIME": 0.31
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.31
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/linter.js:32475",
+          "name": "Linter.#flatVerifyWithoutProcessors",
+          "attributedPercent": 0.57,
+          "ownPercent": 0.2,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.24,
+            "FUNCTION_SELF": 0.2
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.24
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "config/config.js:12014",
+          "name": "getOrCreateValidator",
+          "attributedPercent": 0.51,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.51
+          },
+          "topExternal": [
+            {
+              "origin": "ajv",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.47
+            },
+            {
+              "origin": "json-schema-traverse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            },
+            {
+              "origin": "fast-json-stable-stringify",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "ajv schema compile per validator: repeated schemas across calls (the code caches validators by key; check the hit rate)"
+            ],
+            "note": "getOrCreateValidator compiles JSON schemas (ajv) for rule options; schemas are per rule, compiled once if cached."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:19718",
+          "name": "CodePathAnalyzer.enterNode",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.5,
+          "byTarget": {
+            "FUNCTION_SELF": 0.5
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "linter/linter.js:17395",
+          "name": "createRuleListeners",
+          "attributedPercent": 0.5,
+          "ownPercent": 0.55,
+          "byTarget": {
+            "FUNCTION_SELF": 0.55
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type RuleDefinition<RuleDefinitionTypeOptions>: struct field meta must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:35215",
+          "name": "enter",
+          "attributedPercent": 0.49,
+          "ownPercent": 0.7,
+          "byTarget": {
+            "FUNCTION_SELF": 0.7
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "config/config.js:1984",
+          "name": "getAjv",
+          "attributedPercent": 0.49,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 0.1,
+            "EXTERNAL_DEPENDENCY": 0.37,
+            "IO": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "uri-js",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.31
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.1
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.04
+            },
+            {
+              "origin": "ajv",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            },
+            {
+              "origin": "json-schema-traverse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Ajv: struct field validate must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/sort-keys.js:3854",
+          "name": "Property",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.16,
+          "byTarget": {
+            "FUNCTION_SELF": 0.16,
+            "UNANALYZED_PROJECT": 0.26
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.26
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type (AssignmentProperty & NodeParentExtension) | (Property & NodeParentExtension): unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:35373",
+          "name": "leave",
+          "attributedPercent": 0.44,
+          "ownPercent": 0.38,
+          "byTarget": {
+            "FUNCTION_SELF": 0.38
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "rules/no-octal-escape.js:745",
+          "name": "Literal",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.41,
+          "byTarget": {
+            "FUNCTION_SELF": 0.41
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type (SimpleLiteral & NodeParentExtension) | (RegExpLiteral & NodeParentExtension) | (BigIntLiteral & NodeParentExtension): unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/cursor.js:1811",
+          "name": "Cursor.getAllTokens",
+          "attributedPercent": 0.39,
+          "ownPercent": 0.39,
+          "byTarget": {
+            "FUNCTION_SELF": 0.39
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:21523",
+          "name": "SourceCode.getScope",
+          "attributedPercent": 0.36,
+          "ownPercent": 0.23,
+          "byTarget": {
+            "FUNCTION_SELF": 0.23,
+            "EXTERNAL_DEPENDENCY": 0.13
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "recommended: typescript.js (8.7 MB)",
+      "wallMs": 4605,
+      "profiledMs": 4496,
+      "attribution": {
+        "UNANALYZED_PROJECT": 1.5,
+        "EXTERNAL_DEPENDENCY": 35.46,
+        "FUNCTION_SELF": 32.25,
+        "RUNTIME": 0.25,
+        "IO": 0.09,
+        "UNATTRIBUTED": 30.41
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 33.16
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 29.08
+        },
+        {
+          "origin": "esrecurse",
+          "kind": "PACKAGE",
+          "percent": 14.88
+        },
+        {
+          "origin": "acorn",
+          "kind": "PACKAGE",
+          "percent": 10.09
+        },
+        {
+          "origin": "eslint-scope",
+          "kind": "PACKAGE",
+          "percent": 4.33
+        },
+        {
+          "origin": "espree",
+          "kind": "PACKAGE",
+          "percent": 2.81
+        },
+        {
+          "origin": "@eslint-community/eslint-utils",
+          "kind": "PACKAGE",
+          "percent": 1.25
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 1.24
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 0.83
+        },
+        {
+          "origin": "debug",
+          "kind": "PACKAGE",
+          "percent": 0.78
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 69.59
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 32.25
+        },
+        {
+          "step": "top call sites (18)",
+          "percent": 55.72
+        },
+        {
+          "step": "human-plausible",
+          "percent": 2.96
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 26.66
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 13.01
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 10.04
+        },
+        {
+          "reason": "other: type Object: struct field constructor: struct field apply mu",
+          "percent": 3.83
+        },
+        {
+          "reason": "class instances",
+          "percent": 2.57
+        },
+        {
+          "reason": "async or generator",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "languages/js/index.js:1721",
+          "name": "analyzeScope",
+          "attributedPercent": 18.93,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 19.2
+          },
+          "topExternal": [
+            {
+              "origin": "esrecurse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 15.3
+            },
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.89
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ASTNode: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Scope analysis via eslint-scope/esrecurse once per file; Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:8039",
+          "name": "parse",
+          "attributedPercent": 13.01,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 13.19
+          },
+          "topExternal": [
+            {
+              "origin": "acorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.38
+            },
+            {
+              "origin": "espree",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.81
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Parse via espree/acorn once per file (distinct sources); Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:9431",
+          "name": "applyStep",
+          "attributedPercent": 3.35,
+          "ownPercent": 3.35,
+          "byTarget": {
+            "FUNCTION_SELF": 3.35
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-visitor.js:4354",
+          "name": "SourceCodeVisitor.callSync",
+          "attributedPercent": 2.96,
+          "ownPercent": 2.77,
+          "byTarget": {
+            "FUNCTION_SELF": 2.77
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules. The self-lint workload spends 10-18% of the runtime inside the rules of eslint-plugin-jsdoc (comment-parser, jsdoccomment), which are third-party rule code."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/traverser.js:3106",
+          "name": "Traverser._traverse",
+          "attributedPercent": 2.91,
+          "ownPercent": 2.91,
+          "byTarget": {
+            "FUNCTION_SELF": 2.91
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive AST walk over dynamic nodes with `this`-bound state; per-node dispatch."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:16826",
+          "name": "VariableDeclarator[init!=null], AssignmentExpression, UpdateExpression:exit",
+          "attributedPercent": 2.51,
+          "ownPercent": 1.61,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.9,
+            "FUNCTION_SELF": 1.61
+          },
+          "topExternal": [
+            {
+              "origin": "@eslint-community/eslint-utils",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.9
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/index.js:1316",
+          "name": "createIndexMap",
+          "attributedPercent": 1.85,
+          "ownPercent": 1.85,
+          "byTarget": {
+            "FUNCTION_SELF": 1.85
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token[]: array element has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PACK_DATA"
+            ],
+            "missingEvidence": [
+              "tokens are objects with many fields; a columnar index would change every token consumer"
+            ],
+            "note": "createIndexMap builds range-to-index maps over the token array once per file (token starts/ends are integers): a packed-array candidate, but small (<2%) and a large producer change."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:8821",
+          "name": "SourceCodeTraverser.traverseSync",
+          "attributedPercent": 1.5,
+          "ownPercent": 1.32,
+          "byTarget": {
+            "FUNCTION_SELF": 1.32
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:21523",
+          "name": "SourceCode.getScope",
+          "attributedPercent": 1.44,
+          "ownPercent": 1.02,
+          "byTarget": {
+            "FUNCTION_SELF": 1.02,
+            "EXTERNAL_DEPENDENCY": 0.25
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.25
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:10752",
+          "name": "processCodePathToEnter",
+          "attributedPercent": 1.14,
+          "ownPercent": 0.69,
+          "byTarget": {
+            "FUNCTION_SELF": 0.69,
+            "EXTERNAL_DEPENDENCY": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:16187",
+          "name": "onCodePathSegmentStart",
+          "attributedPercent": 1.03,
+          "ownPercent": 0.95,
+          "byTarget": {
+            "FUNCTION_SELF": 0.95
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type { segment: CodePathSegment; first: null; last: null; }: struct field first: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:14463",
+          "name": "processCodePathToExit",
+          "attributedPercent": 0.98,
+          "ownPercent": 0.75,
+          "byTarget": {
+            "FUNCTION_SELF": 0.75,
+            "EXTERNAL_DEPENDENCY": 0.27
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.27
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:2908",
+          "name": "sortedMerge",
+          "attributedPercent": 0.94,
+          "ownPercent": 0.94,
+          "byTarget": {
+            "FUNCTION_SELF": 0.94
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token[]: array element has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PACK_DATA"
+            ],
+            "missingEvidence": [
+              "merge of two token/comment arrays by range start; only worthwhile if a columnar token layout exists"
+            ],
+            "note": "sortedMerge of tokens and comments."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "rules/no-unused-vars.js:21262",
+          "name": "collectUnusedVariables",
+          "attributedPercent": 0.88,
+          "ownPercent": 0.87,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.09,
+            "FUNCTION_SELF": 0.87
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.09
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Scope: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-redeclare.js:1583",
+          "name": "iterateDeclarations",
+          "attributedPercent": 0.66,
+          "ownPercent": 0.66,
+          "byTarget": {
+            "FUNCTION_SELF": 0.66
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:5235",
+          "name": "ESQueryHelper.calculateSelectors",
+          "attributedPercent": 0.63,
+          "ownPercent": 0.63,
+          "byTarget": {
+            "FUNCTION_SELF": 0.63
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PREPARE_STATE"
+            ],
+            "missingEvidence": [
+              "whether per-node-type listener lists are already cached (a hit rate)"
+            ],
+            "note": "calculateSelectorMatches per node type: a cacheable index of selectors by node type if not already memoized."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:19718",
+          "name": "CodePathAnalyzer.enterNode",
+          "attributedPercent": 0.55,
+          "ownPercent": 0.55,
+          "byTarget": {
+            "FUNCTION_SELF": 0.55
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:8066",
+          "name": "verifyAssignmentIsUsed",
+          "attributedPercent": 0.55,
+          "ownPercent": 0.52,
+          "byTarget": {
+            "FUNCTION_SELF": 0.52,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type AssignmentInfo: struct field variable: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/constructor-super.js:7464",
+          "name": "onCodePathSegmentStart",
+          "attributedPercent": 0.53,
+          "ownPercent": 0.53,
+          "byTarget": {
+            "FUNCTION_SELF": 0.53
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathSegment: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "linter/esquery.js:13063",
+          "name": "matches",
+          "attributedPercent": 0.48,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.48
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.48
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "whether selector matching dominates over node-type prefiltering that already exists",
+              "per-selector-type cost split"
+            ],
+            "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "languages/js/index.js:10121",
+          "name": "createSourceCode",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.06,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.39,
+            "FUNCTION_SELF": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.39
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "all core rules: vite dist",
+      "wallMs": 2357,
+      "profiledMs": 2275,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 33.94,
+        "RUNTIME": 2.09,
+        "UNANALYZED_PROJECT": 5.38,
+        "FUNCTION_SELF": 42.11,
+        "IO": 0.27,
+        "UNATTRIBUTED": 14.73
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 46.34
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 11.75
+        },
+        {
+          "origin": "acorn",
+          "kind": "PACKAGE",
+          "percent": 9.64
+        },
+        {
+          "origin": "esrecurse",
+          "kind": "PACKAGE",
+          "percent": 8.8
+        },
+        {
+          "origin": "esquery",
+          "kind": "PACKAGE",
+          "percent": 5.47
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 3.48
+        },
+        {
+          "origin": "eslint-scope",
+          "kind": "PACKAGE",
+          "percent": 3.02
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 2.68
+        },
+        {
+          "origin": "espree",
+          "kind": "PACKAGE",
+          "percent": 2.26
+        },
+        {
+          "origin": "@eslint-community/regexpp",
+          "kind": "PACKAGE",
+          "percent": 1.41
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 85.27
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 42.11
+        },
+        {
+          "step": "top call sites (25)",
+          "percent": 56.37
+        },
+        {
+          "step": "human-plausible",
+          "percent": 9.94
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 0.43,
+      "lowerBlockers": [
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 14.98
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 12.06
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 11.1
+        },
+        {
+          "reason": "other: type Object: struct field constructor: struct field apply mu",
+          "percent": 9.98
+        },
+        {
+          "reason": "other: type LintResult[]: array element struct field messages: arra",
+          "percent": 2.94
+        },
+        {
+          "reason": "class instances",
+          "percent": 2.68
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.78
+        },
+        {
+          "reason": "other: type Ajv: struct field validate must be a required, non-meth",
+          "percent": 0.69
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got struct",
+          "percent": 0.64
+        },
+        {
+          "reason": "other: type MessageDescriptor: struct field node must be a required",
+          "percent": 0
+        },
+        {
+          "reason": "other: type Node: struct field childNodes: struct field item must b",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "languages/js/index.js:8039",
+          "name": "parse",
+          "attributedPercent": 11.55,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 12.57
+          },
+          "topExternal": [
+            {
+              "origin": "acorn",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.05
+            },
+            {
+              "origin": "espree",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.52
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Parse via espree/acorn once per file (distinct sources); Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/index.js:1721",
+          "name": "analyzeScope",
+          "attributedPercent": 11.4,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 11.66
+          },
+          "topExternal": [
+            {
+              "origin": "esrecurse",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 9.02
+            },
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.63
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ASTNode: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Scope analysis via eslint-scope/esrecurse once per file; Time is in a dependency (acorn/espree parser, esrecurse/eslint-scope, esquery) that the project calls once per file; no repeated invariant input."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/esquery.js:13063",
+          "name": "matches",
+          "attributedPercent": 5.22,
+          "ownPercent": 0.03,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 5.19,
+            "FUNCTION_SELF": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 5.19
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "whether selector matching dominates over node-type prefiltering that already exists",
+              "per-selector-type cost split"
+            ],
+            "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-visitor.js:4354",
+          "name": "SourceCodeVisitor.callSync",
+          "attributedPercent": 4.09,
+          "ownPercent": 4.49,
+          "byTarget": {
+            "FUNCTION_SELF": 4.49,
+            "UNANALYZED_PROJECT": 0.46
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.46
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules. The self-lint workload spends 10-18% of the runtime inside the rules of eslint-plugin-jsdoc (comment-parser, jsdoccomment), which are third-party rule code."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:9431",
+          "name": "applyStep",
+          "attributedPercent": 3.53,
+          "ownPercent": 3.64,
+          "byTarget": {
+            "FUNCTION_SELF": 3.64,
+            "EXTERNAL_DEPENDENCY": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "eslint/eslint.js:38474",
+          "name": "format",
+          "attributedPercent": 2.94,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 2.14,
+            "RUNTIME": 0.8
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 2.14
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.8
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type LintResult[]: array element struct field messages: array element struct field endColumn must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:5235",
+          "name": "ESQueryHelper.calculateSelectors",
+          "attributedPercent": 2.87,
+          "ownPercent": 2.5,
+          "byTarget": {
+            "FUNCTION_SELF": 2.5
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PREPARE_STATE"
+            ],
+            "missingEvidence": [
+              "whether per-node-type listener lists are already cached (a hit rate)"
+            ],
+            "note": "calculateSelectorMatches per node type: a cacheable index of selectors by node type if not already memoized."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/traverser.js:3106",
+          "name": "Traverser._traverse",
+          "attributedPercent": 1.31,
+          "ownPercent": 1.31,
+          "byTarget": {
+            "FUNCTION_SELF": 1.31
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive AST walk over dynamic nodes with `this`-bound state; per-node dispatch."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:21523",
+          "name": "SourceCode.getScope",
+          "attributedPercent": 1.08,
+          "ownPercent": 0.81,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.27,
+            "FUNCTION_SELF": 0.81
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-scope",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.27
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:10752",
+          "name": "processCodePathToEnter",
+          "attributedPercent": 0.98,
+          "ownPercent": 0.8,
+          "byTarget": {
+            "FUNCTION_SELF": 0.8,
+            "EXTERNAL_DEPENDENCY": 0.29
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.29
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:8821",
+          "name": "SourceCodeTraverser.traverseSync",
+          "attributedPercent": 0.93,
+          "ownPercent": 0.78,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.02,
+            "FUNCTION_SELF": 0.78,
+            "EXTERNAL_DEPENDENCY": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            },
+            {
+              "origin": "esquery",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "config/config.js:12014",
+          "name": "getOrCreateValidator",
+          "attributedPercent": 0.82,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.72
+          },
+          "topExternal": [
+            {
+              "origin": "ajv",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.67
+            },
+            {
+              "origin": "fast-json-stable-stringify",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Object: struct field constructor: struct field apply must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "ajv schema compile per validator: repeated schemas across calls (the code caches validators by key; check the hit rate)"
+            ],
+            "note": "getOrCreateValidator compiles JSON schemas (ajv) for rule options; schemas are per rule, compiled once if cached."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:16826",
+          "name": "VariableDeclarator[init!=null], AssignmentExpression, UpdateExpression:exit",
+          "attributedPercent": 0.79,
+          "ownPercent": 0.69,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.05,
+            "FUNCTION_SELF": 0.69,
+            "UNANALYZED_PROJECT": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.06
+            },
+            {
+              "origin": "@eslint-community/eslint-utils",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/logging.js:285",
+          "name": "info",
+          "attributedPercent": 0.78,
+          "ownPercent": 0.27,
+          "byTarget": {
+            "FUNCTION_SELF": 0.27,
+            "IO": 0.03,
+            "RUNTIME": 0.42
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.42
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.03
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "config/config.js:18782",
+          "name": "Config.validateRulesConfig",
+          "attributedPercent": 0.74,
+          "ownPercent": 0.74,
+          "byTarget": {
+            "FUNCTION_SELF": 0.74
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "config/config.js:1984",
+          "name": "getAjv",
+          "attributedPercent": 0.69,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 0.16,
+            "EXTERNAL_DEPENDENCY": 0.5,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "uri-js",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.47
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.16
+            },
+            {
+              "origin": "ajv",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.03
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Ajv: struct field validate must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/func-style.js:1875",
+          "name": "isOverloadedFunction",
+          "attributedPercent": 0.68,
+          "ownPercent": 0.55,
+          "byTarget": {
+            "FUNCTION_SELF": 0.55,
+            "UNANALYZED_PROJECT": 0.13
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ASTNode: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:16187",
+          "name": "onCodePathSegmentStart",
+          "attributedPercent": 0.66,
+          "ownPercent": 0.66,
+          "byTarget": {
+            "FUNCTION_SELF": 0.66
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type { segment: CodePathSegment; first: null; last: null; }: struct field first: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/interpolate.js:997",
+          "name": "interpolate",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.38,
+          "byTarget": {
+            "FUNCTION_SELF": 0.38,
+            "UNANALYZED_PROJECT": 0.26
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.26
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got struct"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/index.js:1316",
+          "name": "createIndexMap",
+          "attributedPercent": 0.62,
+          "ownPercent": 0.65,
+          "byTarget": {
+            "FUNCTION_SELF": 0.65
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token[]: array element has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PACK_DATA"
+            ],
+            "missingEvidence": [
+              "tokens are objects with many fields; a columnar index would change every token consumer"
+            ],
+            "note": "createIndexMap builds range-to-index maps over the token array once per file (token starts/ends are integers): a packed-array candidate, but small (<2%) and a large producer change."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:14463",
+          "name": "processCodePathToExit",
+          "attributedPercent": 0.62,
+          "ownPercent": 0.42,
+          "byTarget": {
+            "FUNCTION_SELF": 0.42,
+            "EXTERNAL_DEPENDENCY": 0.14
+          },
+          "topExternal": [
+            {
+              "origin": "debug",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "rules/no-useless-assignment.js:8066",
+          "name": "verifyAssignmentIsUsed",
+          "attributedPercent": 0.58,
+          "ownPercent": 0.58,
+          "byTarget": {
+            "FUNCTION_SELF": 0.58
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type AssignmentInfo: struct field variable: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "rules/no-unused-vars.js:21262",
+          "name": "collectUnusedVariables",
+          "attributedPercent": 0.57,
+          "ownPercent": 0.44,
+          "byTarget": {
+            "FUNCTION_SELF": 0.44,
+            "UNANALYZED_PROJECT": 0.11
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.11
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Scope: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "linter/linter.js:19095",
+          "name": "runRules",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.38,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.05,
+            "FUNCTION_SELF": 0.38
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type SourceCode: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "languages/js/index.js:10121",
+          "name": "createSourceCode",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.46,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.46
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "rules/no-control-regex.js:1231",
+          "name": "anonymous class.collectControlChars",
+          "attributedPercent": 0.46,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.46
+          },
+          "topExternal": [
+            {
+              "origin": "@eslint-community/regexpp",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.46
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "linter/code-path-analysis/code-path-analyzer.js:19718",
+          "name": "CodePathAnalyzer.enterNode",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.45,
+          "byTarget": {
+            "FUNCTION_SELF": 0.45
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "rules/no-use-before-define.js:11354",
+          "name": "checkReferencesInScope",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.37,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.08,
+            "FUNCTION_SELF": 0.37
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.08
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Scope<Variable<Reference>, Reference>: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "rules/no-unmodified-loop-condition.js:8403",
+          "name": "toLoopCondition",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.45,
+          "byTarget": {
+            "FUNCTION_SELF": 0.45
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Reference: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "rules/require-atomic-updates.js:2685",
+          "name": "SegmentInfo.initialize",
+          "attributedPercent": 0.44,
+          "ownPercent": 0.44,
+          "byTarget": {
+            "FUNCTION_SELF": 0.44
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "rules/no-misleading-character-class.js:9611",
+          "name": "verify",
+          "attributedPercent": 0.42,
+          "ownPercent": 0.03,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.39,
+            "FUNCTION_SELF": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "@eslint-community/regexpp",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.39
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Node: struct field childNodes: struct field item must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "linter/file-report.js:9231",
+          "name": "normalizeFixes",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "FUNCTION_SELF": 0.35,
+            "UNANALYZED_PROJECT": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MessageDescriptor: struct field node must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    }
+  ]
+}

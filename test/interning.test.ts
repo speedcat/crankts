@@ -106,15 +106,19 @@ describe("batch id-domain pass (v0.2.6b)", () => {
     expect(patched.diagnostics).toEqual([]);
     expect(patched.text).toContain("__cranktsBatch.sealGraph(adjacency);");
     expect(patched.text).toContain("const __findArticulationPointsBatch0 = __cranktsBatch.findArticulationPointsBatch(findArticulationPoints, componentMembers, adjacency);");
-    expect(patched.text).toContain("(__findArticulationPointsBatch0[componentIndex] as ReturnType<typeof findArticulationPoints>)");
+    expect(patched.text).toContain("__cranktsBatch.take(__findArticulationPointsBatch0, componentIndex, members, () => findArticulationPoints(members, adjacency))");
+    expect(patched.obligations.map((obligation) => `${obligation.kind}:${obligation.status}`)).toEqual([
+      "IMMUTABLE_AFTER_CAPTURE:GUARDED", "IMMUTABLE_AFTER_CAPTURE:PROVEN", "IMMUTABLE_DURING_HANDLE:PROVEN",
+    ]);
+    expect(plan.orderKeys.length).toBeGreaterThan(0);
   });
 
   it("seals a graph only when no later mutation is possible, and rejects early returns", () => {
     const result = planBatchInterning({ file: batchFixtures, function: "memberCount", alias: "Id" });
     if (!result.ok) throw new Error(result.diagnostics.join("\n"));
     const patched = result.plan.patchedSource("./integration.js", join(repoRoot, "out/ts/batch-kernels.crankts.ts"));
-    expect(patched.text.match(/__cranktsBatch\.sealGraph\(graph\)/g)).toHaveLength(1);
-    expect(patched.text.match(/__cranktsBatch\.memberCountBatch\(memberCount, groups, graph\)/g)).toHaveLength(2);
+    expect(patched.text.match(/__cranktsBatch\.sealGraph\(graph\)/g)).toHaveLength(2);
+    expect(patched.text.match(/__cranktsBatch\.memberCountBatch\(memberCount, groups, graph\)/g)).toHaveLength(3);
     expect(patched.diagnostics).toEqual([expect.stringMatching(/graph graph is not sealed .*line 30/)]);
 
     const early = planBatchInterning({ file: batchFixtures, function: "earlyExit", alias: "Id" });
@@ -135,7 +139,10 @@ describe("batch id-domain pass (v0.2.6b)", () => {
     });
     if (!batched.ok) throw new Error(`${batched.stage}: ${batched.messages.join("\n")}`);
     expect(batched.contract.inputs.map((input) => input.type.kind)).toEqual(["packedGraph", "typedArray", "typedArray"]);
-    expect(batched.contract.proofObligations.map((obligation) => `${obligation.kind}:${obligation.status}`)).toEqual(expect.arrayContaining(["PURE:PROVEN", "NO_ALIASING:PROVEN"]));
+    expect(batched.contract.proofObligations.map((obligation) => `${obligation.kind}:${obligation.status}`)).toEqual(expect.arrayContaining([
+      "PURE:PROVEN", "NO_ALIASING:PROVEN", "TOTAL_ORDER_KEY:PROVEN", "IMMUTABLE_AFTER_CAPTURE:GUARDED", "IMMUTABLE_AFTER_CAPTURE:PROVEN", "IMMUTABLE_DURING_HANDLE:PROVEN",
+    ]));
+    expect(batched.contract.typescriptSemantics).toEqual(expect.arrayContaining([expect.stringContaining("left.functionId.localeCompare(right.functionId)")]));
     // Chained: WCC packed on the batched copy, sharing the sealed graph.
     const chained = extractKernel({
       target: `${join(out, "ap/ts/islands.crankts.ts")}#findWeaklyConnectedComponents`,
@@ -165,6 +172,24 @@ describe("batch id-domain pass (v0.2.6b)", () => {
     expect(apIntegration.packedStatus.packedTypeScriptCalls).toBe(1);
     expect(apIntegration.sealedGraphStats.sealed - before.sealed).toBe(1);
     expect(wccIntegration.sealedGraphStats.reused).toBe(1);
+  });
+
+  it("guards captured groups at use and rejects order keys that are not provably exact integers (v0.2.6c)", async () => {
+    mkdirSync(generatedRoot, { recursive: true });
+    const out = mkdtempSync(join(generatedRoot, "batch-proofs-"));
+    temporaryDirectories.push(out);
+    const counts = extractKernel({ target: `${batchFixtures}#memberCount`, shape: "GRAPH_BATCH", outDir: join(out, "counts"), crateName: "member-count-batch", intern: "Id", batch: true });
+    if (!counts.ok) throw new Error(`${counts.stage}: ${counts.messages.join("\n")}`);
+    const original = await import(pathToFileURL(batchFixtures).href) as { countsAliased(groups: string[][], ids: readonly string[]): number[] };
+    const patched = await import(pathToFileURL(join(out, "counts/ts/batch-kernels.crankts.ts")).href) as typeof original;
+    const integration = await import(pathToFileURL(join(out, "counts/ts/integration.ts")).href) as { packedStatus: { captureGuards: number } };
+    const groups = (): string[][] => [["a", "b", "a"], ["c"], ["a", "c"]];
+    expect(patched.countsAliased(groups(), ["a", "b", "c"])).toEqual(original.countsAliased(groups(), ["a", "b", "c"]));
+    expect(integration.packedStatus.captureGuards).toBe(1);
+
+    const ratio = extractKernel({ target: `${batchFixtures}#bestRatio`, shape: "GRAPH_BATCH", outDir: join(out, "ratio"), crateName: "best-ratio-batch", intern: "Id", batch: true });
+    expect(ratio.ok).toBe(false);
+    expect(ratio.ok ? [] : ratio.messages).toEqual([expect.stringContaining("TOTAL_ORDER_KEY unproven")]);
   });
 });
 

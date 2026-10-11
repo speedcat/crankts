@@ -60,7 +60,9 @@ function assessFunction(
 ): FunctionAccelerationAssessment {
   const observedCpu = functionAnalysis.observedCpu;
   const observedAllocation = functionAnalysis.observedAllocation;
-  const hotness = getHotness(observedCpu?.samplePercent, options.cpuProfile?.confidence);
+  // Own JavaScript only: N-API time a frame spends in Rust/C++ is not something to offload again.
+  const ownCpuPercent = observedCpu?.callSite ? observedCpu.callSite.byTarget.FUNCTION_SELF ?? 0 : observedCpu?.samplePercent;
+  const hotness = getHotness(ownCpuPercent, options.cpuProfile?.confidence);
   const algorithmicHint = highestHint(stages, "ALGORITHMIC");
   const dataLayoutHint = highestHint(stages, "DATA_LAYOUT");
   const parallel = getParallelPotential(functionAnalysis, stages);
@@ -91,6 +93,10 @@ function assessFunction(
         selfCpuMicros: observedCpu.selfCpuMicros,
         inclusiveCpuMicros: observedCpu.totalCpuMicros,
         cpuSamplePercent: observedCpu.samplePercent,
+        ...(observedCpu.callSite ? {
+          ownCpuSamplePercent: observedCpu.callSite.byTarget.FUNCTION_SELF ?? 0,
+          causedCpuSamplePercent: observedCpu.callSite.causedPercent,
+        } : {}),
       } : {}),
       ...(options.cpuProfile ? {
         cpuProfileConfidence: options.cpuProfile.confidence,
@@ -155,6 +161,11 @@ function assessFunctionRecommendations(
       evidence: [`pipeline-stage:${stageWithAlgorithmHint.id}`, `declared-hint:${algorithmicEvidence}`],
       explanation: algorithmicEvidence,
     });
+  }
+
+  const hoist = hoistRecommendation(functionAnalysis);
+  if (hoist) {
+    recommendations.push(hoist);
   }
 
   const independentSerialStage = stages.find((stage) => (
@@ -343,3 +354,59 @@ function highestHint(
   return hints.sort((left, right) => rank.indexOf(right.level) - rank.indexOf(left.level))
     .map(({ level, evidence, stageId }) => ({ level, evidence: `pipeline-stage:${stageId}: ${evidence}` }))[0];
 }
+
+/**
+ * HOIST_INVARIANT_WORK (v0.2.6d, recognition only). Hoisting pays only for work that is repeated:
+ * - LOOP_INVARIANT: repeated by construction (HIGH confidence)
+ * - STATIC_INVARIANT: needs at least 2 measured calls (input-signature probe; HIGH), else LOW
+ * - PARAM_DEPENDENT / VARIANT: needs measured reuse ≥ 0.75 over the arguments or one substantial argument
+ *   path (each input used four times on average; MEDIUM), else LOW
+ * Level: the call's own cost × the share of calls a cache would serve (≥ 5% HIGH, ≥ 1% MEDIUM, else LOW).
+ * LOW confidence caps the level at LOW: an unproven repetition is reported, not recommended.
+ */
+function hoistRecommendation(functionAnalysis: FunctionAnalysis): AccelerationRecommendation | undefined {
+  const candidates = functionAnalysis.hoistCandidates ?? [];
+  if (candidates.length === 0) {
+    return undefined;
+  }
+  const ranked = candidates.map((candidate) => {
+    const reuse = Math.max(candidate.repetition?.reuseRatio ?? 0, candidate.repetition?.bestPath?.reuseRatio ?? 0);
+    const repeated = candidate.invariance === "LOOP_INVARIANT"
+      || (candidate.invariance === "STATIC_INVARIANT" && (candidate.repetition?.calls ?? 0) >= 2)
+      || ((candidate.invariance === "PARAM_DEPENDENT" || candidate.invariance === "VARIANT") && reuse >= 0.75);
+    const confidence: EvidenceConfidence = !repeated ? "LOW" : candidate.invariance === "PARAM_DEPENDENT" || candidate.invariance === "VARIANT" ? "MEDIUM" : "HIGH";
+    const share = candidate.invariance === "PARAM_DEPENDENT" || candidate.invariance === "VARIANT" ? reuse : 1;
+    const atStake = (candidate.atStakePercent ?? 0) * share;
+    const level: AccelerationLevel = confidence === "LOW" ? "LOW" : atStake >= 5 ? "HIGH" : atStake >= 1 ? "MEDIUM" : "LOW";
+    return { candidate, confidence, level, atStake };
+  }).sort((left, right) => rank(right.level) - rank(left.level) || rank(right.confidence) - rank(left.confidence) || right.atStake - left.atStake);
+  const best = ranked[0];
+  if (!best) {
+    return undefined;
+  }
+  const { candidate } = best;
+  const evidence = [
+    `hoist-candidate:${candidate.line}:${candidate.column}:${candidate.kind}`,
+    `invariance:${candidate.invariance}`,
+    ...(candidate.atStakePercent !== undefined ? [`call-cost:${candidate.atStakePercent}%`] : []),
+    ...(candidate.compileLikePercent !== undefined ? [`compile-like-cpu:${candidate.compileLikePercent}%`] : []),
+    ...(candidate.repetition ? [`input-reuse:${candidate.repetition.calls} calls, ${candidate.repetition.reuseRatio}${candidate.repetition.bestPath ? `; ${candidate.repetition.bestPath.path} ${candidate.repetition.bestPath.reuseRatio}` : ""}`] : []),
+  ];
+  const where = `\`${candidate.callee}\` (line ${candidate.line})`;
+  return {
+    action: "HOIST_INVARIANT_WORK",
+    level: best.level,
+    confidence: best.confidence,
+    targetKind: "FUNCTION",
+    targetId: functionAnalysis.id,
+    evidence,
+    explanation: best.confidence === "LOW"
+      ? `${where} builds reusable state on every call; repetition is not shown yet (profile its inputs and call count).`
+      : `${where} builds reusable state from ${candidate.invariance === "LOOP_INVARIANT" ? "loop-invariant" : candidate.invariance === "STATIC_INVARIANT" ? "invariant" : "repeating"} inputs on every call; compute it once (prepared state or a cache keyed by those inputs).`,
+  };
+}
+
+function rank(level: AccelerationLevel | EvidenceConfidence): number {
+  return { UNKNOWN: 0, LOW: 1, MEDIUM: 2, HIGH: 3, VERY_HIGH: 4 }[level];
+}
+

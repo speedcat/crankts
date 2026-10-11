@@ -1053,7 +1053,8 @@ class RustEmitter {
         if (type.storage !== "dynamic") {
           return `Vec<${type.storage}>`;
         }
-        return type.element.kind === "f64" ? `Vec<${int ? "i64" : "f64"}>` : `Vec<${this.rustType(type.element, false)}>`;
+        // For arrays of arrays the INT flag describes the innermost elements (see integer-analysis.ts).
+        return type.element.kind === "f64" ? `Vec<${int ? "i64" : "f64"}>` : `Vec<${this.rustType(type.element, type.element.kind === "array" && int)}>`;
       case "map":
         return `HashMap<Str, ${this.mapValueType(type.value, int)}, FxBuild>`;
       case "struct":
@@ -1076,7 +1077,7 @@ class RustEmitter {
         if (type.storage !== "dynamic") {
           return `&[${type.storage}]`;
         }
-        return type.element.kind === "f64" ? `&[${int ? "i64" : "f64"}]` : `&[${this.rustType(type.element, false)}]`;
+        return type.element.kind === "f64" ? `&[${int ? "i64" : "f64"}]` : `&[${this.rustType(type.element, type.element.kind === "array" && int)}]`;
       case "map":
         return `&HashMap<Str, ${this.mapValueType(type.value, int)}, FxBuild>`;
       case "struct":

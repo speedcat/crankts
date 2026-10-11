@@ -1,0 +1,717 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "effect-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      2.7,
+      5.79,
+      11.27
+    ]
+  },
+  "subject": {
+    "name": "effect",
+    "version": "4.0.3",
+    "description": "Effect core on fiber, stream, and schema workloads (run from source)",
+    "analyzedFunctions": 17461
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "/Users/benjaminbecker/Workspace/crankts/evaluation/effect/annotations.json"
+  },
+  "workloads": [
+    {
+      "workload": "fibers (Effect.gen, forEach, concurrency)",
+      "wallMs": 1301,
+      "profiledMs": 1258,
+      "attribution": {
+        "FUNCTION_SELF": 8.07,
+        "UNANALYZED_PROJECT": 33.88,
+        "RUNTIME": 1.07,
+        "UNATTRIBUTED": 56.97
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 42.24
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 32.74
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 11.58
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 9.96
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 1.72
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 1.32
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.65
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 43.03
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 8.07
+        },
+        {
+          "step": "top call sites (2)",
+          "percent": 36.25
+        },
+        {
+          "step": "human-plausible",
+          "percent": 0
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 32.42
+        },
+        {
+          "reason": "other: generic functions are not lowered",
+          "percent": 3.83
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/internal/effect.ts:19474",
+          "name": "FiberImpl.runLoop",
+          "attributedPercent": 32.38,
+          "ownPercent": 2.23,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 30.19,
+            "FUNCTION_SELF": 2.23
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 30.19
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "The fiber run loop: a bytecode-style interpreter over Effect primitives with a mutable fiber (`this`), continuation stack, and scheduler. It is the runtime itself."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:18061",
+          "name": "FiberImpl.evaluate",
+          "attributedPercent": 4.62,
+          "ownPercent": 3.31,
+          "byTarget": {
+            "FUNCTION_SELF": 3.31,
+            "RUNTIME": 1.19,
+            "UNANALYZED_PROJECT": 0.12
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 1.19
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.12
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Fiber evaluate step: part of the interpreter."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/internal/core.ts:14059",
+          "name": "makeExit",
+          "attributedPercent": 4.39,
+          "ownPercent": 0.91,
+          "byTarget": {
+            "FUNCTION_SELF": 0.91,
+            "UNANALYZED_PROJECT": 2.92
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 2.92
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Exit allocation (makeExit): object construction for every result."
+          },
+          "seenInRuns": 2
+        }
+      ]
+    },
+    {
+      "workload": "streams (map/filter/rechunk/fold, splitLines)",
+      "wallMs": 961,
+      "profiledMs": 925,
+      "attribution": {
+        "FUNCTION_SELF": 14.49,
+        "UNANALYZED_PROJECT": 23.75,
+        "UNATTRIBUTED": 62.21,
+        "RUNTIME": 0
+      },
+      "topOrigins": [
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 43.35
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 38.45
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 12.22
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 2.61
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 2.01
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.66
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.08
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 37.79
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 14.49
+        },
+        {
+          "step": "top call sites (5)",
+          "percent": 32.16
+        },
+        {
+          "step": "human-plausible",
+          "percent": 0
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 20.06
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 8.53
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 2.88
+        },
+        {
+          "reason": "tuples",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/internal/effect.ts:47705",
+          "name": "mapCont",
+          "attributedPercent": 16.7,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 16.7
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 16.7
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type { readonly payload: any; }: struct field payload: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Stream continuation (`mapCont`): closure chains over Exit values."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/Stream.ts:217230",
+          "name": "loop",
+          "attributedPercent": 4.39,
+          "ownPercent": 4.56,
+          "byTarget": {
+            "FUNCTION_SELF": 4.56,
+            "UNANALYZED_PROJECT": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Stream loop over channel pulls: closure continuation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/Channel.ts:115731",
+          "name": "loop",
+          "attributedPercent": 4.14,
+          "ownPercent": 4.99,
+          "byTarget": {
+            "FUNCTION_SELF": 4.99
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Channel loop: closure continuation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:19474",
+          "name": "FiberImpl.runLoop",
+          "attributedPercent": 3.57,
+          "ownPercent": 0.32,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 2.55,
+            "FUNCTION_SELF": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 2.55
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "The fiber run loop: a bytecode-style interpreter over Effect primitives with a mutable fiber (`this`), continuation stack, and scheduler. It is the runtime itself."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/internal/effect.ts:47919",
+          "name": "andThenCont",
+          "attributedPercent": 3.52,
+          "ownPercent": 2.93,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.42,
+            "FUNCTION_SELF": 2.93
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.42
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type { readonly payload: any; }: struct field payload: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "andThenCont: continuation chain."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/Array.ts:6902",
+          "name": "range",
+          "attributedPercent": 3.04,
+          "ownPercent": 0.49,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 2.55,
+            "FUNCTION_SELF": 0.49
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 2.55
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type [number, ...number[]]: tuples are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Array.range builds a plain array of numbers (native fill/push)."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "schema (decode/encode of 50-item orders)",
+      "wallMs": 1664,
+      "profiledMs": 1629,
+      "attribution": {
+        "FUNCTION_SELF": 40.69,
+        "UNANALYZED_PROJECT": 23.56,
+        "UNATTRIBUTED": 35.75
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 65.14
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 24.99
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 6.8
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 1.36
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 1.14
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.37
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 64.25
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 40.69
+        },
+        {
+          "step": "top call sites (3)",
+          "percent": 55.26
+        },
+        {
+          "step": "human-plausible",
+          "percent": 9.96
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 34.76
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 20.34
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/SchemaAST.ts:69168",
+          "name": "onItem",
+          "attributedPercent": 34.76,
+          "ownPercent": 13.48,
+          "byTarget": {
+            "FUNCTION_SELF": 13.48,
+            "UNANALYZED_PROJECT": 22.32
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 22.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ArrayParserState: struct field ast: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Schema parser: per-item closure dispatch over a compiled parser tree (getParser, Exit values); the schema is already compiled once into closures."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:161132",
+          "name": "runSequential",
+          "attributedPercent": 10.26,
+          "ownPercent": 9.98,
+          "byTarget": {
+            "FUNCTION_SELF": 9.98
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type S: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "runSequential over parser steps: closure and Exit dispatch."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/record.ts:17",
+          "name": "assignProperty",
+          "attributedPercent": 9.96,
+          "ownPercent": 9.49,
+          "byTarget": {
+            "FUNCTION_SELF": 9.49
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type object: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "CHANGE_DATA_LAYOUT"
+            ],
+            "missingEvidence": [
+              "object shapes: assigning keys one at a time via `Reflect.ownKeys` makes dictionary-mode objects; a precomputed key list or object spread/constructor would keep a stable shape",
+              "a measured gain"
+            ],
+            "note": "assignProperty/assignProperties copies keys dynamically onto freshly created objects (9.5% in the schema workload, own time). A shape-preserving construction is an algorithmic/layout change, not a mechanical one."
+          },
+          "seenInRuns": 3
+        }
+      ]
+    }
+  ]
+}

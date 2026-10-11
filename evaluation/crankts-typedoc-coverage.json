@@ -1,0 +1,4266 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "typedoc-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      5.21,
+      14.2,
+      16.87
+    ]
+  },
+  "subject": {
+    "name": "typedoc",
+    "version": "0.28.20",
+    "description": "TypeDoc generating HTML documentation for five TypeScript projects (run from source through tsx)",
+    "analyzedFunctions": 2182
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "/Users/benjaminbecker/Workspace/crankts/evaluation/typedoc/annotations.json"
+  },
+  "workloads": [
+    {
+      "workload": "typedoc (self)",
+      "wallMs": 2828,
+      "profiledMs": 2716,
+      "attribution": {
+        "UNANALYZED_PROJECT": 3.78,
+        "FUNCTION_SELF": 14.53,
+        "EXTERNAL_DEPENDENCY": 39.23,
+        "IO": 3.34,
+        "RUNTIME": 6.89,
+        "UNATTRIBUTED": 31.39
+      },
+      "topOrigins": [
+        {
+          "origin": "typescript",
+          "kind": "PACKAGE",
+          "percent": 34.24
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 18.11
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 15.58
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 6.95
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.22
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 3.65
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 4.9
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 2.65
+        },
+        {
+          "origin": "lunr",
+          "kind": "PACKAGE",
+          "percent": 2.15
+        },
+        {
+          "origin": "markdown-it",
+          "kind": "PACKAGE",
+          "percent": 0.85
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 68.61
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 14.53
+        },
+        {
+          "step": "top call sites (25)",
+          "percent": 53.11
+        },
+        {
+          "step": "human-plausible",
+          "percent": 7.34
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "class instances",
+          "percent": 34.03
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 6.85
+        },
+        {
+          "reason": "call to unresolvable or library function",
+          "percent": 6.44
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 3.94
+        },
+        {
+          "reason": "other: type Icons: struct field chevronDown must be a required, non",
+          "percent": 0.76
+        },
+        {
+          "reason": "async or generator",
+          "percent": 0.51
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0
+        },
+        {
+          "reason": "library method not lowered",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "utils/entry-point.ts:12953",
+          "name": "getEntryPrograms",
+          "attributedPercent": 16.57,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "FUNCTION_SELF": 0.05,
+            "EXTERNAL_DEPENDENCY": 14,
+            "IO": 2.82,
+            "RUNTIME": 0.19
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 14
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 2.82
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.19
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Logger: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:28966",
+          "name": "getSymbolForModuleLike",
+          "attributedPercent": 6.48,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 6.08
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 6.08
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/highlighter.tsx:5546",
+          "name": "highlight",
+          "attributedPercent": 6.44,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.84,
+            "RUNTIME": 5.75
+          },
+          "topExternal": [
+            {
+              "origin": "wasm",
+              "target": "RUNTIME",
+              "percent": 5.75
+            },
+            {
+              "origin": "@shikijs/vscode-textmate",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.55
+            },
+            {
+              "origin": "@shikijs/engine-oniguruma",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.25
+            },
+            {
+              "origin": "@gerrit0/mini-shiki",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: call to assert does not resolve to a function declaration or const arrow function with a body"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "repetition is workload-dependent: Vite 50 calls / 12 distinct (reuse 0.76), TypeDoc self 29 / 27 (0.07)",
+              "share of per-call tokenizing vs. one-time grammar (oniguruma WASM) compilation"
+            ],
+            "note": "Shiki highlighting (oniguruma regexes in WASM) per code block; memoizing by (code, language) helps only where examples repeat."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/signature.ts:1697",
+          "name": "createSignature",
+          "attributedPercent": 4.04,
+          "ownPercent": 0.09,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.71,
+            "FUNCTION_SELF": 0.09,
+            "UNANALYZED_PROJECT": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.71
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:26017",
+          "name": "convertProperty",
+          "attributedPercent": 2.84,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 2.78,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.78
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:3790",
+          "name": "convertType",
+          "attributedPercent": 2.75,
+          "ownPercent": 0.36,
+          "byTarget": {
+            "FUNCTION_SELF": 0.36,
+            "EXTERNAL_DEPENDENCY": 2.34,
+            "UNANALYZED_PROJECT": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.34
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/plugins/JavascriptIndexPlugin.ts:2212",
+          "name": "JavascriptIndexPlugin.buildSearchIndex",
+          "attributedPercent": 2.28,
+          "ownPercent": 0.09,
+          "byTarget": {
+            "FUNCTION_SELF": 0.09,
+            "EXTERNAL_DEPENDENCY": 2.18
+          },
+          "topExternal": [
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.18
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Builds the lunr search index once per run (dependency code)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/MarkedPlugin.tsx:17787",
+          "name": "MarkedPlugin.onParseMarkdown",
+          "attributedPercent": 1.43,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.62,
+            "UNANALYZED_PROJECT": 0.05,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "markdown-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.14
+            },
+            {
+              "origin": "linkify-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.43
+            },
+            {
+              "origin": "mdurl",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.05
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "markdown-it rendering per comment; inputs are mostly distinct (not measured)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2953",
+          "name": "renderInto",
+          "attributedPercent": 1.25,
+          "ownPercent": 1.25,
+          "byTarget": {
+            "FUNCTION_SELF": 1.25
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2740",
+          "name": "renderElement",
+          "attributedPercent": 0.94,
+          "ownPercent": 0.85,
+          "byTarget": {
+            "FUNCTION_SELF": 0.85
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/default/partials/icon.tsx:1145",
+          "name": "buildRefIcons",
+          "attributedPercent": 0.76,
+          "ownPercent": 0.64,
+          "byTarget": {
+            "FUNCTION_SELF": 0.64,
+            "UNANALYZED_PROJECT": 0.12
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.12
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Icons: struct field chevronDown must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "number of renders per distinct relative-URL prefix"
+            ],
+            "note": "buildRefIcons rebuilds the same SVG icon references for every render context; only the relative URL to assets/icons.svg varies, so a cache per URL prefix would serve most pages."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/symbol-id.ts:710",
+          "name": "createSymbolIdImpl",
+          "attributedPercent": 0.75,
+          "ownPercent": 0.2,
+          "byTarget": {
+            "RUNTIME": 0.52,
+            "EXTERNAL_DEPENDENCY": 0.12,
+            "FUNCTION_SELF": 0.2
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.52
+            },
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.12
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Symbol: struct field flags: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Symbol ids from declarations (checker + path work)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/paths.ts:385",
+          "name": "MinimatchSet.matchesAny",
+          "attributedPercent": 0.7,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.7
+          },
+          "topExternal": [
+            {
+              "origin": "minimatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.7
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Minimatch matching with patterns compiled once in MinimatchSet."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/signature.ts:7354",
+          "name": "convertParameters",
+          "attributedPercent": 0.66,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.57,
+            "UNANALYZED_PROJECT": 0.14,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.57
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/compress.ts:349",
+          "name": "compressJson",
+          "attributedPercent": 0.5,
+          "ownPercent": 0.37,
+          "byTarget": {
+            "IO": 0.04,
+            "FUNCTION_SELF": 0.37,
+            "EXTERNAL_DEPENDENCY": 0.07,
+            "RUNTIME": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.07
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.04
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O. (zlib)"
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/comments/blockLexer.ts:11577",
+          "name": "attachLinkTagResult",
+          "attributedPercent": 0.49,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.59,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.59
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token: struct field kind: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comment lexer bookkeeping."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:9647",
+          "name": "RepositoryManager.initializeRepositoriesForDirs",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "FUNCTION_SELF": 0.02,
+            "IO": 0.51
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.51
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/map.ts:128",
+          "name": "DefaultMap.get",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.48,
+          "byTarget": {
+            "FUNCTION_SELF": 0.48
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Map get-or-create bookkeeping."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/plugins/SourcePlugin.ts:2147",
+          "name": "SourcePlugin.onDeclaration",
+          "attributedPercent": 0.46,
+          "ownPercent": 0.14,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.22,
+            "FUNCTION_SELF": 0.14,
+            "UNANALYZED_PROJECT": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.22
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.09
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Source location bookkeeping (checker)."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "models/Comment.ts:4097",
+          "name": "CommentTag.clone",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.11,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.3,
+            "FUNCTION_SELF": 0.11
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.3
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comment model clone."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/symbols.ts:18389",
+          "name": "convertFunctionOrMethod",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.28,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.28
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "output/themes/lib.tsx:1489",
+          "name": "wbr",
+          "attributedPercent": 0.37,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type (string | JsxElement)[]: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "String splitting for HTML word breaks."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/types.ts:6382",
+          "name": "convert",
+          "attributedPercent": 0.37,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.32,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:490",
+          "name": "gitAsync",
+          "attributedPercent": 0.37,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.37
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.37
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils-common/jsx.ts:4249",
+          "name": "renderChildrenInto",
+          "attributedPercent": 0.36,
+          "ownPercent": 0.36,
+          "byTarget": {
+            "FUNCTION_SELF": 0.36
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxChildren[]: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/fs.ts:2178",
+          "name": "writeFile",
+          "attributedPercent": 0.36,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.12,
+            "RUNTIME": 0.24
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.24
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.12
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/context.ts:4969",
+          "name": "Context.createDeclarationReflection",
+          "attributedPercent": 0.35,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.31
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.31
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Reflection construction."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/string.ts:3087",
+          "name": "escapeHtml",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: method replace is not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "String.replace (native)."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/plugins/ImplementsPlugin.ts:14053",
+          "name": "ImplementsPlugin.onDeclaration",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.12,
+          "byTarget": {
+            "FUNCTION_SELF": 0.12,
+            "EXTERNAL_DEPENDENCY": 0.13,
+            "UNANALYZED_PROJECT": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.13
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.09
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/sort.ts:2231",
+          "name": "alphabetical-ignoring-documents",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type DeclarationReflection | DocumentReflection: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comparator."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/comments/index.ts:5009",
+          "name": "getComment",
+          "attributedPercent": 0.33,
+          "ownPercent": 0.12,
+          "byTarget": {
+            "FUNCTION_SELF": 0.12,
+            "EXTERNAL_DEPENDENCY": 0.11,
+            "UNANALYZED_PROJECT": 0.1
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.11
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.1
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Symbol: struct field flags: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/plugins/SourcePlugin.ts:4278",
+          "name": "SourcePlugin.onBeginResolve",
+          "attributedPercent": 0.31,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "RUNTIME": 0.24,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.24
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Source resolution bookkeeping."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "crankts",
+      "wallMs": 1667,
+      "profiledMs": 1598,
+      "attribution": {
+        "UNANALYZED_PROJECT": 1.69,
+        "FUNCTION_SELF": 7.93,
+        "EXTERNAL_DEPENDENCY": 38.18,
+        "IO": 6.13,
+        "RUNTIME": 1.44,
+        "UNATTRIBUTED": 44.65
+      },
+      "topOrigins": [
+        {
+          "origin": "typescript",
+          "kind": "PACKAGE",
+          "percent": 34.79
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 24.22
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 9.97
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.87
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 6.49
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 5.35
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 3.56
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 2.82
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 1.34
+        },
+        {
+          "origin": "markdown-it",
+          "kind": "PACKAGE",
+          "percent": 1.32
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 55.35
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 7.93
+        },
+        {
+          "step": "top call sites (13)",
+          "percent": 44.64
+        },
+        {
+          "step": "human-plausible",
+          "percent": 1.87
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "class instances",
+          "percent": 36.73
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 3.75
+        },
+        {
+          "reason": "call to unresolvable or library function",
+          "percent": 1.23
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 1.02
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.96
+        },
+        {
+          "reason": "other: type Icons: struct field chevronDown must be a required, non",
+          "percent": 0.64
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "utils/entry-point.ts:12953",
+          "name": "getEntryPrograms",
+          "attributedPercent": 23.22,
+          "ownPercent": 0.04,
+          "byTarget": {
+            "FUNCTION_SELF": 0.04,
+            "EXTERNAL_DEPENDENCY": 20.9,
+            "IO": 2,
+            "RUNTIME": 0.28
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 20.9
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 2
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.28
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Logger: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:28966",
+          "name": "getSymbolForModuleLike",
+          "attributedPercent": 10.05,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 10.04
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.04
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/MarkedPlugin.tsx:17787",
+          "name": "MarkedPlugin.onParseMarkdown",
+          "attributedPercent": 1.78,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.75
+          },
+          "topExternal": [
+            {
+              "origin": "markdown-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.2
+            },
+            {
+              "origin": "linkify-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.55
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "markdown-it rendering per comment; inputs are mostly distinct (not measured)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:26017",
+          "name": "convertProperty",
+          "attributedPercent": 1.45,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.53,
+            "FUNCTION_SELF": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.53
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/highlighter.tsx:5546",
+          "name": "highlight",
+          "attributedPercent": 1.23,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.27,
+            "RUNTIME": 0.74
+          },
+          "topExternal": [
+            {
+              "origin": "wasm",
+              "target": "RUNTIME",
+              "percent": 0.74
+            },
+            {
+              "origin": "@shikijs/vscode-textmate",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.2
+            },
+            {
+              "origin": "@gerrit0/mini-shiki",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            },
+            {
+              "origin": "@shikijs/engine-oniguruma",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: call to assert does not resolve to a function declaration or const arrow function with a body"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "repetition is workload-dependent: Vite 50 calls / 12 distinct (reuse 0.76), TypeDoc self 29 / 27 (0.07)",
+              "share of per-call tokenizing vs. one-time grammar (oniguruma WASM) compilation"
+            ],
+            "note": "Shiki highlighting (oniguruma regexes in WASM) per code block; memoizing by (code, language) helps only where examples repeat."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/plugins/JavascriptIndexPlugin.ts:2212",
+          "name": "JavascriptIndexPlugin.buildSearchIndex",
+          "attributedPercent": 1.14,
+          "ownPercent": 0.1,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.89,
+            "FUNCTION_SELF": 0.1
+          },
+          "topExternal": [
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.89
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Builds the lunr search index once per run (dependency code)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:490",
+          "name": "gitAsync",
+          "attributedPercent": 0.96,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.66
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.66
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/fs.ts:2950",
+          "name": "copySync",
+          "attributedPercent": 0.85,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.79
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.79
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Stats: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:3790",
+          "name": "convertType",
+          "attributedPercent": 0.83,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "FUNCTION_SELF": 0.08,
+            "EXTERNAL_DEPENDENCY": 0.75
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.75
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:9647",
+          "name": "RepositoryManager.initializeRepositoriesForDirs",
+          "attributedPercent": 0.8,
+          "ownPercent": 0.04,
+          "byTarget": {
+            "IO": 0.74,
+            "FUNCTION_SELF": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.74
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/default/partials/icon.tsx:1145",
+          "name": "buildRefIcons",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.52,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.11,
+            "FUNCTION_SELF": 0.52
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.11
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Icons: struct field chevronDown must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "number of renders per distinct relative-URL prefix"
+            ],
+            "note": "buildRefIcons rebuilds the same SVG icon references for every render context; only the relative URL to assets/icons.svg varies, so a cache per URL prefix would serve most pages."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2953",
+          "name": "renderInto",
+          "attributedPercent": 0.52,
+          "ownPercent": 0.46,
+          "byTarget": {
+            "FUNCTION_SELF": 0.46
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2740",
+          "name": "renderElement",
+          "attributedPercent": 0.52,
+          "ownPercent": 0.42,
+          "byTarget": {
+            "FUNCTION_SELF": 0.42
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "utils/sort.ts:2231",
+          "name": "alphabetical-ignoring-documents",
+          "attributedPercent": 0.38,
+          "ownPercent": 0.38,
+          "byTarget": {
+            "FUNCTION_SELF": 0.38
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type DeclarationReflection | DocumentReflection: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comparator."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "knip",
+      "wallMs": 2280,
+      "profiledMs": 2136,
+      "attribution": {
+        "UNANALYZED_PROJECT": 1.41,
+        "FUNCTION_SELF": 5.18,
+        "EXTERNAL_DEPENDENCY": 43.22,
+        "IO": 11.3,
+        "RUNTIME": 0.76,
+        "UNATTRIBUTED": 37.14
+      },
+      "topOrigins": [
+        {
+          "origin": "typescript",
+          "kind": "PACKAGE",
+          "percent": 43.62
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 20.05
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 9.79
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 6.72
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.31
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 5.53
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 2.69
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 1.53
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 1.01
+        },
+        {
+          "origin": "markdown-it",
+          "kind": "PACKAGE",
+          "percent": 0.79
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 62.86
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 5.18
+        },
+        {
+          "step": "top call sites (4)",
+          "percent": 50.89
+        },
+        {
+          "step": "human-plausible",
+          "percent": 0
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "class instances",
+          "percent": 50.9
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "utils/entry-point.ts:12953",
+          "name": "getEntryPrograms",
+          "attributedPercent": 31.84,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 21,
+            "IO": 8.87,
+            "RUNTIME": 0.27
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 21
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 8.87
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.27
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Logger: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:28966",
+          "name": "getSymbolForModuleLike",
+          "attributedPercent": 9.43,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 10.28
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.28
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:33785",
+          "name": "convertVariable",
+          "attributedPercent": 7.08,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 8.1
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 8.1
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:3790",
+          "name": "convertType",
+          "attributedPercent": 2.38,
+          "ownPercent": 0.24,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 2.09,
+            "FUNCTION_SELF": 0.24,
+            "UNANALYZED_PROJECT": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.09
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:490",
+          "name": "gitAsync",
+          "attributedPercent": 2.34,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 2.34
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 2.34
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "tanstack router-core",
+      "wallMs": 2418,
+      "profiledMs": 2312,
+      "attribution": {
+        "UNANALYZED_PROJECT": 2.6,
+        "FUNCTION_SELF": 10.41,
+        "EXTERNAL_DEPENDENCY": 40.4,
+        "RUNTIME": 3.94,
+        "IO": 7.55,
+        "UNATTRIBUTED": 34.46
+      },
+      "topOrigins": [
+        {
+          "origin": "typescript",
+          "kind": "PACKAGE",
+          "percent": 37.02
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 17.86
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 13.3
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 6.95
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 6.11
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.07
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 4.32
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 2.03
+        },
+        {
+          "origin": "lunr",
+          "kind": "PACKAGE",
+          "percent": 1.15
+        },
+        {
+          "origin": "tsx",
+          "kind": "PACKAGE",
+          "percent": 0.93
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 65.54
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 10.41
+        },
+        {
+          "step": "top call sites (21)",
+          "percent": 52.5
+        },
+        {
+          "step": "human-plausible",
+          "percent": 4.34
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "class instances",
+          "percent": 41.42
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 3.93
+        },
+        {
+          "reason": "call to unresolvable or library function",
+          "percent": 3.45
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 2.17
+        },
+        {
+          "reason": "other: type Icons: struct field chevronDown must be a required, non",
+          "percent": 0.79
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.7
+        },
+        {
+          "reason": "async or generator",
+          "percent": 0
+        },
+        {
+          "reason": "other: type NonSharedBuffer: struct field slice must be a required,",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "utils/entry-point.ts:12953",
+          "name": "getEntryPrograms",
+          "attributedPercent": 24.32,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "FUNCTION_SELF": 0.02,
+            "EXTERNAL_DEPENDENCY": 14.29,
+            "IO": 7.62,
+            "RUNTIME": 0.16
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 14.29
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 7.62
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.16
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Logger: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:28966",
+          "name": "getSymbolForModuleLike",
+          "attributedPercent": 7.91,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 9.56
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 9.56
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/highlighter.tsx:5546",
+          "name": "highlight",
+          "attributedPercent": 3.45,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.75,
+            "RUNTIME": 2.96
+          },
+          "topExternal": [
+            {
+              "origin": "wasm",
+              "target": "RUNTIME",
+              "percent": 2.96
+            },
+            {
+              "origin": "@shikijs/vscode-textmate",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.53
+            },
+            {
+              "origin": "@shikijs/engine-oniguruma",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.18
+            },
+            {
+              "origin": "@gerrit0/mini-shiki",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: call to assert does not resolve to a function declaration or const arrow function with a body"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "repetition is workload-dependent: Vite 50 calls / 12 distinct (reuse 0.76), TypeDoc self 29 / 27 (0.07)",
+              "share of per-call tokenizing vs. one-time grammar (oniguruma WASM) compilation"
+            ],
+            "note": "Shiki highlighting (oniguruma regexes in WASM) per code block; memoizing by (code, language) helps only where examples repeat."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:26017",
+          "name": "convertProperty",
+          "attributedPercent": 2.85,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 2.58,
+            "FUNCTION_SELF": 0.07,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.58
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:3790",
+          "name": "convertType",
+          "attributedPercent": 2.27,
+          "ownPercent": 0.16,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.85,
+            "FUNCTION_SELF": 0.16,
+            "UNANALYZED_PROJECT": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.85
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:6382",
+          "name": "convert",
+          "attributedPercent": 2.2,
+          "ownPercent": 0.14,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 2.58,
+            "FUNCTION_SELF": 0.14,
+            "UNANALYZED_PROJECT": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.58
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/MarkedPlugin.tsx:17787",
+          "name": "MarkedPlugin.onParseMarkdown",
+          "attributedPercent": 1.64,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.66,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "markdown-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.74
+            },
+            {
+              "origin": "linkify-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.49
+            },
+            {
+              "origin": "mdurl",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.44
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "markdown-it rendering per comment; inputs are mostly distinct (not measured)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/signature.ts:1697",
+          "name": "createSignature",
+          "attributedPercent": 1.15,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.08,
+            "FUNCTION_SELF": 0.05,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.08
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/plugins/JavascriptIndexPlugin.ts:2212",
+          "name": "JavascriptIndexPlugin.buildSearchIndex",
+          "attributedPercent": 1.14,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.02,
+            "EXTERNAL_DEPENDENCY": 1.1,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.1
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Builds the lunr search index once per run (dependency code)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2740",
+          "name": "renderElement",
+          "attributedPercent": 0.82,
+          "ownPercent": 1.05,
+          "byTarget": {
+            "FUNCTION_SELF": 1.05
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/default/partials/icon.tsx:1145",
+          "name": "buildRefIcons",
+          "attributedPercent": 0.79,
+          "ownPercent": 0.56,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.22,
+            "FUNCTION_SELF": 0.56
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.22
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Icons: struct field chevronDown must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "number of renders per distinct relative-URL prefix"
+            ],
+            "note": "buildRefIcons rebuilds the same SVG icon references for every render context; only the relative URL to assets/icons.svg varies, so a cache per URL prefix would serve most pages."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:33785",
+          "name": "convertVariable",
+          "attributedPercent": 0.72,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.04,
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.04
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2953",
+          "name": "renderInto",
+          "attributedPercent": 0.71,
+          "ownPercent": 1.16,
+          "byTarget": {
+            "FUNCTION_SELF": 1.16
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:490",
+          "name": "gitAsync",
+          "attributedPercent": 0.7,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "FUNCTION_SELF": 0.02,
+            "IO": 0.39
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.39
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:9647",
+          "name": "RepositoryManager.initializeRepositoriesForDirs",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "IO": 0.58,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.58
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/symbol-id.ts:710",
+          "name": "createSymbolIdImpl",
+          "attributedPercent": 0.6,
+          "ownPercent": 0.11,
+          "byTarget": {
+            "RUNTIME": 0.19,
+            "FUNCTION_SELF": 0.11,
+            "EXTERNAL_DEPENDENCY": 0.09,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.19
+            },
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.09
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Symbol: struct field flags: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Symbol ids from declarations (checker + path work)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/paths.ts:385",
+          "name": "MinimatchSet.matchesAny",
+          "attributedPercent": 0.49,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.42,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "minimatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.42
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Minimatch matching with patterns compiled once in MinimatchSet."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "utils/fs.ts:2178",
+          "name": "writeFile",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.06,
+          "byTarget": {
+            "IO": 0.18,
+            "RUNTIME": 0.24,
+            "FUNCTION_SELF": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.24
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.18
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils-common/map.ts:128",
+          "name": "DefaultMap.get",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.45,
+          "byTarget": {
+            "FUNCTION_SELF": 0.45
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Map get-or-create bookkeeping."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/fs.ts:738",
+          "name": "readFile",
+          "attributedPercent": 0.41,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.41
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.41
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type NonSharedBuffer: struct field slice must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/options/readers/typedoc.ts:1616",
+          "name": "TypeDocReader.readFile",
+          "attributedPercent": 0.41,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.41
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.41
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "vite (node API)",
+      "wallMs": 2707,
+      "profiledMs": 2604,
+      "attribution": {
+        "FUNCTION_SELF": 11.17,
+        "UNANALYZED_PROJECT": 2.89,
+        "EXTERNAL_DEPENDENCY": 40.43,
+        "IO": 6.77,
+        "RUNTIME": 7.79,
+        "UNATTRIBUTED": 30.85
+      },
+      "topOrigins": [
+        {
+          "origin": "typescript",
+          "kind": "PACKAGE",
+          "percent": 35.45
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 14.09
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 15.73
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.67
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 7.75
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 6.59
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 4.72
+        },
+        {
+          "origin": "@shikijs/engine-oniguruma",
+          "kind": "PACKAGE",
+          "percent": 0.54
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 2.17
+        },
+        {
+          "origin": "lunr",
+          "kind": "PACKAGE",
+          "percent": 1.46
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 69.15
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 11.17
+        },
+        {
+          "step": "top call sites (22)",
+          "percent": 55.61
+        },
+        {
+          "step": "human-plausible",
+          "percent": 8.94
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "class instances",
+          "percent": 38.54
+        },
+        {
+          "reason": "call to unresolvable or library function",
+          "percent": 8.44
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 4.73
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 2.97
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.57
+        },
+        {
+          "reason": "other: type Icons: struct field chevronDown must be a required, non",
+          "percent": 0.5
+        },
+        {
+          "reason": "async or generator",
+          "percent": 0.34
+        },
+        {
+          "reason": "tuples",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "utils/entry-point.ts:12953",
+          "name": "getEntryPrograms",
+          "attributedPercent": 24.19,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 12.52,
+            "IO": 4.22,
+            "RUNTIME": 0.13
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 12.52
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 4.22
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Logger: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/highlighter.tsx:5546",
+          "name": "highlight",
+          "attributedPercent": 8.44,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.09,
+            "RUNTIME": 6.89
+          },
+          "topExternal": [
+            {
+              "origin": "wasm",
+              "target": "RUNTIME",
+              "percent": 6.89
+            },
+            {
+              "origin": "@shikijs/engine-oniguruma",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.73
+            },
+            {
+              "origin": "@shikijs/vscode-textmate",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.96
+            },
+            {
+              "origin": "@gerrit0/mini-shiki",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.4
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: call to assert does not resolve to a function declaration or const arrow function with a body"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "repetition is workload-dependent: Vite 50 calls / 12 distinct (reuse 0.76), TypeDoc self 29 / 27 (0.07)",
+              "share of per-call tokenizing vs. one-time grammar (oniguruma WASM) compilation"
+            ],
+            "note": "Shiki highlighting (oniguruma regexes in WASM) per code block; memoizing by (code, language) helps only where examples repeat."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:28966",
+          "name": "getSymbolForModuleLike",
+          "attributedPercent": 8.05,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 10.65
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.65
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:3790",
+          "name": "convertType",
+          "attributedPercent": 3.34,
+          "ownPercent": 0.59,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.79,
+            "FUNCTION_SELF": 0.59,
+            "RUNTIME": 0.02,
+            "UNANALYZED_PROJECT": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.79
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.08
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/symbols.ts:26017",
+          "name": "convertProperty",
+          "attributedPercent": 1.85,
+          "ownPercent": 0.04,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.71,
+            "FUNCTION_SELF": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.71
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/themes/MarkedPlugin.tsx:17787",
+          "name": "MarkedPlugin.onParseMarkdown",
+          "attributedPercent": 1.79,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.25,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "markdown-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.78
+            },
+            {
+              "origin": "linkify-it",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.45
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            },
+            {
+              "origin": "mdurl",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            },
+            {
+              "origin": "punycode.js",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "markdown-it rendering per comment; inputs are mostly distinct (not measured)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "output/plugins/JavascriptIndexPlugin.ts:2212",
+          "name": "JavascriptIndexPlugin.buildSearchIndex",
+          "attributedPercent": 1.56,
+          "ownPercent": 0.13,
+          "byTarget": {
+            "FUNCTION_SELF": 0.13,
+            "EXTERNAL_DEPENDENCY": 1.11
+          },
+          "topExternal": [
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.11
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Builds the lunr search index once per run (dependency code)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/comments/blockLexer.ts:15004",
+          "name": "discoverIndent",
+          "attributedPercent": 1.11,
+          "ownPercent": 1.11,
+          "byTarget": {
+            "FUNCTION_SELF": 1.11
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type [boolean, number]: tuples are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "measured gain of a char-code test over `/\\S/.test(file[pos])` per character"
+            ],
+            "note": "discoverIndent scans comment text one character at a time and runs a regex on each character; a code-unit whitespace test is equivalent (JS \\s set) and allocation-free. About 1% on Vite."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2740",
+          "name": "renderElement",
+          "attributedPercent": 0.95,
+          "ownPercent": 2.24,
+          "byTarget": {
+            "FUNCTION_SELF": 2.24
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils-common/jsx.ts:2953",
+          "name": "renderInto",
+          "attributedPercent": 0.94,
+          "ownPercent": 1.08,
+          "byTarget": {
+            "FUNCTION_SELF": 1.08
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxElement | null | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "utils/paths.ts:385",
+          "name": "MinimatchSet.matchesAny",
+          "attributedPercent": 0.76,
+          "ownPercent": 0.1,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.64,
+            "FUNCTION_SELF": 0.1,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "minimatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.64
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Minimatch matching with patterns compiled once in MinimatchSet."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/factories/signature.ts:7354",
+          "name": "convertParameters",
+          "attributedPercent": 0.7,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.54,
+            "UNANALYZED_PROJECT": 0.17
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.54
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.17
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/factories/symbol-id.ts:710",
+          "name": "createSymbolIdImpl",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.21,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.17,
+            "FUNCTION_SELF": 0.21,
+            "RUNTIME": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.32
+            },
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.17
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Symbol: struct field flags: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Symbol ids from declarations (checker + path work)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/converter.ts:22622",
+          "name": "Converter.isExternal",
+          "attributedPercent": 0.6,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "FUNCTION_SELF": 0.05,
+            "UNANALYZED_PROJECT": 0.55
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.55
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:490",
+          "name": "gitAsync",
+          "attributedPercent": 0.57,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 1.06,
+            "RUNTIME": 0
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 1.06
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/utilities/repository.ts:9647",
+          "name": "RepositoryManager.initializeRepositoriesForDirs",
+          "attributedPercent": 0.56,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.56
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.56
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/factories/signature.ts:1697",
+          "name": "createSignature",
+          "attributedPercent": 0.56,
+          "ownPercent": 0.1,
+          "byTarget": {
+            "FUNCTION_SELF": 0.1,
+            "EXTERNAL_DEPENDENCY": 0.39,
+            "UNANALYZED_PROJECT": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.39
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "converter/comments/discovery.ts:9556",
+          "name": "discoverCommentWorker",
+          "attributedPercent": 0.52,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34,
+            "UNANALYZED_PROJECT": 0.06,
+            "EXTERNAL_DEPENDENCY": 0.12
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.12
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Symbol: struct field flags: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "output/themes/default/partials/icon.tsx:1145",
+          "name": "buildRefIcons",
+          "attributedPercent": 0.5,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.17,
+            "FUNCTION_SELF": 0.35
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.17
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Icons: struct field chevronDown must be a required, non-method property"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "missingEvidence": [
+              "number of renders per distinct relative-URL prefix"
+            ],
+            "note": "buildRefIcons rebuilds the same SVG icon references for every render context; only the relative URL to assets/icons.svg varies, so a cache per URL prefix would serve most pages."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "converter/types.ts:6382",
+          "name": "convert",
+          "attributedPercent": 0.49,
+          "ownPercent": 0.1,
+          "byTarget": {
+            "FUNCTION_SELF": 0.1,
+            "EXTERNAL_DEPENDENCY": 0.38,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.38
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Context: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "utils-common/jsx.ts:4249",
+          "name": "renderChildrenInto",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.48,
+          "byTarget": {
+            "FUNCTION_SELF": 0.48
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type JsxChildren[]: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "TypeDoc's own JSX-to-string rendering."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "utils-common/map.ts:128",
+          "name": "DefaultMap.get",
+          "attributedPercent": 0.47,
+          "ownPercent": 0.47,
+          "byTarget": {
+            "FUNCTION_SELF": 0.47
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Map get-or-create bookkeeping."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/plugins/SourcePlugin.ts:2147",
+          "name": "SourcePlugin.onDeclaration",
+          "attributedPercent": 0.44,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.33,
+            "UNANALYZED_PROJECT": 0.02,
+            "FUNCTION_SELF": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "typescript",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.33
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Source location bookkeeping (checker)."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/comments/blockLexer.ts:2239",
+          "name": "lexBlockComment2",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.41,
+          "byTarget": {
+            "FUNCTION_SELF": 0.41
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comment lexer (generator)."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "models/types.ts:26991",
+          "name": "ReferenceType.createUnresolvedReference",
+          "attributedPercent": 0.38,
+          "ownPercent": 0.16,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.23,
+            "FUNCTION_SELF": 0.16
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.23
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ReflectionSymbolId: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Model construction."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "converter/context.ts:4969",
+          "name": "Context.createDeclarationReflection",
+          "attributedPercent": 0.35,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.3,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.3
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Reflection construction."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/compress.ts:349",
+          "name": "compressJson",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.27,
+          "byTarget": {
+            "IO": 0.02,
+            "FUNCTION_SELF": 0.27,
+            "EXTERNAL_DEPENDENCY": 0.02,
+            "RUNTIME": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.02
+            },
+            {
+              "origin": "lunr",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "File system, git, or compression I/O. (zlib)"
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "utils/sort.ts:2231",
+          "name": "alphabetical-ignoring-documents",
+          "attributedPercent": 0.33,
+          "ownPercent": 0.33,
+          "byTarget": {
+            "FUNCTION_SELF": 0.33
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type DeclarationReflection | DocumentReflection: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Comparator."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    }
+  ]
+}

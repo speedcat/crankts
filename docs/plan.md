@@ -359,7 +359,7 @@ The packed function is itself the transformed-TypeScript variant, and it lowers 
 - its 928 per-component calls are batched into one kernel call
 - `findCandidateIslands` seals the adjacency once (immutability is checked), and the chained WCC kernel reuses it
 
-Output is byte-identical; parity is 2,835 agreeing cases plus 165 guarded, with no mismatches. At kernel level on W1 with the graph sealed, the batched TypeScript is 2.0× faster and native 3.7× (3.0–3.6× at 10× and 100×, where native carries 63–69% of the gain). End to end, the graph work in `findCandidateIslands` drops from 7.1 to 3.4 ms (2.1× native, 1.8× TypeScript only). One lesson: a full `localeCompare` id rank cost more than the kernel itself, so id comparisons are now deferred to ties. See [lowering.md](lowering.md) and [crankts-v026b-batched-graph.json](../evaluation/crankts-v026b-batched-graph.json). Next is the external evaluation (Knip) and the advisor refactor.
+Output is byte-identical; parity is 2,835 agreeing cases plus 165 guarded, with no mismatches. At kernel level on W1 with the graph sealed, the batched TypeScript is 2.0× faster and native 3.7× (3.0–3.6× at 10× and 100×, where native carries 63–69% of the gain). End to end, the graph work in `findCandidateIslands` drops from 7.1 to 3.4 ms (2.1× native, 1.8× TypeScript only). One lesson: a full `localeCompare` id rank cost more than the kernel itself, so id comparisons are now deferred to ties. See [lowering.md](lowering.md) and [crankts-v026b-batched-graph.json](../evaluation/crankts-v026b-batched-graph.json). Next: v0.2.6c, the Knip coverage study, then v0.2.7 (see the replan below).
 
 ### Adjustments from the third review round
 
@@ -373,6 +373,154 @@ Output is byte-identical; parity is 2,835 agreeing cases plus 165 guarded, with 
 - **Recommendation taxonomy:** split into transformation (`HOIST_INVARIANT_WORK`, `PREPARE_STATE`, `CHANGE_DATA_LAYOUT`, `BATCH`, `PARALLELIZE`) and execution (`KEEP_TS`, `MOVE_OFF_EVENT_LOOP`, `NATIVE_OFFLOAD`). Reports state transformation gain and native incremental gain separately.
 - **No further KWX work:** the remaining 11.4 s is structured regex extraction, a separate problem.
 - **Knip:** after v0.2.6b (now due).
+
+**v0.2.6c is done.** The two assumptions of v0.2.6b are now proof obligations:
+
+- `TOTAL_ORDER_KEY` is PROVEN by the integer analysis, which now handles arrays of arrays; otherwise the extraction is rejected.
+- `IMMUTABLE_AFTER_CAPTURE` is GUARDED per group: the result is used only if the group still equals the captured copy, and otherwise the original re-runs.
+- The graph's immutability through the batched statement is PROVEN, and batching now requires it.
+
+The graph transformation is fail-closed without documented exceptions. See [lowering.md](lowering.md).
+
+### Replan after the fourth review round
+
+v0.2.6b showed that CrankTS has to transform across function boundaries: batching, a sealed representation shared by two consumers, and rare semantics kept in TypeScript. The open question is no longer whether CrankTS can optimize two known cases. It is **how much hot TypeScript a small set of reusable acceleration patterns explains.** New order:
+
+| Step | Content |
+| --- | --- |
+| v0.2.6c | Close the two documented assumptions of v0.2.6b as proof obligations (`IMMUTABLE_AFTER_CAPTURE` for batched groups, `TOTAL_ORDER_KEY` for comparator keys); fail closed otherwise |
+| Knip study | Generalization test, no new patterns: CPU profiles of Knip on several real repositories; the coverage funnel; per-hotspot recognition status; manual "transformable" review → recognition recall |
+| v0.2.7 | `TransformationPlan` (kernels, regions, representations with preparation site, lifetime, and consumers, call replacements, TS-kept semantics, guards, obligations, fallback, validation). It is shaped by the Knip findings. One patched copy per source file instead of chained copies, and a shared A/B/C evaluation harness. |
+| Advisor v2 | Transformation strategy (`KEEP_STRUCTURE`, `HOIST_INVARIANT_WORK`, `PREPARE_STATE`, `PACK_DATA`, `BATCH`, `PARALLELIZE`, `CHANGE_ALGORITHM`) separate from execution strategy (`KEEP_TS`, `MOVE_OFF_EVENT_LOOP`, `NATIVE`). Reports gain attribution and observed vs. projected application impact. |
+| v0.3 | Automatic selection: analyzer → qualifier (proofs) → advisor → `TransformationPlan` → Kernel IR only for native parts → validator enables or rolls back |
+
+**No new transformation patterns until the Knip study is evaluated.** (Superseded by the fifth round below: until the five-project generalization review.)
+
+**Metrics for the external evaluations.** They are measured on profiled CPU, never on lines of code or syntax support:
+
+- **Acceleration Coverage funnel:**
+  1. runtime
+  2. project-owned compute
+  3. statically transformable (human review)
+  4. covered by known CrankTS patterns
+  5. worthwhile after the cost model
+  6. successfully accelerated
+- **Recognition recall:** recognized by CrankTS ÷ transformable according to human review.
+- **Pattern yield:** per pattern, the projects it hits and the CPU coverage it adds. This shows diminishing returns early.
+- **Product metric:** coverage × achievable speedup (Amdahl).
+
+**Eval matrix:**
+
+- Knip (dependency and static analysis)
+- TypeDoc (compiler API)
+- ts-morph (compiler object graph)
+- ESLint (AST traversal and rules)
+- one data-heavy Node tool (parsing and aggregation)
+
+Not React web apps.
+
+**Stop/Go after about five projects:**
+
+| Median actionable project-owned CPU | Verdict |
+| --- | --- |
+| ≥ 30%, and a few recurring patterns explain most of it | continue with v0.3 |
+| 10–30%, and patterns recur across projects | a niche optimizer for compute-heavy TypeScript |
+| < 10%, and every project needs bespoke patterns | rethink the architecture (data-flow, dependence, and alias analysis instead of pattern recognition) |
+| < 5%, mostly unique idioms, and native adds little after V8 | no automatic compiler: advisor-only, or a whole-program approach |
+
+**Knip study (first data point) is done.** The annotations were reviewed in the fifth round, which split them into evidence levels. Details are in [eval-knip.md](eval-knip.md). Knip 6.41 was profiled on five repositories.
+
+- **Coverage:** known-pattern coverage and recognition recall are both 0. Human review finds 2.3–22.6% of runtime transformable at Knip call sites, median 14.5%.
+- **What is transformable:** mostly `HOIST_INVARIANT_WORK` (picomatch recompiling ignore patterns inside tinyglobby, 1.2–10.6%) and `PREPARE_STATE`/index-building (gitignore and workspace lookups).
+- **Native:** Knip already runs parsing and resolution in Rust, so native execution is not the lever.
+- **What this changes:**
+  - **Call-site attribution:** attribute external time to the project code that causes it, and feed that into Advisor v2.
+  - **A recognizer for repeated invariant work across calls:** compile/parse/matcher factories called with repeated inputs (memoize or hoist).
+  - **Lowering syntax:** accept arrow functions and `this`-free methods as kernels.
+  - **N-API time:** classify it as external native, not project compute.
+  - **TypeScript 7:** projects that pin it (whose JavaScript package has no checker API) now fall back to the bundled TypeScript 5.9.
+
+No Go/No-Go from one project. The patterns do recur (hoisting, prepared state); recognition is what fails. That points the v0.2.7 and Advisor v2 work at recognition and call sites rather than at new kernels.
+
+### Replan after the fifth review round (after Knip)
+
+Knip did not show that the approach fails. It showed that CrankTS's pattern families recur, but its recognition is too function-centric and too narrow in syntax: **CrankTS knows the idea but does not see where it applies.** So: build less compiler for now, and measure which compiler is needed.
+
+| Step | Status | Content |
+| --- | --- | --- |
+| v0.2.6c | done | Proof cleanup (`TOTAL_ORDER_KEY`, `IMMUTABLE_AFTER_CAPTURE`) |
+| Eval #1 Knip | done | Hybrid static analysis with native dependencies ([eval-knip.md](eval-knip.md)) |
+| **v0.2.6d** | done | **Recognition infrastructure:**<br>R1 call-site attribution as a first-class model (`FUNCTION_SELF`, `CALL_SITE_CAUSED`, `EXTERNAL_DEPENDENCY`, `EXTERNAL_NATIVE`, `IO`, `GC_RUNTIME`)<br>R2 native-addon (N-API) time externalized<br>R3 `HOIST_INVARIANT_WORK` detection (recognition only; `STATIC_INVARIANT` vs `DYNAMICALLY_REPEATED`, with optional input-signature profiling: call count, unique argument fingerprints, reuse ratio)<br>R4 arrow functions and `this`-free methods in lowering (syntax coverage, not a pattern) |
+| Eval #2–#5 | in progress: TypeDoc and ESLint done ([eval-typedoc-eslint.md](eval-typedoc-eslint.md)); noble-hashes done ([eval-noble-hashes.md](eval-noble-hashes.md)); Effect done (in [eval-generalization.md](eval-generalization.md)) | TypeDoc (TS checker and AST), ESLint (visitors and rules), Effect (runtime, state, concurrency), noble-hashes (pure compute and typed arrays, a compute-heavy control and upper bound). Recognize and classify only; no new transformers. |
+| Generalization review | draft written ([eval-generalization.md](eval-generalization.md)); the stop/go decision is open | Acceleration coverage, automated recognition recall, pattern-family recall, pattern yield, stop/go decision |
+| v0.2.7 | | `TransformationPlan` built from the patterns that actually recur |
+| Advisor v2 | | Transformation vs. execution strategy, gain attribution, call-site recommendations |
+| v0.3 | | Automatic selection and execution |
+
+**v0.2.6d is done.** Details are in [analysis-and-evaluation.md](analysis-and-evaluation.md) and [eval-knip.md](eval-knip.md).
+
+- **R1 call-site attribution:** `observedCpu.callSite` holds the targets per function, plus dependency entries with their compile-like time.
+- **R2 N-API time:** time on N-API call lines and addon binding lines is externalized; advisor hotness now uses own JavaScript.
+- **R3 `HOIST_INVARIANT_WORK` detection:** invariance classes, and repetition evidence from input-signature profiling (`--probe-inputs`, `--input-signatures`).
+- **R4 lowering:** const arrow functions, function expressions, and `this`-free methods.
+
+On Knip, every number is a median over workloads:
+
+| Measure | Value |
+| --- | ---: |
+| Human-plausible | 11.5% |
+| Evidence-supported | 4.3% |
+| Recognized | 2.3% |
+| Recognition recall | 0.46 (was 0) |
+| Pattern-family recall | 1.0 |
+| Precision | 1.0 |
+
+The measured repetition turned `glob`/picomatch from plausible into evidence-supported. A study driver ([run-study.ts](../evaluation/coverage/run-study.ts)) now runs any subject from a config; evals #2–#5 use it.
+
+**Rule until the generalization review:**
+
+- New hotspots are classified by a human: an existing pattern family counts as a hit, anything else is recorded as a candidate pattern.
+- Nothing new is implemented as a transformer. This guards against 35 special passes for 7% coverage.
+
+**Evidence levels in the coverage funnel.** Every study reports these separately:
+
+1. **Human-plausible**
+2. **Human-evidence-supported:** the precondition is shown by measurement or by inspection, e.g. inputs that really repeat.
+3. **CrankTS-recognized**
+4. **CrankTS-transformable**
+5. **Validated-beneficial**
+
+**Two recalls:**
+
+- **Automated recognition recall:** did CrankTS find the concrete case?
+- **Pattern-family recall:** does CrankTS have the optimization family at all?
+
+Knip: 0 for the first, nonzero for the second.
+
+**Eval matrix (revised):**
+
+| Project | Character |
+| --- | --- |
+| Knip | dependency- and orchestration-heavy static analysis |
+| TypeDoc | TS checker- and AST-heavy |
+| ESLint | visitor- and rule-heavy |
+| Effect | runtime-, state-, and concurrency-heavy |
+| noble-hashes | pure compute- and typed-array-heavy (control) |
+
+ts-morph is dropped as too similar to TypeDoc. The noble-hashes study also tests the lowering itself: how much profiled CPU is syntactically lowerable, semantically provable, and worth running natively? JavaScript's 32-bit bitwise semantics may be the missing IR piece there.
+
+**Compiler frontend.** TypeScript 7 with the projects' compilers falls back to the bundled TypeScript 5.9; the report records which compiler was used. This is a side issue; nothing more is pursued here. Possible future backends:
+
+- the TypeScript 7.1 API, which the TypeScript docs announce as a new compiler API
+- a `bun check` API, if one appears
+
+The architectural boundary for them is a `CompilerFrontend` (TS 5/6 JS API today) behind `CompilerFacade`. A faster native checker would also remove CrankTS's own 95% bottleneck without CrankTS optimizing it. For CrankTS itself that would be an execution-strategy recommendation (`SWITCH_CHECKER`), not a kernel.
+
+**Lessons from v0.2.4–v0.2.6b that shape the next steps:**
+
+- **Load-sensitive measurements:** evaluations run round-robin across fresh processes, with `--expose-gc` and the load average recorded, and report ratios.
+- **Hidden O(n) work:** a transformation can add O(n) work that the original only does on rare paths (the `localeCompare` rank). Validation compares against the original's actual paths.
+- **Brittle chaining:** chained patched copies work but are brittle; v0.2.7 replaces them.
 
 ### Open point: a faster TypeScript checker
 

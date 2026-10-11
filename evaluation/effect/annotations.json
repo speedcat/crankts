@@ -1,0 +1,54 @@
+{
+  "src/SchemaAST.ts:69168": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Schema parser: per-item closure dispatch over a compiled parser tree (getParser, Exit values); the schema is already compiled once into closures."
+  },
+  "src/internal/effect.ts:19474": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "The fiber run loop: a bytecode-style interpreter over Effect primitives with a mutable fiber (`this`), continuation stack, and scheduler. It is the runtime itself."
+  },
+  "src/internal/effect.ts:47705": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Stream continuation (`mapCont`): closure chains over Exit values."
+  },
+  "src/internal/effect.ts:161132": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "runSequential over parser steps: closure and Exit dispatch."
+  },
+  "src/internal/record.ts:17": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "CHANGE_DATA_LAYOUT"
+    ],
+    "missingEvidence": [
+      "object shapes: assigning keys one at a time via `Reflect.ownKeys` makes dictionary-mode objects; a precomputed key list or object spread/constructor would keep a stable shape",
+      "a measured gain"
+    ],
+    "note": "assignProperty/assignProperties copies keys dynamically onto freshly created objects (9.5% in the schema workload, own time). A shape-preserving construction is an algorithmic/layout change, not a mechanical one."
+  },
+  "src/internal/effect.ts:18061": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Fiber evaluate step: part of the interpreter."
+  },
+  "src/internal/core.ts:14059": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Exit allocation (makeExit): object construction for every result."
+  },
+  "src/Stream.ts:217230": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Stream loop over channel pulls: closure continuation."
+  },
+  "src/Channel.ts:115731": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Channel loop: closure continuation."
+  },
+  "src/internal/effect.ts:47919": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "andThenCont: continuation chain."
+  },
+  "src/Array.ts:6902": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Array.range builds a plain array of numbers (native fill/push)."
+  }
+}

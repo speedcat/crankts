@@ -1,0 +1,207 @@
+{
+  "src/typescript/SourceFileManager.ts:3226": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+  },
+  "src/typescript/ast-nodes.ts:876": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+  },
+  "src/typescript/visitors/walk.ts:31896": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+  },
+  "src/util/glob-core.ts:11456": {
+    "transformability": "EVIDENCE_SUPPORTED",
+    "confidence": "HIGH",
+    "patterns": [
+      "HOIST_INVARIANT_WORK"
+    ],
+    "fraction": 0.78,
+    "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+    "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+  },
+  "src/util/glob-core.ts:14502": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "PREPARE_STATE",
+      "CHANGE_ALGORITHM"
+    ],
+    "missingEvidence": [
+      "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+    ],
+    "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+  },
+  "src/util/glob-core.ts:4832": {
+    "transformability": "EVIDENCE_SUPPORTED",
+    "confidence": "HIGH",
+    "patterns": [
+      "CHANGE_ALGORITHM"
+    ],
+    "evidence": "By inspection: `matcher(path) || incr(path)` chains a new closure per batch of pending patterns and walks the chain for every path.",
+    "note": "Materialize the accumulated matcher once. Small share."
+  },
+  "src/util/glob-core.ts:5083": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "addFile: reads and parses .gitignore files (I/O)."
+  },
+  "src/util/resolve.ts:1914": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+  },
+  "src/util/resolve.ts:1133": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "oxc-resolver package.json resolution (N-API), already native."
+  },
+  "src/util/loader.ts:285": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
+  },
+  "src/graph/build.ts:3262": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+  },
+  "src/ConfigurationChief.ts:18421": {
+    "transformability": "EVIDENCE_SUPPORTED",
+    "confidence": "HIGH",
+    "patterns": [
+      "PREPARE_STATE",
+      "CHANGE_DATA_LAYOUT"
+    ],
+    "evidence": "By inspection: a linear startsWith scan over all workspace directories per (memoized) file path.",
+    "note": "A path-segment index built once (prepared state) makes it O(depth). Backstage: about 230 workspaces, 2.9%."
+  },
+  "src/util/fs.ts:2885": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "yaml package parsing config/lock files; once per file."
+  },
+  "src/typescript/SourceFileManager.ts:3384": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
+  },
+  "src/typescript/visitors/members.ts:634": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Per-AST-node visitor logic (Map lookups, shadowing checks) over dynamic ESTree objects; no batchable kernel."
+  },
+  "src/typescript/visitors/walk.ts:6842": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Recursive type-reference collector over ESTree nodes (switch on node.type); dynamic object graph."
+  },
+  "src/typescript/get-imports-and-exports.ts:1647": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Per-file orchestration of parse + visitors; own time is small bookkeeping."
+  },
+  "src/typescript/visitors/calls.ts:4759": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Per-call-expression visitor over ESTree nodes."
+  },
+  "src/util/glob.ts:3076": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Synchronous directory globbing (fs)."
+  },
+  "src/util/load-tsconfig.ts:5050": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "get-tsconfig: reading and parsing tsconfig files (I/O + JSON)."
+  },
+  "src/typescript/resolve-module-names.ts:8818": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Module resolution orchestration around oxc-resolver (native)."
+  },
+  "src/typescript/visitors/walk.ts:17526": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Visitor callback (VariableDeclarator) over ESTree nodes."
+  },
+  "src/typescript/visitors/exports.ts:1494": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Visitor callback (export declarations)."
+  },
+  "src/ProjectPrincipal.ts:10799": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Per-file analysis orchestration."
+  },
+  "src/util/resolve.ts:3403": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "oxc-resolver (native)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/ast-nodes.ts:1634": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "buildLineStarts: a pure string scan using native String.prototype.indexOf; already optimal. It would be lowerable in principle, but CrankTS rejects it only for syntax (arrow function), and a native kernel would not beat V8's indexOf."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/visitors/walk.ts:12447": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "CHANGE_DATA_LAYOUT"
+    ],
+    "note": "isShadowed: linear scan over shadow ranges; an interval index would help, but the share is below 0.4% and irrelevant for the architecture decision."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/array.ts:127": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "compact: Set + filter on small arrays."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/path.ts:858": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "String.prototype.includes (native)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/module-graph.ts:2378": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Map/Set bookkeeping while merging import maps; per-entry work."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/graph-explorer/operations/is-referenced.ts:1093": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Recursive re-export traversal with string keys and a seen-set; data-dependent graph walk over Map-based module graph (a PACK_DATA candidate only if the module graph were packed upstream; small share)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/glob-core.ts:8771": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "findAncestorGitignoreFiles: fs existence checks (I/O)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/glob-core.ts:13262": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Gitignore setup (fs + picomatch compile once)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/fs.ts:617": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File reading (I/O)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/util/load-tsconfig.ts:3474": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "tsconfig loading (I/O + parse)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/follow-imports.ts:1163": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Import following: resolution orchestration around oxc-resolver."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/resolve-module-names.ts:8379": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Module-name resolution around oxc-resolver (native)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/visitors/walk.ts:17721": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Visitor callback (CallExpression)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/typescript/visitors/walk.ts:17857": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Visitor callback (MemberExpression)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/plugins/vite/visitors/importMetaGlob.ts:394": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Plugin visitor callback."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/graph/analyze.ts:2202": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Graph analysis orchestration (per export bookkeeping)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/WorkspaceWorker.ts:10803": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Plugin orchestration (config loading)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/WorkspaceWorker.ts:14218": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Plugin orchestration (config loading)."
+  },
+  "/Users/benjaminbecker/Workspace/crankts-eval/knip/packages/knip/src/WorkspaceWorker.ts:5056": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Plugin enablement checks over dependency lists."
+  }
+}

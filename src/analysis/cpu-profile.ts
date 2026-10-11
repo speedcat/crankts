@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
-import { extname, isAbsolute, relative, resolve, sep } from "node:path";
+import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
   AnalysisResult,
+  AttributionTarget,
+  CallSiteObservation,
   CandidateIsland,
   CpuProfileObservation,
   CpuProfileOrigin,
@@ -22,7 +24,22 @@ interface V8ProfileNode {
   readonly id: number;
   readonly callFrame: ProfileCallFrame;
   readonly children?: readonly number[];
+  /** Self ticks per 1-based source line (`node --cpu-prof` records them). */
+  readonly positionTicks?: readonly { readonly line: number; readonly ticks: number }[];
 }
+
+export interface CpuProfileLoadOptions {
+  /**
+   * 1-based lines of a function where it calls into a native addon (N-API). N-API calls have no frame, so
+   * their time is the caller's self time; ticks on these lines are attributed as EXTERNAL_NATIVE.
+   */
+  readonly nativeAddonCallLines?: (functionId: FunctionId) => ReadonlySet<number> | undefined;
+  /** Whether the package at this root directory is a native addon; defaults to reading its package.json. */
+  readonly isNativeAddonPackage?: (packageRoot: string) => boolean;
+}
+
+/** Node modules whose native leaves are I/O. */
+const IO_MODULE = /^node:(?:internal\/)?(?:fs|net|dns|tls|http|https|http2|child_process|dgram|readline|zlib|internal\/fs|internal\/streams|stream)(?:\/|$)/;
 
 interface V8CpuProfile {
   readonly nodes: readonly V8ProfileNode[];
@@ -45,6 +62,7 @@ export function loadV8CpuProfile(
   profilePath: string,
   projectRoot: string,
   functions: readonly FunctionAnalysis[],
+  options: CpuProfileLoadOptions = {},
 ): LoadedCpuProfile {
   const absoluteProfilePath = resolve(profilePath);
   let rawProfile: unknown;
@@ -82,6 +100,39 @@ export function loadV8CpuProfile(
   let totalSampleMicros = 0;
   let matchedSampleMicros = 0;
   let matchedSampleCount = 0;
+  const attribution = new Map<FunctionId, SiteAccumulator>();
+  const attributedByTarget: Partial<Record<AttributionTarget, number>> = {};
+  let nativeAddonSelfMicros = 0;
+  // Per profile: node ids are only unique within one profile.
+  const addonShareByNode = new Map<number, number>();
+  const bindingShareByNode = new Map<number, number>();
+  /** Share of a project frame's self ticks that fall on its N-API call lines. */
+  const addonShare = (node: V8ProfileNode, functionId: FunctionId): number => {
+    const cached = addonShareByNode.get(node.id);
+    if (cached !== undefined) return cached;
+    const lines = options.nativeAddonCallLines?.(functionId);
+    let share = 0;
+    if (lines && lines.size > 0 && node.positionTicks && node.positionTicks.length > 0) {
+      const total = node.positionTicks.reduce((sum, entry) => sum + entry.ticks, 0);
+      const onAddon = node.positionTicks.filter((entry) => lines.has(entry.line)).reduce((sum, entry) => sum + entry.ticks, 0);
+      share = total > 0 ? onAddon / total : 0;
+    }
+    addonShareByNode.set(node.id, share);
+    return share;
+  };
+  const addAttribution = (functionId: FunctionId, target: AttributionTarget, origin: string | undefined, micros: number): void => {
+    if (micros <= 0) return;
+    const entry = attribution.get(functionId) ?? newSiteAccumulator();
+    entry.byTarget[target] = (entry.byTarget[target] ?? 0) + micros;
+    if (origin !== undefined) {
+      const key = `${origin}\u0000${target}`;
+      const external = entry.external.get(key) ?? { target, micros: 0 };
+      external.micros += micros;
+      entry.external.set(key, external);
+    }
+    attribution.set(functionId, entry);
+    attributedByTarget[target] = (attributedByTarget[target] ?? 0) + micros;
+  };
 
   for (let index = 0; index < profile.samples.length; index += 1) {
     const nodeId = profile.samples[index];
@@ -134,6 +185,43 @@ export function loadV8CpuProfile(
       );
     }
 
+    // Call-site attribution: the innermost analyzed frame, and what the sample's leaf is relative to it.
+    let siteNodeId: number | undefined = nodeId;
+    let belowSite: number[] = [];
+    while (siteNodeId !== undefined && !functionByProfileNode.has(siteNodeId)) {
+      belowSite.push(siteNodeId);
+      siteNodeId = parentByNode.get(siteNodeId);
+    }
+    const siteFunctionId = siteNodeId === undefined ? undefined : functionByProfileNode.get(siteNodeId);
+    if (siteNodeId !== undefined && siteFunctionId) {
+      if (belowSite.length === 0) {
+        const native = durationMicros * addonShare(nodeById.get(siteNodeId) as V8ProfileNode, siteFunctionId);
+        nativeAddonSelfMicros += native;
+        addAttribution(siteFunctionId, "EXTERNAL_NATIVE", "(N-API call)", native);
+        addAttribution(siteFunctionId, "FUNCTION_SELF", undefined, durationMicros - native);
+      } else {
+        // The frame right below the analyzed function: the dependency (or Node API) it called into.
+        const entryFrame = nodeById.get(belowSite[belowSite.length - 1] as number)?.callFrame;
+        if (entryFrame?.url) {
+          const site = attribution.get(siteFunctionId) ?? newSiteAccumulator();
+          const key = `${classifyOrigin(entryFrame, projectRoot).origin}\u0000${entryFrame.functionName ?? ""}`;
+          const entry = site.entries.get(key) ?? { micros: 0, compileLikeMicros: 0 };
+          entry.micros += durationMicros;
+          if (belowSite.some((id) => isCompileLike(nodeById.get(id)?.callFrame.functionName))) entry.compileLikeMicros += durationMicros;
+          site.entries.set(key, entry);
+          attribution.set(siteFunctionId, site);
+        }
+        const isAddon = options.isNativeAddonPackage ?? isNativeAddonPackageRoot;
+        const classified = classifyBelowSite(belowSite.map((id) => nodeById.get(id)?.callFrame), projectRoot, isAddon);
+        // A JS frame of an addon package spends its N-API calls as self time too: split by its line ticks.
+        const leafNode = nodeById.get(nodeId);
+        const native = classified.target === "EXTERNAL_DEPENDENCY" && leafNode ? durationMicros * packageBindingShare(leafNode, isAddon, bindingShareByNode) : 0;
+        addAttribution(siteFunctionId, "EXTERNAL_NATIVE", classified.origin, native);
+        addAttribution(siteFunctionId, classified.target, classified.target === "FUNCTION_SELF" ? undefined : classified.origin, durationMicros - native);
+      }
+    }
+    belowSite = [];
+
     samples.push({ durationMicros, functionIds });
   }
 
@@ -141,12 +229,14 @@ export function loadV8CpuProfile(
   for (const functionAnalysis of functions) {
     const selfCpuMicros = selfMicrosByFunction.get(functionAnalysis.id) ?? 0;
     const totalCpuMicros = totalMicrosByFunction.get(functionAnalysis.id) ?? selfCpuMicros;
-      observations.set(functionAnalysis.id, {
-        selfCpuMicros,
-        totalCpuMicros,
-        samplePercent: percentOf(selfCpuMicros, totalSampleMicros),
-        callCount: null,
-      });
+    const site = attribution.get(functionAnalysis.id);
+    observations.set(functionAnalysis.id, {
+      selfCpuMicros,
+      totalCpuMicros,
+      samplePercent: percentOf(selfCpuMicros, totalSampleMicros),
+      callCount: null,
+      ...(site ? { callSite: callSiteObservation(site, totalSampleMicros) } : {}),
+    });
   }
 
   const matchedSamplePercent = percentOf(matchedSampleMicros, totalSampleMicros);
@@ -178,10 +268,179 @@ export function loadV8CpuProfile(
       timeUnit: "microseconds",
       confidence,
       origins,
+      attribution: {
+        attributedPercent: percentOf(sumValues(attributedByTarget), totalSampleMicros),
+        byTarget: mapValues(attributedByTarget, (micros) => percentOf(micros, totalSampleMicros)),
+        unattributedPercent: percentOf(totalSampleMicros - sumValues(attributedByTarget), totalSampleMicros),
+        nativeAddonSelfPercent: percentOf(nativeAddonSelfMicros, totalSampleMicros),
+      },
     },
     observations,
     samples,
   };
+}
+
+interface SiteAccumulator {
+  readonly byTarget: Partial<Record<AttributionTarget, number>>;
+  readonly external: Map<string, { target: AttributionTarget; micros: number }>;
+  readonly entries: Map<string, { micros: number; compileLikeMicros: number }>;
+}
+
+function newSiteAccumulator(): SiteAccumulator {
+  return { byTarget: {}, external: new Map(), entries: new Map() };
+}
+
+/** Frames that build reusable state from their input: compilers, parsers, scanners, pattern expansion. */
+const COMPILE_LIKE = /^(?:compile|parse|makeRe|toRegex|tokeni[sz]e|scan|lex|expand)/i;
+
+export function isCompileLike(functionName: string | undefined): boolean {
+  const last = (functionName ?? "").split(".").pop() ?? "";
+  return COMPILE_LIKE.test(last);
+}
+
+function callSiteObservation(site: SiteAccumulator, totalSampleMicros: number): CallSiteObservation {
+  const attributedMicros = sumValues(site.byTarget);
+  const causedMicros = attributedMicros - (site.byTarget.FUNCTION_SELF ?? 0);
+  return {
+    attributedMicros: Math.round(attributedMicros),
+    attributedPercent: percentOf(attributedMicros, totalSampleMicros),
+    causedMicros: Math.round(causedMicros),
+    causedPercent: percentOf(causedMicros, totalSampleMicros),
+    byTarget: mapValues(site.byTarget, (micros) => percentOf(micros, totalSampleMicros)),
+    topExternal: [...site.external]
+      .map(([key, entry]) => ({ origin: key.split("\u0000")[0] as string, target: entry.target, micros: Math.round(entry.micros), percent: percentOf(entry.micros, totalSampleMicros) }))
+      .sort((left, right) => right.micros - left.micros)
+      .slice(0, 5),
+    entries: [...site.entries]
+      .map(([key, entry]) => {
+        const [origin, functionName] = key.split("\u0000") as [string, string];
+        return {
+          origin,
+          functionName,
+          micros: Math.round(entry.micros),
+          percent: percentOf(entry.micros, totalSampleMicros),
+          compileLikeMicros: Math.round(entry.compileLikeMicros),
+          compileLikePercent: percentOf(entry.compileLikeMicros, totalSampleMicros),
+        };
+      })
+      .sort((left, right) => right.micros - left.micros)
+      .slice(0, 8),
+  };
+}
+
+/**
+ * Classifies a sample by the frames between the leaf (first) and the innermost analyzed frame (exclusive).
+ * Native leaves (no script: builtins, regexes, bindings) take the class of their nearest JavaScript caller.
+ */
+export function classifyBelowSite(
+  frames: readonly (ProfileCallFrame | undefined)[],
+  projectRoot: string,
+  isAddonPackage: (packageRoot: string) => boolean,
+): { readonly target: AttributionTarget; readonly origin: string } {
+  const leaf = frames[0];
+  const leafUrl = leaf?.url ?? "";
+  const scripted = frames.find((frame) => frame?.url && !frame.url.startsWith("wasm://"));
+  if (leafUrl.startsWith("wasm://")) {
+    return { target: "RUNTIME", origin: scripted?.url?.startsWith("node:") ? "node (wasm)" : "wasm" };
+  }
+  const reference = leafUrl ? leaf : scripted;
+  if (!reference?.url) {
+    // Only native frames between the analyzed function and the leaf: its own builtins and regexes.
+    return { target: "FUNCTION_SELF", origin: "(native)" };
+  }
+  const nativeLeaf = !leafUrl;
+  const url = reference.url;
+  if (url.startsWith("node:")) {
+    return { target: IO_MODULE.test(url) ? "IO" : "RUNTIME", origin: "node" };
+  }
+  const origin = classifyOrigin(reference, projectRoot);
+  if (origin.kind === "PACKAGE") {
+    const root = packageRootFromUrl(url);
+    return { target: nativeLeaf && root !== undefined && isAddonPackage(root) ? "EXTERNAL_NATIVE" : "EXTERNAL_DEPENDENCY", origin: origin.origin };
+  }
+  if (origin.kind === "PROJECT") {
+    return { target: "UNANALYZED_PROJECT", origin: "project" };
+  }
+  return { target: "RUNTIME", origin: origin.origin };
+}
+
+const BINDING_CALL = /\b(?:\w*[Bb]inding\w*|addon|native)\s*(?:\.\s*\w+\s*)?\(/;
+const sourceLinesCache = new Map<string, readonly string[] | null>();
+
+/**
+ * Share of an addon package frame's self ticks on lines that call its binding (`parseSyncBinding(…)`,
+ * `binding.resolve(…)`, `nativeBinding.x(…)`): the generated glue of napi-rs and node-gyp packages.
+ * Packages are not type-checked, so this is a textual check, limited to native addon packages.
+ */
+function packageBindingShare(node: V8ProfileNode, isAddon: (packageRoot: string) => boolean, bindingShareCache: Map<number, number>): number {
+  const cached = bindingShareCache.get(node.id);
+  if (cached !== undefined) return cached;
+  let share = 0;
+  const url = node.callFrame.url ?? "";
+  const root = packageRootFromUrl(url);
+  if (root && isAddon(root) && node.positionTicks && node.positionTicks.length > 0) {
+    let lines = sourceLinesCache.get(url);
+    if (lines === undefined) {
+      try {
+        lines = readFileSync(url.startsWith("file:") ? fileURLToPath(new URL(url)) : url, "utf8").split("\n");
+      } catch {
+        lines = null;
+      }
+      sourceLinesCache.set(url, lines);
+    }
+    if (lines) {
+      const total = node.positionTicks.reduce((sum, entry) => sum + entry.ticks, 0);
+      const onBinding = node.positionTicks.filter((entry) => BINDING_CALL.test(lines?.[entry.line - 1] ?? "")).reduce((sum, entry) => sum + entry.ticks, 0);
+      share = total > 0 ? onBinding / total : 0;
+    }
+  }
+  bindingShareCache.set(node.id, share);
+  return share;
+}
+
+/** `/…/node_modules/<name>/` (innermost) of a script URL. */
+export function packageRootFromUrl(url: string): string | undefined {
+  let path = url;
+  try {
+    path = url.startsWith("file:") ? fileURLToPath(new URL(url)) : url;
+  } catch {
+    return undefined;
+  }
+  const normalized = path.split(sep).join("/");
+  const match = /^(.*\/node_modules\/(?:@[^/]+\/)?[^/]+)\/(?!.*\/node_modules\/)/.exec(normalized);
+  return match?.[1];
+}
+
+const addonManifestCache = new Map<string, boolean>();
+export function isNativeAddonPackageRoot(packageRoot: string): boolean {
+  let addon = addonManifestCache.get(packageRoot);
+  if (addon === undefined) {
+    try {
+      addon = isNativeAddonManifest(JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as Record<string, unknown>);
+    } catch {
+      addon = false;
+    }
+    addonManifestCache.set(packageRoot, addon);
+  }
+  return addon;
+}
+
+/** napi-rs, node-gyp, and prebuild packages; also packages shipping per-platform binding packages. */
+export function isNativeAddonManifest(manifest: Record<string, unknown>): boolean {
+  if (manifest["napi"] || manifest["gypfile"] || manifest["binary"]) return true;
+  const dependencies = { ...(manifest["dependencies"] as Record<string, string> | undefined), ...(manifest["optionalDependencies"] as Record<string, string> | undefined) };
+  return Object.keys(dependencies).some((name) => (
+    /^(node-gyp-build|bindings|prebuild-install|@mapbox\/node-pre-gyp|node-addon-api)$/.test(name)
+    || /(?:^|[/-])binding-|-(?:darwin|linux|win32)-(?:x64|arm64|ia32)/.test(name)
+  ));
+}
+
+function sumValues(record: Partial<Record<string, number>>): number {
+  return Object.values(record).reduce<number>((sum, value) => sum + (value ?? 0), 0);
+}
+
+function mapValues<K extends string>(record: Partial<Record<K, number>>, map: (value: number) => number): Partial<Record<K, number>> {
+  return Object.fromEntries(Object.entries(record).map(([key, value]) => [key, map(value as number)])) as Partial<Record<K, number>>;
 }
 
 export function attachCpuProfile(

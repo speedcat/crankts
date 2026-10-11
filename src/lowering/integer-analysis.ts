@@ -11,6 +11,8 @@ import { walkStatements } from "./verify.js";
  * Flow-insensitive: scalar slots are keyed by (function, name); array element and map value classes
  * are unified (union-find) along every flow (bindings, calls, returns, struct fields). Entry
  * parameters come from JavaScript and are always f64. NONNEG additionally proves INT values >= 0.
+ * Arrays of arrays (v0.2.6c): the inner element class of a class `k` is the derived key `k/E`, unified
+ * whenever the outer classes are, and with every inner array stored into the outer one.
  */
 
 export interface IntegerAnalysis {
@@ -75,6 +77,18 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
   const isNumericCollection = (type: IrType | undefined): boolean => (
     (type?.kind === "map" && type.value.kind === "f64") || (type?.kind === "array" && type.storage === "dynamic" && type.element.kind === "f64")
   );
+  /** A dynamic array whose elements are (nested) numeric collections. */
+  const isNestedCollection = (type: IrType | undefined): boolean => (
+    type?.kind === "array" && type.storage === "dynamic" && (isNumericCollection(type.element) || isNestedCollection(type.element))
+  );
+  const isTracked = (type: IrType | undefined): boolean => isNumericCollection(type) || isNestedCollection(type);
+  /** Unifies two classes of `type`, and for arrays of arrays their inner element classes too. */
+  const unionDeep = (left: string, right: string, type: IrType | undefined): void => {
+    union(left, right);
+    if (type?.kind === "array" && isNestedCollection(type)) {
+      unionDeep(`${left}/E`, `${right}/E`, type.element);
+    }
+  };
 
   /** Union-find key of the element/value class an array- or map-typed expression denotes. */
   const classKey = (fn: string, expr: IrExpr): string => {
@@ -99,9 +113,12 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
       }
       case "cond": {
         const key = classKey(fn, expr.then);
-        union(key, classKey(fn, expr.otherwise));
+        unionDeep(key, classKey(fn, expr.otherwise), typeOf(fn, expr.then));
         return key;
       }
+      case "index":
+        // An element of an array of arrays: the derived inner class of the outer array.
+        return isNestedCollection(typeOf(fn, expr.target)) ? `${classKey(fn, expr.target)}/E` : external();
       default:
         // e.g. an element of an array of arrays: not tracked, so never INT.
         return external();
@@ -130,13 +147,17 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
         if (isNumericCollection(param.type)) {
           externalClasses.add(find(`C:${fn.name}:${param.name}`));
         }
+        for (let type: IrType = param.type, key = `C:${fn.name}:${param.name}`; isNestedCollection(type) && type.kind === "array"; type = type.element) {
+          key = `${key}/E`;
+          externalClasses.add(key);
+        }
       }
     }
     const bind = (name: string, type: IrType, value: IrExpr): void => {
       if (type.kind === "f64") {
         defineScalar(`L:${fn.name}:${name}`, { fn: fn.name, expr: value });
-      } else if (isNumericCollection(type)) {
-        union(`C:${fn.name}:${name}`, classKey(fn.name, value));
+      } else if (isTracked(type)) {
+        unionDeep(`C:${fn.name}:${name}`, classKey(fn.name, value), type);
       }
     };
     walkStatements(fn.body, (statement) => {
@@ -155,11 +176,15 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
           defineScalar(`L:${fn.name}:${statement.variable}`, { fn: fn.name, expr: statement.start });
           break;
         case "setIndex":
-        case "push":
-          if (isNumericCollection(typeOf(fn.name, statement.target))) {
+        case "push": {
+          const targetType = typeOf(fn.name, statement.target);
+          if (isNumericCollection(targetType)) {
             classDefinitions.push({ classKey: classKey(fn.name, statement.target), definition: { fn: fn.name, expr: statement.value } });
+          } else if (isNestedCollection(targetType) && targetType?.kind === "array") {
+            unionDeep(`${classKey(fn.name, statement.target)}/E`, classKey(fn.name, statement.value), targetType.element);
           }
           break;
+        }
         case "mapSet":
           if (isNumericCollection(typeOf(fn.name, statement.map))) {
             classDefinitions.push({ classKey: classKey(fn.name, statement.map), definition: { fn: fn.name, expr: statement.value } });
@@ -168,8 +193,8 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
         case "return":
           if (statement.value && fn.returnType.kind === "f64") {
             defineScalar(`R:${fn.name}`, { fn: fn.name, expr: statement.value });
-          } else if (statement.value && isNumericCollection(fn.returnType)) {
-            union(`CR:${fn.name}`, classKey(fn.name, statement.value));
+          } else if (statement.value && isTracked(fn.returnType)) {
+            unionDeep(`CR:${fn.name}`, classKey(fn.name, statement.value), fn.returnType);
           }
           break;
         default:
@@ -179,9 +204,17 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
       if (expr.op === "arrayNew" && expr.type.storage === "dynamic" && expr.type.element.kind === "f64") {
         classDefinitions.push({ classKey: classKey(fn.name, expr), definition: { fn: fn.name, expr: expr.fill } });
       }
+      if (expr.op === "arrayNew" && isNestedCollection(expr.type)) {
+        unionDeep(`${classKey(fn.name, expr)}/E`, classKey(fn.name, expr.fill), expr.type.element);
+      }
       if (expr.op === "arrayLiteral" && expr.type.element.kind === "f64") {
         for (const element of expr.elements) {
           classDefinitions.push({ classKey: classKey(fn.name, expr), definition: { fn: fn.name, expr: element } });
+        }
+      }
+      if (expr.op === "arrayLiteral" && isNestedCollection(expr.type)) {
+        for (const element of expr.elements) {
+          unionDeep(`${classKey(fn.name, expr)}/E`, classKey(fn.name, element), expr.type.element);
         }
       }
       if (expr.op === "struct") {
@@ -189,8 +222,8 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
           const type = structFields.get(expr.name)?.get(field.name);
           if (type?.kind === "f64") {
             defineScalar(`F:${expr.name}.${field.name}`, { fn: fn.name, expr: field.value });
-          } else if (type && isNumericCollection(type)) {
-            union(`CF:${expr.name}.${field.name}`, classKey(fn.name, field.value));
+          } else if (type && isTracked(type)) {
+            unionDeep(`CF:${expr.name}.${field.name}`, classKey(fn.name, field.value), type);
           }
         }
       }
@@ -203,8 +236,8 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
           }
           if (param.type.kind === "f64") {
             defineScalar(`L:${callee.name}:${param.name}`, { fn: fn.name, expr: arg });
-          } else if (isNumericCollection(param.type)) {
-            union(`C:${callee.name}:${param.name}`, classKey(fn.name, arg));
+          } else if (isTracked(param.type)) {
+            unionDeep(`C:${callee.name}:${param.name}`, classKey(fn.name, arg), param.type);
           }
         });
       }
@@ -335,17 +368,24 @@ export function analyzeIntegers(module: IrModule, entries: readonly string[] = [
     }
   }
 
+  /** Backends keep one INT flag per binding: for arrays of arrays it describes the innermost elements. */
+  const innermost = (key: string, type: IrType | undefined): string => {
+    let current = key;
+    for (let level = type; level?.kind === "array" && isNestedCollection(level); level = level.element) current = `${current}/E`;
+    return find(current);
+  };
+  const structFieldType = (struct: string, field: string): IrType | undefined => structFields.get(struct)?.get(field);
   return {
     localInt: (fn, name) => intScalars.has(`L:${fn}:${name}`),
     localNonneg: (fn, name) => nonnegScalars.has(`L:${fn}:${name}`),
     returnInt: (fn) => intScalars.has(`R:${fn}`),
     fieldInt: (struct, field) => intScalars.has(`F:${struct}.${field}`),
-    elementsInt: (fn, expr) => intClasses.has(find(classKey(fn, expr))),
-    elementsNonneg: (fn, expr) => nonnegClasses.has(find(classKey(fn, expr))),
-    localElementsInt: (fn, name) => intClasses.has(find(`C:${fn}:${name}`)),
-    fieldElementsInt: (struct, field) => intClasses.has(find(`CF:${struct}.${field}`)),
-    returnElementsInt: (fn) => intClasses.has(find(`CR:${fn}`)),
-    returnElementsNonneg: (fn) => nonnegClasses.has(find(`CR:${fn}`)),
+    elementsInt: (fn, expr) => intClasses.has(innermost(classKey(fn, expr), typeOf(fn, expr))),
+    elementsNonneg: (fn, expr) => nonnegClasses.has(innermost(classKey(fn, expr), typeOf(fn, expr))),
+    localElementsInt: (fn, name) => intClasses.has(innermost(`C:${fn}:${name}`, localTypes.get(fn)?.get(name))),
+    fieldElementsInt: (struct, field) => intClasses.has(innermost(`CF:${struct}.${field}`, structFieldType(struct, field))),
+    returnElementsInt: (fn) => intClasses.has(innermost(`CR:${fn}`, functions.get(fn)?.returnType)),
+    returnElementsNonneg: (fn) => nonnegClasses.has(innermost(`CR:${fn}`, functions.get(fn)?.returnType)),
     exprInt: isInt,
     exprNonneg: isNonneg,
   };

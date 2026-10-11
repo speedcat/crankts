@@ -463,6 +463,21 @@ What the numbers say:
 - **End to end, the two kernels on one sealed graph halve the graph work** (2.08× native, 1.80× TypeScript only). These are milliseconds: graph passes are about 0.7% of CrankTS's W1 wall time (MVP-9a), so this does not change CrankTS's own recommendation (`KEEP_TS` for the whole analysis). It shows the transformation chain (representation, then batching, then upstream packing, then native) on unmodified real code, with each step's gain reported separately.
 - **Backend fix:** `a[i].push(v)` on nested dynamic arrays now binds the index before the mutable borrow. Rust rejected the old form.
 
+## Proof Cleanup (v0.2.6c)
+
+v0.2.6b left two assumptions documented but unchecked. Both are now proof obligations in `contract.json`. If one cannot be discharged, the extraction fails closed.
+
+| Obligation | Subject | Status and evidence |
+| --- | --- | --- |
+| `TOTAL_ORDER_KEY` | numeric comparator keys moved into the kernel | **PROVEN** by the integer analysis: every key local is an exact integer (abs(v) ≤ 2^53), so `a - b` is never NaN and `a \|\| b` falls through only on 0. Otherwise the extraction is rejected, e.g. the fixture `bestRatio` (a quotient key). The NaN workaround in the generated chain is gone. |
+| `IMMUTABLE_AFTER_CAPTURE` | each batched group | **GUARDED**: `__cranktsBatch.take(batch, i, group, () => f(group, G))` compares the group with the copy captured by the batch call, an identity compare in O(group size). A changed group re-runs the original for that group (`packedStatus.captureGuards`). This holds whatever aliases exist (fixture `countsAliased`), so no aliasing argument is needed. |
+| `IMMUTABLE_AFTER_CAPTURE` | the graph during the batched statement | **PROVEN**, and now required for batching even when the graph cannot be sealed. G is a `const` created in its statement (`new Map`, sets via `new Set`, no identifier of `Set` type flowing in). Producer locals are only built and returned. Inside the statement, G is only passed as `ReadonlyMap`. |
+| `IMMUTABLE_DURING_HANDLE` | the sealed graph | **PROVEN**: the same producer proof, plus every later reference being a `ReadonlyMap<_, ReadonlySet<_>>` argument or the batched call |
+
+The `localeCompare` tie-break is recorded in `typescriptSemantics` as semantics deliberately kept in TypeScript.
+
+Proving `TOTAL_ORDER_KEY` for `findArticulationPoints` needed integer facts through arrays of arrays: subtree sizes are stored in `number[][]` and summed in `getNonRootParts`. The integer analysis now tracks the inner element class of an array of arrays as a derived class (`k/E`). That class is unified along bindings, pushes, literals, calls, returns, and fields. The Rust backend applies the INT flag to the innermost elements (`Vec<Vec<i64>>`). The kernel is now integer-specialized there, and parity remains exact: 2,835 agreeing cases plus 165 guarded, both TypeScript and native.
+
 ## Next Steps (from review.md)
 
 1. **Advisor refactor:** separate transformation potential (hoist invariant work, prepared state, data layout, batching, parallelism) from the execution backend (keep TypeScript, move off the event loop, native). Report transformation gain and native incremental gain separately, as the v0.2.5, v0.2.6, and v0.2.6b evaluations do.

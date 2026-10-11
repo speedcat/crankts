@@ -1,0 +1,888 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "noble-hashes-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      5.25,
+      12.35,
+      15.96
+    ]
+  },
+  "subject": {
+    "name": "noble-hashes",
+    "version": "2.4.0",
+    "description": "noble-hashes (pure TypeScript hashes and KDFs) on bulk, KDF, and small-message workloads",
+    "analyzedFunctions": 387
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "/Users/benjaminbecker/Workspace/crankts/evaluation/noble-hashes/annotations.json"
+  },
+  "workloads": [
+    {
+      "workload": "bulk hashing (30 rounds x 8 hashes x 1 MiB)",
+      "wallMs": 4028,
+      "profiledMs": 4001,
+      "attribution": {
+        "FUNCTION_SELF": 95.44,
+        "UNANALYZED_PROJECT": 0.02,
+        "UNATTRIBUTED": 4.53
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 95.62
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 2.83
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.66
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 0.58
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.13
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.11
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 95.47
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 95.44
+        },
+        {
+          "step": "top call sites (6)",
+          "percent": 78.35
+        },
+        {
+          "step": "human-plausible",
+          "percent": 78.35
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 64.67
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 7.01
+        },
+        {
+          "reason": "operator not lowered (|)",
+          "percent": 5.44
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/sha3.ts:3779",
+          "name": "keccakP",
+          "attributedPercent": 37.73,
+          "ownPercent": 37.73,
+          "byTarget": {
+            "FUNCTION_SELF": 37.73
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint32Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "Keccak-f[1600] permutation over a Uint32Array state: pure 32-bit integer loop with bit rotations; the textbook native-kernel shape."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/blake2.ts:17994",
+          "name": "_compress",
+          "attributedPercent": 14.94,
+          "ownPercent": 14.94,
+          "byTarget": {
+            "FUNCTION_SELF": 14.94
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint8Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE3 compression function: pure 32-bit integer rounds over typed arrays."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/sha2.ts:10015",
+          "name": "SHA2_64B.process",
+          "attributedPercent": 7.01,
+          "ownPercent": 6.99,
+          "byTarget": {
+            "FUNCTION_SELF": 6.99
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "SHA-512 block rounds over a Uint32Array message schedule (method; this-bound state)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/blake2.ts:3063",
+          "name": "G2b",
+          "attributedPercent": 6.9,
+          "ownPercent": 6.53,
+          "byTarget": {
+            "FUNCTION_SELF": 6.53
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint32Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE2b mixing function over a Uint32Array."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/blake2.ts:1891",
+          "name": "G1b",
+          "attributedPercent": 5.47,
+          "ownPercent": 5.47,
+          "byTarget": {
+            "FUNCTION_SELF": 5.47
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint32Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE2b mixing function over a Uint32Array: 64-bit arithmetic emulated with 32-bit pairs."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/_blake.ts:2802",
+          "name": "G2s",
+          "attributedPercent": 5.21,
+          "ownPercent": 5.21,
+          "byTarget": {
+            "FUNCTION_SELF": 5.21
+          },
+          "topExternal": [],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: operator | is not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE2s mixing function: 32-bit rotations and adds."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/_blake.ts:2408",
+          "name": "G1s",
+          "attributedPercent": 4.86,
+          "ownPercent": 4.86,
+          "byTarget": {
+            "FUNCTION_SELF": 4.86
+          },
+          "topExternal": [],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: operator | is not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE2s mixing function: 32-bit rotations and adds."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "KDFs (pbkdf2 1M, scrypt 2^15, argon2id 64 MiB)",
+      "wallMs": 1648,
+      "profiledMs": 1618,
+      "attribution": {
+        "UNANALYZED_PROJECT": 0.04,
+        "FUNCTION_SELF": 95.56,
+        "UNATTRIBUTED": 4.4
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 95.6
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 1.75
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 1.4
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 0.56
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.32
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.31
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 95.6
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 95.56
+        },
+        {
+          "step": "top call sites (4)",
+          "percent": 77.57
+        },
+        {
+          "step": "human-plausible",
+          "percent": 71.62
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 33.14
+        },
+        {
+          "reason": "captured outer state",
+          "percent": 21.79
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 16.65
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 5.5
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/sha2.ts:3153",
+          "name": "SHA2_32B.process",
+          "attributedPercent": 33.14,
+          "ownPercent": 33.14,
+          "byTarget": {
+            "FUNCTION_SELF": 33.14
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "SHA-256 block rounds over a Uint32Array schedule (method; this-bound state)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/argon2.ts:2107",
+          "name": "G",
+          "attributedPercent": 21.79,
+          "ownPercent": 22.05,
+          "byTarget": {
+            "FUNCTION_SELF": 22.05
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: A2_BUF is not a parameter or local of the lowered function"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "Argon2 mixing function over a shared module-level buffer (captured state)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/argon2.ts:5290",
+          "name": "block",
+          "attributedPercent": 16.65,
+          "ownPercent": 16.65,
+          "byTarget": {
+            "FUNCTION_SELF": 16.65
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint32Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "Argon2 block compression (BLAKE2b-style round over Uint32Array)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/pbkdf2.ts:3566",
+          "name": "rounds",
+          "attributedPercent": 5.5,
+          "ownPercent": 4.84,
+          "byTarget": {
+            "FUNCTION_SELF": 4.84
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Glue around the compression functions: buffer bookkeeping, loops over blocks, or scrypt/pbkdf2 driver code; no separate transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils.ts:14271",
+          "name": "createView",
+          "attributedPercent": 4.63,
+          "ownPercent": 4.63,
+          "byTarget": {
+            "FUNCTION_SELF": 4.63
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<TypedArray>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Glue around the compression functions: DataView creation (platform object); no separate transformation."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "small messages (300k x hash/hmac/hkdf)",
+      "wallMs": 2834,
+      "profiledMs": 2808,
+      "attribution": {
+        "FUNCTION_SELF": 87.98,
+        "UNANALYZED_PROJECT": 3.85,
+        "UNATTRIBUTED": 8.16
+      },
+      "topOrigins": [
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 95.8
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 2.07
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 0.87
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.84
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 0.18
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 0.18
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.05
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 91.84
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 87.98
+        },
+        {
+          "step": "top call sites (5)",
+          "percent": 75.7
+        },
+        {
+          "step": "human-plausible",
+          "percent": 65.38
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 51.29
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 23.64
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/sha3.ts:3779",
+          "name": "keccakP",
+          "attributedPercent": 35.28,
+          "ownPercent": 34.54,
+          "byTarget": {
+            "FUNCTION_SELF": 34.54
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint32Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "Keccak-f[1600] permutation over a Uint32Array state: pure 32-bit integer loop with bit rotations; the textbook native-kernel shape."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/sha2.ts:3153",
+          "name": "SHA2_32B.process",
+          "attributedPercent": 23.64,
+          "ownPercent": 22.82,
+          "byTarget": {
+            "FUNCTION_SELF": 22.82
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "SHA-256 block rounds over a Uint32Array schedule (method; this-bound state)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils.ts:14271",
+          "name": "createView",
+          "attributedPercent": 7.26,
+          "ownPercent": 7.64,
+          "byTarget": {
+            "FUNCTION_SELF": 7.64
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<TypedArray>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Glue around the compression functions: DataView creation (platform object); no separate transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/blake2.ts:17994",
+          "name": "_compress",
+          "attributedPercent": 5.41,
+          "ownPercent": 5.11,
+          "byTarget": {
+            "FUNCTION_SELF": 5.11
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint8Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "NATIVE_KERNEL"
+            ],
+            "missingEvidence": [
+              "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+              "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+            ],
+            "note": "BLAKE3 compression function: pure 32-bit integer rounds over typed arrays."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils.ts:33012",
+          "name": "hashC",
+          "attributedPercent": 3.51,
+          "ownPercent": 0.43,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 3.08,
+            "FUNCTION_SELF": 0.43
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 3.08
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type TArg<Uint8Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Glue around the compression functions: buffer bookkeeping, loops over blocks, or scrypt/pbkdf2 driver code; no separate transformation."
+          },
+          "seenInRuns": 3
+        }
+      ]
+    }
+  ]
+}

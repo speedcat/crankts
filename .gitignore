@@ -152,3 +152,8 @@ vite.config.ts.timestamp-*
 
 # Generated kernels from tests (crankts extract)
 test/.generated/
+
+# Closed-source evaluation subject (arc-platform): keep results with function names and paths out of git
+evaluation/arc-platform/coverage.json
+evaluation/arc-platform/annotations.json
+evaluation/arc-platform/REPORT.md

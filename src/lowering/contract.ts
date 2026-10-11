@@ -141,7 +141,11 @@ export type ProofObligationKind =
   | "EXCEPTION_FREE"
   | "TERMINATION"
   /** A property of the input the type system cannot express, e.g. a symmetric adjacency map. */
-  | "INPUT_INVARIANT";
+  | "INPUT_INVARIANT"
+  /** A value captured for a hoisted/batched computation is not mutated before its original use (v0.2.6c). */
+  | "IMMUTABLE_AFTER_CAPTURE"
+  /** Sort/order keys moved into a kernel form a total order there: exact integers, never NaN (v0.2.6c). */
+  | "TOTAL_ORDER_KEY";
 
 export type ProofStatus =
   | "PROVEN"

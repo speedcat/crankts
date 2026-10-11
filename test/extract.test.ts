@@ -136,6 +136,25 @@ describe("crankts extract", () => {
       .toEqual({ normal: 50, boundary: 50, strings: 50, trapDomain: 50 });
   });
 
+  it("extracts an exported const arrow function (v0.2.6d) and rejects methods as targets", async () => {
+    const generatedRoot = fileURLToPath(new URL("./.generated", import.meta.url));
+    mkdirSync(generatedRoot, { recursive: true });
+    const out = mkdtempSync(join(generatedRoot, "arrow-"));
+    temporaryDirectories.push(out);
+    const result = cli(["extract", join(fixtures, "arrow-kernels.ts#sumOfSquares"), "--shape", "PURE_BATCH", "--name", "arrow-sum", "--out", out]);
+    expect(result.exitCode, result.error).toBe(0);
+    const wrapper = await import(pathToFileURL(join(out, "ts/sumOfSquares.ts")).href) as { sumOfSquares: (values: readonly number[]) => number };
+    expect(wrapper.sumOfSquares([1, 2, 3])).toBe(14);
+    const parity = await import(pathToFileURL(join(out, "ts/parity.ts")).href) as {
+      runParity(options: { iterations: number }): { mismatches: unknown[] };
+    };
+    expect(parity.runParity({ iterations: 100 }).mismatches).toEqual([]);
+
+    const method = cli(["extract", join(fixtures, "arrow-kernels.ts#Stats.total"), "--shape", "PURE_BATCH", "--out", outDir()]);
+    expect(method.exitCode).not.toBe(0);
+    expect(method.error).toContain("is not a function declaration or const arrow function");
+  });
+
   it("falls back only on traps and contract guards; internal errors surface", async () => {
     const generatedRoot = fileURLToPath(new URL("./.generated", import.meta.url));
     mkdirSync(generatedRoot, { recursive: true });

@@ -39,8 +39,14 @@ const F64: IrType = { kind: "f64" };
 const BOOL: IrType = { kind: "bool" };
 const STRING: IrType = { kind: "string" };
 
+/**
+ * A function the lowering accepts as a kernel (v0.2.6d, R4): a function declaration, a `const` binding of
+ * an arrow function or function expression, or a method that uses neither `this` nor `super`.
+ */
+export type KernelFunction = ts.FunctionDeclaration | ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration;
+
 export function lowerKernel(
-  entry: ts.FunctionDeclaration,
+  entry: KernelFunction,
   facade: Facade,
   options: LoweringOptions = {},
 ): LoweringResult {
@@ -66,11 +72,11 @@ class Lowerer {
   readonly structs = new Map<string, IrStruct>();
   private readonly ts: typeof ts;
   private readonly checker: ts.TypeChecker;
-  private readonly names = new Map<ts.FunctionDeclaration, string>();
-  private readonly pending: ts.FunctionDeclaration[] = [];
+  private readonly names = new Map<KernelFunction, string>();
+  private readonly pending: KernelFunction[] = [];
   private readonly lowered = new Map<string, IrFunction>();
   private readonly callees = new Map<string, Set<string>>();
-  private current: ts.FunctionDeclaration | undefined;
+  private current: KernelFunction | undefined;
   private hiddenCounter = 0;
   /** `const v = m.get(k)` bindings used only as `v ?? fallback`; each use becomes mapGetOr. */
   private readonly deferredGets = new Map<ts.Symbol, { readonly map: ts.Expression; readonly key: ts.Expression }>();
@@ -80,12 +86,12 @@ class Lowerer {
     this.checker = facade.checker;
   }
 
-  functionName(declaration: ts.FunctionDeclaration): string {
+  functionName(declaration: KernelFunction): string {
     const known = this.names.get(declaration);
     if (known) {
       return known;
     }
-    const base = declaration.name?.text ?? "anonymous";
+    const base = kernelBaseName(this.ts, declaration);
     let name = base;
     for (let suffix = 2; [...this.names.values()].includes(name); suffix += 1) {
       name = `${base}_${suffix}`;
@@ -127,12 +133,17 @@ class Lowerer {
     return ordered;
   }
 
-  private lowerFunction(declaration: ts.FunctionDeclaration): void {
+  private lowerFunction(declaration: KernelFunction): void {
+    const t = this.ts;
     const name = this.functionName(declaration);
     this.current = declaration;
     this.callees.set(name, new Set());
     if (!declaration.body) {
       this.report(declaration, "function has no body");
+      return;
+    }
+    if (t.isMethodDeclaration(declaration) && usesThisOrSuper(t, declaration.body)) {
+      this.report(declaration, "methods that use `this` or `super` are not lowered");
       return;
     }
     if (declaration.asteriskToken || declaration.modifiers?.some((modifier) => modifier.kind === this.ts.SyntaxKind.AsyncKeyword)) {
@@ -151,7 +162,10 @@ class Lowerer {
     });
     const signature = this.checker.getSignatureFromDeclaration(declaration);
     const returnType = signature ? this.irType(this.checker.getReturnTypeOfSignature(signature), declaration, true) : undefined;
-    const body = this.block(declaration.body.statements);
+    // A concise arrow body `(x) => expr` is `return expr`.
+    const body = t.isBlock(declaration.body)
+      ? this.block(declaration.body.statements)
+      : this.statement(t.factory.createReturnStatement(declaration.body as ts.Expression));
     // Map parameters the body mutates become in-out (has/set only; checked by the verifier).
     const mutatedMaps = new Set<string>();
     walkStatements(body, (statement) => {
@@ -799,11 +813,11 @@ class Lowerer {
     if (t.isIdentifier(callee)) {
       const symbol = this.checker.getSymbolAtLocation(callee);
       const resolved = symbol && symbol.flags & t.SymbolFlags.Alias ? this.checker.getAliasedSymbol(symbol) : symbol;
-      const declaration = resolved?.declarations?.find((candidate): candidate is ts.FunctionDeclaration => (
-        t.isFunctionDeclaration(candidate) && candidate.body !== undefined
-      ));
+      const declaration = resolved?.declarations
+        ?.map((candidate) => kernelFunctionOf(t, candidate))
+        .find((candidate): candidate is KernelFunction => candidate !== undefined && candidate.body !== undefined);
       if (!declaration) {
-        return this.fail(node, `call to ${callee.text} does not resolve to a function declaration with a body`);
+        return this.fail(node, `call to ${callee.text} does not resolve to a function declaration or const arrow function with a body`);
       }
       const name = this.functionName(declaration);
       if (this.current) {
@@ -812,7 +826,7 @@ class Lowerer {
       const lowered = args.map((argument) => this.expr(argument));
       return lowered.every(Boolean) ? { op: "call", callee: name, args: lowered as IrExpr[] } : undefined;
     }
-    return this.fail(node, "only direct calls to function declarations are lowered");
+    return this.fail(node, "only direct calls to function declarations and const arrow functions are lowered");
   }
 
   private newExpression(node: ts.NewExpression): IrExpr | undefined {
@@ -1176,4 +1190,39 @@ export function parseCharClassRegex(literal: string): { readonly ranges: [number
     return `invalid range in ${literal}`;
   }
   return { ranges, allowEmpty: match[2] === "*" };
+}
+
+/** The kernel function a declaration denotes: the function itself, or a `const f = (…) => …` binding. */
+export function kernelFunctionOf(t: typeof ts, declaration: ts.Node): KernelFunction | undefined {
+  if (t.isFunctionDeclaration(declaration) || t.isMethodDeclaration(declaration)) return declaration;
+  if ((t.isArrowFunction(declaration) || t.isFunctionExpression(declaration)) && t.isVariableDeclaration(declaration.parent)) {
+    return kernelFunctionOf(t, declaration.parent);
+  }
+  if (t.isVariableDeclaration(declaration) && declaration.initializer && t.isVariableDeclarationList(declaration.parent)
+    && declaration.parent.flags & t.NodeFlags.Const
+    && (t.isArrowFunction(declaration.initializer) || t.isFunctionExpression(declaration.initializer))) {
+    return declaration.initializer;
+  }
+  return undefined;
+}
+
+function kernelBaseName(t: typeof ts, declaration: KernelFunction): string {
+  if (t.isFunctionDeclaration(declaration)) return declaration.name?.text ?? "anonymous";
+  if (t.isMethodDeclaration(declaration)) {
+    const owner = declaration.parent;
+    const className = t.isClassLike(owner) && owner.name ? `${owner.name.text}_` : "";
+    return `${className}${t.isIdentifier(declaration.name) ? declaration.name.text : "method"}`;
+  }
+  return t.isVariableDeclaration(declaration.parent) && t.isIdentifier(declaration.parent.name) ? declaration.parent.name.text : "anonymous";
+}
+
+function usesThisOrSuper(t: typeof ts, body: ts.Node): boolean {
+  let found = false;
+  const visit = (node: ts.Node): void => {
+    if (node.kind === t.SyntaxKind.ThisKeyword || node.kind === t.SyntaxKind.SuperKeyword) found = true;
+    // Nested non-arrow functions have their own `this`.
+    if (!found && !(t.isFunctionDeclaration(node) || t.isFunctionExpression(node) || t.isClassLike(node))) node.forEachChild(visit);
+  };
+  visit(body);
+  return found;
 }

@@ -1,0 +1,188 @@
+{
+  "utils/entry-point.ts:12953": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "TypeScript program creation (parse, bind) for the documented project: the compiler is a dependency. Execution-strategy candidate only (a native TypeScript 7 checker), not a CrankTS transformation."
+  },
+  "converter/converter.ts:28966": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "First checker query per module (getSymbolAtLocation) pays the checker's lazy binding and resolution."
+  },
+  "utils/highlighter.tsx:5546": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "LOW",
+    "patterns": [
+      "HOIST_INVARIANT_WORK"
+    ],
+    "missingEvidence": [
+      "repetition is workload-dependent: Vite 50 calls / 12 distinct (reuse 0.76), TypeDoc self 29 / 27 (0.07)",
+      "share of per-call tokenizing vs. one-time grammar (oniguruma WASM) compilation"
+    ],
+    "note": "Shiki highlighting (oniguruma regexes in WASM) per code block; memoizing by (code, language) helps only where examples repeat."
+  },
+  "converter/symbols.ts:33785": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/factories/signature.ts:1697": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/types.ts:3790": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/symbols.ts:26017": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/types.ts:6382": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/factories/signature.ts:7354": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/symbols.ts:18389": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/factories/symbol-id.ts:710": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Symbol ids from declarations (checker + path work)."
+  },
+  "converter/comments/discovery.ts:9556": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/comments/index.ts:5009": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/utilities/repository.ts:490": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "converter/utilities/repository.ts:9647": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "utils/fs.ts:2950": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "utils/fs.ts:738": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "utils/fs.ts:2178": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "utils/compress.ts:349": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O. (zlib)"
+  },
+  "utils/options/readers/typedoc.ts:1616": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "File system, git, or compression I/O."
+  },
+  "output/plugins/JavascriptIndexPlugin.ts:2212": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Builds the lunr search index once per run (dependency code)."
+  },
+  "output/themes/MarkedPlugin.tsx:17787": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "markdown-it rendering per comment; inputs are mostly distinct (not measured)."
+  },
+  "utils-common/jsx.ts:2953": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+  },
+  "utils-common/jsx.ts:2740": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "TypeDoc's own JSX-to-string rendering: direct string building."
+  },
+  "utils-common/jsx.ts:4249": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "TypeDoc's own JSX-to-string rendering."
+  },
+  "converter/comments/blockLexer.ts:15004": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "CHANGE_ALGORITHM"
+    ],
+    "missingEvidence": [
+      "measured gain of a char-code test over `/\\S/.test(file[pos])` per character"
+    ],
+    "note": "discoverIndent scans comment text one character at a time and runs a regex on each character; a code-unit whitespace test is equivalent (JS \\s set) and allocation-free. About 1% on Vite."
+  },
+  "output/themes/default/partials/icon.tsx:1145": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "HOIST_INVARIANT_WORK"
+    ],
+    "missingEvidence": [
+      "number of renders per distinct relative-URL prefix"
+    ],
+    "note": "buildRefIcons rebuilds the same SVG icon references for every render context; only the relative URL to assets/icons.svg varies, so a cache per URL prefix would serve most pages."
+  },
+  "utils/paths.ts:385": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Minimatch matching with patterns compiled once in MinimatchSet."
+  },
+  "converter/converter.ts:22622": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "utils-common/map.ts:128": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Map get-or-create bookkeeping."
+  },
+  "converter/comments/blockLexer.ts:11577": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Comment lexer bookkeeping."
+  },
+  "converter/plugins/SourcePlugin.ts:2147": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Source location bookkeeping (checker)."
+  },
+  "models/Comment.ts:4097": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Comment model clone."
+  },
+  "converter/comments/blockLexer.ts:2239": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Comment lexer (generator)."
+  },
+  "utils/sort.ts:2231": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Comparator."
+  },
+  "models/types.ts:26991": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Model construction."
+  },
+  "output/themes/lib.tsx:1489": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "String splitting for HTML word breaks."
+  },
+  "converter/context.ts:4969": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Reflection construction."
+  },
+  "utils-common/string.ts:3087": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "String.replace (native)."
+  },
+  "converter/plugins/ImplementsPlugin.ts:14053": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Converter logic driven by TypeScript checker queries (getTypeOfSymbol, signatures): the time is the checker's lazy type resolution."
+  },
+  "converter/plugins/SourcePlugin.ts:4278": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Source resolution bookkeeping."
+  }
+}

@@ -9,7 +9,7 @@ import { interpretIr, KernelTrap } from "../src/lowering/interpret.js";
 import type { IrModule, IrStmt } from "../src/lowering/ir.js";
 import { mergeModules, printIrModule } from "../src/lowering/ir.js";
 import { analyzeIntegers } from "../src/lowering/integer-analysis.js";
-import { lowerKernel } from "../src/lowering/lower.js";
+import { kernelFunctionOf, lowerKernel, type KernelFunction } from "../src/lowering/lower.js";
 import { verifyIrModule, walkStatements } from "../src/lowering/verify.js";
 import { graphBatch } from "./fixtures/lowering/src/graph-kernel.js";
 import { prepareDictionary, scanAsciiTerms } from "./fixtures/lowering/src/kwx-kernel.js";
@@ -19,17 +19,18 @@ const fixtureRoot = fileURLToPath(new URL("./fixtures/lowering", import.meta.url
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const facades = new Map<string, CompilerFacade>();
 
-function declaration(root: string, file: string, name: string): { node: ts.FunctionDeclaration; facade: CompilerFacade } {
+function declaration(root: string, file: string, name: string): { node: KernelFunction; facade: CompilerFacade } {
   let facade = facades.get(root);
   if (!facade) {
     facade = createCompilerFacade(root);
     facades.set(root, facade);
   }
   const definition = collectFunctions(facade).definitions.find((candidate) => candidate.file === file && candidate.name === name);
-  if (!definition || !facade.typescript.isFunctionDeclaration(definition.node)) {
-    throw new Error(`Expected function declaration ${file}#${name}.`);
+  const node = definition ? kernelFunctionOf(facade.typescript, definition.node) : undefined;
+  if (!definition || !node) {
+    throw new Error(`Expected a kernel function ${file}#${name}.`);
   }
-  return { node: definition.node, facade: definition.compilerFacade };
+  return { node, facade: definition.compilerFacade };
 }
 
 function lower(file: string, name: string, root = fixtureRoot) {
@@ -92,6 +93,30 @@ describe("Kernel IR lowering", () => {
     expect(truthiness.ok ? [] : truthiness.diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
       expect.stringContaining("no truthiness coercion"),
     ]);
+  });
+});
+
+describe("lowering arrow functions and methods (v0.2.6d)", () => {
+  const file = "src/arrow-kernels.ts";
+
+  it("lowers const arrow functions, function expressions, and their calls", () => {
+    const module = lowered(file, "sumOfSquares");
+    expect(module.functions.map((fn) => fn.name)).toEqual(["square", "sumOfSquares"]);
+    expect(interpretIr(module, [[1, 2, 3]])).toBe(14);
+    expect(interpretIr(lowered(file, "countAbove"), [[1, 5, 9], 4])).toBe(2);
+  });
+
+  it("lowers methods without this and rejects methods that use it", () => {
+    expect(interpretIr(lowered(file, "Stats.total"), [[1, 2, 3]])).toBe(6);
+    const scaled = lower(file, "Stats.scaled");
+    expect(scaled.ok ? [] : scaled.diagnostics.map((diagnostic) => diagnostic.message)).toEqual(["methods that use `this` or `super` are not lowered"]);
+  });
+
+  it("still rejects arrow functions that capture outer locals", () => {
+    const result = lower(file, "scaleAll");
+    expect(result.ok ? [] : result.diagnostics.map((diagnostic) => diagnostic.message)).toEqual(expect.arrayContaining([
+      expect.stringContaining("factor is not a parameter or local of the lowered function"),
+    ]));
   });
 });
 

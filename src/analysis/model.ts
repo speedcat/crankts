@@ -139,7 +139,9 @@ export type AccelerationRecommendationAction =
   | "MOVE_OFF_EVENT_LOOP"
   | "NATIVE_OFFLOAD"
   | "BATCH_IO"
-  | "REMOVE_SERIALIZED_SINK";
+  | "REMOVE_SERIALIZED_SINK"
+  /** Recognition only (v0.2.6d): invariant or repeated work (compile/parse/factory) redone per call. */
+  | "HOIST_INVARIANT_WORK";
 export type PipelineResourceEffect =
   | "SERIALIZED_SINK"
   | "SHARED_EXTERNAL_STATE"
@@ -244,6 +246,10 @@ export interface FunctionAccelerationAssessment {
     readonly selfCpuMicros?: number;
     readonly inclusiveCpuMicros?: number;
     readonly cpuSamplePercent?: number;
+    /** Own JavaScript share (call-site attribution, v0.2.6d): self time minus N-API calls. Drives hotness. */
+    readonly ownCpuSamplePercent?: number;
+    /** Time this function causes outside its own JavaScript (dependencies, native, I/O, runtime). */
+    readonly causedCpuSamplePercent?: number;
     readonly cpuProfileConfidence?: EvidenceConfidence;
     readonly cpuMatchedSamplePercent?: number;
     readonly sampledAllocationBytesSelf?: number;
@@ -327,6 +333,42 @@ export interface FunctionAnalysis {
   readonly calls: readonly CallEdge[];
   readonly observedCpu?: CpuProfileObservation;
   readonly observedAllocation?: AllocationObservation;
+  /** HOIST_INVARIANT_WORK candidates (v0.2.6d, recognition only); computed for profiled functions. */
+  readonly hoistCandidates?: readonly HoistCandidate[];
+}
+
+/**
+ * A call that builds reusable state (a compiled matcher, a regex, a parser or resolver instance, …) on every
+ * execution. STATIC_INVARIANT: its inputs are module constants, imports, readonly instance fields, or
+ * literals, so it can be computed once. LOOP_INVARIANT: inputs do not change inside the enclosing loop.
+ * PARAM_DEPENDENT: inputs come from parameters; hoisting needs DYNAMICALLY_REPEATED evidence (the same
+ * inputs recur across calls), measured by input-signature profiling.
+ */
+export interface HoistCandidate {
+  readonly line: number;
+  readonly column: number;
+  readonly callee: string;
+  /** Why the call is considered a builder of reusable state. */
+  readonly kind: "REGEXP" | "RETURNS_FUNCTION" | "PACKAGE_INSTANCE" | "COMPILE_LIKE_DEPENDENCY";
+  readonly invariance: "STATIC_INVARIANT" | "LOOP_INVARIANT" | "PARAM_DEPENDENT" | "VARIANT";
+  readonly inLoop: boolean;
+  /**
+   * The call's own profiled cost (percent of runtime): the compile-like time under its dependency entry, the
+   * entry's time, or a project callee's inclusive time (an upper bound). Undefined if unknown.
+   */
+  readonly atStakePercent?: number;
+  readonly compileLikePercent?: number;
+  /** Input-signature profile: calls, distinct argument fingerprints, and reuse ratio per argument path. */
+  readonly repetition?: InputRepetition;
+}
+
+export interface InputRepetition {
+  readonly calls: number;
+  readonly distinctSignatures: number;
+  /** 1 − distinct/calls over the whole argument list (0 for a single call). */
+  readonly reuseRatio: number;
+  /** Best reuse ratio over substantial argument paths (fingerprint ≥ 200 chars: pattern lists, sources), e.g. `args[1].ignore`. */
+  readonly bestPath?: { readonly path: string; readonly distinct: number; readonly reuseRatio: number };
 }
 
 export interface CandidateIsland {
@@ -358,10 +400,62 @@ export interface CandidateIsland {
 }
 
 export interface CpuProfileObservation {
+  /** Raw V8 self time; includes time inside N-API calls, which have no frame of their own. */
   readonly selfCpuMicros: number;
   readonly totalCpuMicros: number;
   readonly samplePercent: number;
   readonly callCount: null;
+  /** Call-site attribution (v0.2.6d): everything this function is the innermost analyzed frame of. */
+  readonly callSite?: CallSiteObservation;
+}
+
+/**
+ * Where the time a project function is responsible for goes (v0.2.6d). Every profile sample is billed to
+ * the innermost analyzed function on its stack:
+ * - FUNCTION_SELF: the function's own JavaScript, including builtins and regexes it runs directly
+ * - EXTERNAL_DEPENDENCY: JavaScript (and regexes) of packages it calls
+ * - EXTERNAL_NATIVE: native addons, either N-API calls made on its own lines or native frames under addon packages
+ * - IO: fs, net, and process bindings
+ * - RUNTIME: other Node internals and wasm
+ * - UNANALYZED_PROJECT: project code the analysis did not match
+ */
+export type AttributionTarget = "FUNCTION_SELF" | "EXTERNAL_DEPENDENCY" | "EXTERNAL_NATIVE" | "IO" | "RUNTIME" | "UNANALYZED_PROJECT";
+
+export interface CallSiteObservation {
+  /** All time attributed to this function as the innermost analyzed frame (own plus caused). */
+  readonly attributedMicros: number;
+  readonly attributedPercent: number;
+  /** Time outside the function's own JavaScript that it caused (dependencies, native, I/O, runtime). */
+  readonly causedMicros: number;
+  readonly causedPercent: number;
+  readonly byTarget: Readonly<Partial<Record<AttributionTarget, number>>>;
+  /** Largest external origins (package, `node`, or `(native)` under a package) with their target. */
+  readonly topExternal: readonly { readonly origin: string; readonly target: AttributionTarget; readonly micros: number; readonly percent: number }[];
+  /**
+   * The functions this one calls directly into (first frame below it that is not its own code), with the
+   * time spent under them and the part under compile-like frames (`parse*`, `compile*`, `makeRe`, `toRegex`,
+   * `scan*`, `tokenize*`, …): the runtime evidence for HOIST_INVARIANT_WORK at call sites into dependencies.
+   */
+  readonly entries?: readonly CallSiteEntry[];
+}
+
+export interface CallSiteEntry {
+  readonly origin: string;
+  readonly functionName: string;
+  readonly micros: number;
+  readonly percent: number;
+  readonly compileLikeMicros: number;
+  readonly compileLikePercent: number;
+}
+
+export interface CpuAttributionSummary {
+  /** Share of samples with an analyzed function on their stack. */
+  readonly attributedPercent: number;
+  readonly byTarget: Readonly<Partial<Record<AttributionTarget, number>>>;
+  /** Samples without any analyzed frame (startup, module loading, GC, idle), in percent. */
+  readonly unattributedPercent: number;
+  /** Raw self time of project frames that was spent in N-API calls on their own lines, in percent. */
+  readonly nativeAddonSelfPercent: number;
 }
 
 export interface AllocationObservation {
@@ -395,6 +489,7 @@ export interface CpuProfileSummary {
    * samples whose stack contains no analyzed function, so external hotspots stay attributable.
    */
   readonly origins?: readonly CpuProfileOrigin[];
+  readonly attribution?: CpuAttributionSummary;
 }
 
 export type CpuProfileOriginKind =

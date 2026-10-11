@@ -1,0 +1,134 @@
+{
+  "src/sha3.ts:3779": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "Keccak-f[1600] permutation over a Uint32Array state: pure 32-bit integer loop with bit rotations; the textbook native-kernel shape."
+  },
+  "src/blake2.ts:17994": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "BLAKE3 compression function: pure 32-bit integer rounds over typed arrays."
+  },
+  "src/blake2.ts:1891": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "BLAKE2b mixing function over a Uint32Array: 64-bit arithmetic emulated with 32-bit pairs."
+  },
+  "src/blake2.ts:3063": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "BLAKE2b mixing function over a Uint32Array."
+  },
+  "src/_blake.ts:2408": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "BLAKE2s mixing function: 32-bit rotations and adds."
+  },
+  "src/_blake.ts:2802": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "BLAKE2s mixing function: 32-bit rotations and adds."
+  },
+  "src/sha2.ts:10015": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "SHA-512 block rounds over a Uint32Array message schedule (method; this-bound state)."
+  },
+  "src/sha2.ts:3153": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "SHA-256 block rounds over a Uint32Array schedule (method; this-bound state)."
+  },
+  "src/argon2.ts:5290": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "Argon2 block compression (BLAKE2b-style round over Uint32Array)."
+  },
+  "src/argon2.ts:2107": {
+    "transformability": "PLAUSIBLE",
+    "confidence": "MEDIUM",
+    "patterns": [
+      "NATIVE_KERNEL"
+    ],
+    "missingEvidence": [
+      "native speedup over V8 for this loop (KWX's native scan was at parity with V8; integer-only 32-bit loops are the favorable case)",
+      "crossing cost for the typical call size (64 B messages vs 1 MiB)"
+    ],
+    "note": "Argon2 mixing function over a shared module-level buffer (captured state)."
+  },
+  "src/pbkdf2.ts:3566": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Glue around the compression functions: buffer bookkeeping, loops over blocks, or scrypt/pbkdf2 driver code; no separate transformation."
+  },
+  "src/utils.ts:14271": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Glue around the compression functions: DataView creation (platform object); no separate transformation."
+  },
+  "src/utils.ts:33012": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Glue around the compression functions: buffer bookkeeping, loops over blocks, or scrypt/pbkdf2 driver code; no separate transformation."
+  }
+}

@@ -38,6 +38,18 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
         lines.push(`    ${origin.origin} [${origin.kind}]: ${origin.selfPercent.toFixed(1)}% self, ${origin.unmatchedPercent.toFixed(1)}% unmatched`);
       }
     }
+    const attribution = result.cpuProfile.attribution;
+    if (attribution) {
+      const targets = Object.entries(attribution.byTarget)
+        .sort((left, right) => (right[1] ?? 0) - (left[1] ?? 0))
+        .map(([target, percent]) => `${target} ${(percent ?? 0).toFixed(1)}%`);
+      lines.push(
+        `  Call-site attribution (${attribution.attributedPercent.toFixed(1)}% of samples have an analyzed caller): ${targets.join(", ")}`,
+        ...(attribution.nativeAddonSelfPercent > 0
+          ? [`  N-API time inside project frames (not project compute): ${attribution.nativeAddonSelfPercent.toFixed(1)}%`]
+          : []),
+      );
+    }
   }
   if (result.allocationProfile) {
     lines.push(

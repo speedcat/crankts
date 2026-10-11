@@ -1,14 +1,16 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
-import { analyzeProject } from "./analysis/analyze-project.js";
+import { analyzeProject, writeHoistInputProbe } from "./analysis/analyze-project.js";
 import { StageTimer } from "./analysis/timings.js";
 import { SUPPORTED_KERNEL_SHAPES, type SupportedKernelShape } from "./lowering/contract.js";
 import { extractKernel, type ExtractRequest } from "./lowering/extract.js";
 import { renderJsonReport } from "./report/json.js";
 import { renderTextReport } from "./report/text.js";
 
-export { analyzeProject } from "./analysis/analyze-project.js";
+export { analyzeProject, writeHoistInputProbe } from "./analysis/analyze-project.js";
+export { detectHoistCandidates } from "./analysis/hoist.js";
+export { readInputSignatures, writeInputSignatureProbe } from "./analysis/input-signatures.js";
 export { renderJsonReport } from "./report/json.js";
 export { renderTextReport } from "./report/text.js";
 export { StageTimer } from "./analysis/timings.js";
@@ -37,6 +39,8 @@ export { emitRegionIntegration } from "./lowering/region-integration.js";
 export { planInterning } from "./lowering/interning.js";
 export type { InternPlan, InternRequest, InternResult } from "./lowering/interning.js";
 export { emitInternIntegration } from "./lowering/intern-integration.js";
+export { computeCoverage, KNOWN_PATTERN_FAMILIES } from "./analysis/coverage.js";
+export type { CoverageAnnotation, CoverageCallSite, CoverageReport, SupportProbe, Transformability } from "./analysis/coverage.js";
 export { planBatchInterning } from "./lowering/interning-batch.js";
 export type { BatchInternPlan, BatchInternRequest, BatchInternResult, BatchOutputField } from "./lowering/interning-batch.js";
 export { emitBatchIntegration } from "./lowering/batch-integration.js";
@@ -55,6 +59,9 @@ interface AnalyzeOptions {
   readonly pipelinePath?: string;
   readonly workloadLabel?: string;
   readonly timingsPath?: string;
+  readonly inputSignaturePaths?: readonly string[];
+  /** `--probe-inputs <dir>`: write an input-signature probe for the hoisting candidates instead of a report. */
+  readonly probeInputsDir?: string;
   readonly target: string;
   readonly verbose: boolean;
 }
@@ -101,7 +108,18 @@ export function runCli(arguments_: readonly string[]): number {
       ...(options.pipelinePath ? { pipelinePath: options.pipelinePath } : {}),
       ...(options.workloadLabel ? { workloadLabel: options.workloadLabel } : {}),
       ...(options.workspaceReferences ? { workspaceReferences: true } : {}),
+      ...(options.inputSignaturePaths ? { inputSignaturePaths: options.inputSignaturePaths } : {}),
     });
+    if (options.probeInputsDir) {
+      if (!options.profilePath) {
+        throw new Error("--probe-inputs needs --profile (candidates come from profiled call sites).");
+      }
+      const probe = writeHoistInputProbe(target, result, options.probeInputsDir, { workspaceReferences: options.workspaceReferences });
+      console.log(`Input-signature probe for ${probe.sites.length} call site(s): ${probe.sites.join(", ")}`);
+      console.log(`Run: CRANKTS_SIGNATURES_OUT=signatures.json node --import ${probe.importPath} <program>`);
+      console.log("Then: crankts analyze ... --profile <profile> --input-signatures signatures.json");
+      return 0;
+    }
     const reportOptions = { verbose: options.verbose, minScore: options.minScore };
     const render = (): string => (options.format === "json"
       ? renderJsonReport(result, reportOptions)
@@ -261,6 +279,8 @@ function printUsage(): void {
   console.log("  --workload <label>    Label the workload represented by attached profiles");
   console.log("  --workspace-references Analyze transitive TypeScript project references");
   console.log("  --timings <file>      Write per-stage wall time and memory to a separate JSON file");
+  console.log("  --probe-inputs <dir>  With --profile: write an input-signature probe for hoisting candidates");
+  console.log("  --input-signatures <file>  Attach input repetition evidence (repeatable) to hoisting candidates");
   console.log("");
   console.log("Usage: crankts extract <file>#<function> --shape <shape> --out <dir> [options]");
   console.log("Lower an explicitly selected function to a Rust/N-API crate; fails closed unless its contract is lowerable.");
@@ -289,9 +309,21 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
   let pipelinePath: string | undefined;
   let workloadLabel: string | undefined;
   let timingsPath: string | undefined;
+  const inputSignaturePaths: string[] = [];
+  let probeInputsDir: string | undefined;
 
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index];
+    if (argument === "--input-signatures" || argument === "--probe-inputs") {
+      const value = arguments_[index + 1];
+      index += 1;
+      if (!value || value.startsWith("-")) {
+        throw new Error(`${argument} requires a path.`);
+      }
+      if (argument === "--input-signatures") inputSignaturePaths.push(value);
+      else probeInputsDir = value;
+      continue;
+    }
     if (argument === "--workspace-references") {
       workspaceReferences = true;
       continue;
@@ -398,5 +430,7 @@ function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {
     ...(pipelinePath ? { pipelinePath } : {}),
     ...(workloadLabel ? { workloadLabel } : {}),
     ...(timingsPath ? { timingsPath } : {}),
+    ...(inputSignaturePaths.length > 0 ? { inputSignaturePaths } : {}),
+    ...(probeInputsDir ? { probeInputsDir } : {}),
   };
 }

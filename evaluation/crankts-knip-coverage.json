@@ -1,0 +1,4134 @@
+{
+  "schemaVersion": 2,
+  "project": "CrankTS",
+  "comparisonType": "knip-acceleration-coverage",
+  "capturedAt": "2026-10-11",
+  "environment": {
+    "node": "22.19.0",
+    "host": "darwin-arm64",
+    "loadAverage": [
+      5.5,
+      15.21,
+      17.31
+    ]
+  },
+  "subject": {
+    "name": "knip",
+    "version": "6.41.0",
+    "description": "Knip run from its TypeScript sources (Node type stripping) on five repositories",
+    "analyzedFunctions": 2514
+  },
+  "method": {
+    "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
+    "attribution": "every sample billed to the innermost analyzed frame (call site), split into own JavaScript, dependency JavaScript, native addons (N-API lines and addon binding lines), I/O, and runtime",
+    "inputRepetition": "one instrumented run per workload for parameter-dependent hoisting candidates with >= 0.3% at stake",
+    "probes": "dry runs of Kernel IR lowering (declarations, const arrows, this-free methods), planInterning and planBatchInterning",
+    "callSites": "call sites covering 80% of attributed time, at most 25 per run; medians over runs",
+    "annotations": "/Users/benjaminbecker/Workspace/crankts/evaluation/knip/annotations.json"
+  },
+  "workloads": [
+    {
+      "workload": "knip (self)",
+      "wallMs": 979,
+      "profiledMs": 936,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 21.39,
+        "IO": 16.42,
+        "FUNCTION_SELF": 12.47,
+        "RUNTIME": 1.46,
+        "UNANALYZED_PROJECT": 1.27,
+        "EXTERNAL_NATIVE": 3.72,
+        "UNATTRIBUTED": 43.29
+      },
+      "topOrigins": [
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 21.6
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 17.11
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 14.88
+        },
+        {
+          "origin": "oxc-parser",
+          "kind": "PACKAGE",
+          "percent": 14.69
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 13.23
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 5.74
+        },
+        {
+          "origin": "picomatch",
+          "kind": "PACKAGE",
+          "percent": 4.39
+        },
+        {
+          "origin": "yaml",
+          "kind": "PACKAGE",
+          "percent": 1.67
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 1.18
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 0.85
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 56.71
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 12.47
+        },
+        {
+          "step": "top call sites (20)",
+          "percent": 45.61
+        },
+        {
+          "step": "human-plausible",
+          "percent": 4.66
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 3.52
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 0
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0,
+      "patternFamilyRecall": 0.48,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 22.7
+        },
+        {
+          "reason": "class instances",
+          "percent": 9.28
+        },
+        {
+          "reason": "captured outer state",
+          "percent": 2.85
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 2.5
+        },
+        {
+          "reason": "async or generator",
+          "percent": 2.34
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 2.26
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 1.69
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 1.14
+        },
+        {
+          "reason": "functions as values",
+          "percent": 0.93
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got string",
+          "percent": 0
+        },
+        {
+          "reason": "other: type ImportMaps: struct field refs: sets are not lowered; pr",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3226",
+          "name": "SourceFileManager.readRawFile",
+          "attributedPercent": 13.16,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "IO": 12.28,
+            "RUNTIME": 0.19,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 12.28
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.19
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/ast-nodes.ts:876",
+          "name": "parseFile",
+          "attributedPercent": 9.28,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "RUNTIME": 0.55,
+            "EXTERNAL_DEPENDENCY": 6.9,
+            "EXTERNAL_NATIVE": 1.49,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 6.9
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.49
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.55
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:31896",
+          "name": "walkAST",
+          "attributedPercent": 6.4,
+          "ownPercent": 0.17,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 6.17,
+            "UNANALYZED_PROJECT": 0.32,
+            "FUNCTION_SELF": 0.17
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 6.17
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Program: struct field body: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:4832",
+          "name": "isExcluded",
+          "attributedPercent": 2.4,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.96,
+            "UNANALYZED_PROJECT": 0.55
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.96
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.55
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: isIgnored is not a parameter or local of the lowered function"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "evidence": "By inspection: `matcher(path) || incr(path)` chains a new closure per batch of pending patterns and walks the chain for every path.",
+            "note": "Materialize the accumulated matcher once. Small share."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/fs.ts:2885",
+          "name": "parseYAML",
+          "attributedPercent": 1.67,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.6
+          },
+          "topExternal": [
+            {
+              "origin": "yaml",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.6
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "yaml package parsing config/lock files; once per file."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:5083",
+          "name": "addFile",
+          "attributedPercent": 1.63,
+          "ownPercent": 0.13,
+          "byTarget": {
+            "IO": 1.1,
+            "FUNCTION_SELF": 0.13,
+            "RUNTIME": 0.1
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 1.1
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.1
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "addFile: reads and parses .gitignore files (I/O)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:11456",
+          "name": "glob",
+          "attributedPercent": 1.46,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.48,
+            "IO": 0.14
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.35
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.14
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "fraction": 0.78,
+            "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+            "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3384",
+          "name": "SourceFileManager.cacheSourceText",
+          "attributedPercent": 1.29,
+          "ownPercent": 1.29,
+          "byTarget": {
+            "FUNCTION_SELF": 1.29
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1914",
+          "name": "resolveSync",
+          "attributedPercent": 1.14,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 1.14
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 1.14,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.94,
+            "UNANALYZED_PROJECT": 0.07,
+            "FUNCTION_SELF": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.94
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1133",
+          "name": "resolvePackageManifestPath",
+          "attributedPercent": 0.93,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 0.85
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.85
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver package.json resolution (N-API), already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:6842",
+          "name": "_collectRefsInType",
+          "attributedPercent": 0.9,
+          "ownPercent": 0.9,
+          "byTarget": {
+            "FUNCTION_SELF": 0.9
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive type-reference collector over ESTree nodes (switch on node.type); dynamic object graph."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/get-imports-and-exports.ts:1647",
+          "name": "getImportsAndExports",
+          "attributedPercent": 0.74,
+          "ownPercent": 0.74,
+          "byTarget": {
+            "FUNCTION_SELF": 0.74
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ResolveModule: functions cannot be lowered as values"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-file orchestration of parse + visitors; own time is small bookkeeping."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:8771",
+          "name": "walk",
+          "attributedPercent": 0.56,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "IO": 0.49,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.49
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: pending is not a parameter or local of the lowered function"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob.ts:3076",
+          "name": "syncGlob",
+          "attributedPercent": 0.55,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.49,
+            "EXTERNAL_DEPENDENCY": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.49
+            },
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Synchronous directory globbing (fs)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/imports.ts:377",
+          "name": "handleVariableDeclarator",
+          "attributedPercent": 0.52,
+          "ownPercent": 0.52,
+          "byTarget": {
+            "FUNCTION_SELF": 0.52
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type VariableDeclarator: struct field id: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/glob-core.ts:4594",
+          "name": "extend",
+          "attributedPercent": 0.5,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.5
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.5
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type (str: string) => boolean: functions cannot be lowered as values"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/load-tsconfig.ts:5050",
+          "name": "loadTSConfig",
+          "attributedPercent": 0.48,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.27,
+            "IO": 0.15,
+            "RUNTIME": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "get-tsconfig",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.27
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.15
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "get-tsconfig: reading and parsing tsconfig files (I/O + JSON)."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/graph/build.ts:3262",
+          "name": "build",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.26,
+          "byTarget": {
+            "FUNCTION_SELF": 0.26,
+            "UNANALYZED_PROJECT": 0.07,
+            "IO": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.07
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/calls.ts:4759",
+          "name": "handleCallExpression",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.4,
+          "byTarget": {
+            "FUNCTION_SELF": 0.4
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-call-expression visitor over ESTree nodes."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/typescript/visitors/exports.ts:1494",
+          "name": "handleExportNamed",
+          "attributedPercent": 0.43,
+          "ownPercent": 0.43,
+          "byTarget": {
+            "FUNCTION_SELF": 0.43
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ExportNamedDeclaration: struct field declaration: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Visitor callback (export declarations)."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/scripts.ts:2055",
+          "name": "getScriptCommands",
+          "attributedPercent": 0.41,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.41
+          },
+          "topExternal": [
+            {
+              "origin": "unbash",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.41
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got string"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/ProjectPrincipal.ts:10799",
+          "name": "ProjectPrincipal.analyzeSourceFile",
+          "attributedPercent": 0.4,
+          "ownPercent": 0.33,
+          "byTarget": {
+            "FUNCTION_SELF": 0.33,
+            "UNANALYZED_PROJECT": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-file analysis orchestration."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/manifest/helpers.ts:291",
+          "name": "loadPackageManifest",
+          "attributedPercent": 0.38,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.12,
+            "RUNTIME": 0.26
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.26
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.12
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:17721",
+          "name": "CallExpression",
+          "attributedPercent": 0.35,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "FUNCTION_SELF": 0.35
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/module-graph.ts:163",
+          "name": "updateImportMaps",
+          "attributedPercent": 0.32,
+          "ownPercent": 0.32,
+          "byTarget": {
+            "FUNCTION_SELF": 0.32
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ImportMaps: struct field refs: sets are not lowered; prepare them into a Map<string, number> index"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "intentweave",
+      "wallMs": 1052,
+      "profiledMs": 1002,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 20.8,
+        "RUNTIME": 1.16,
+        "FUNCTION_SELF": 12.96,
+        "EXTERNAL_NATIVE": 4.72,
+        "IO": 12.79,
+        "UNANALYZED_PROJECT": 1.38,
+        "UNATTRIBUTED": 46.88
+      },
+      "topOrigins": [
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 19.3
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 17.46
+        },
+        {
+          "origin": "oxc-parser",
+          "kind": "PACKAGE",
+          "percent": 17.43
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 16.99
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 12.07
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 5.98
+        },
+        {
+          "origin": "picomatch",
+          "kind": "PACKAGE",
+          "percent": 4.35
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 1.57
+        },
+        {
+          "origin": "yaml",
+          "kind": "PACKAGE",
+          "percent": 0.94
+        },
+        {
+          "origin": "get-tsconfig",
+          "kind": "PACKAGE",
+          "percent": 0.79
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 53.12
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 12.96
+        },
+        {
+          "step": "top call sites (20)",
+          "percent": 42.69
+        },
+        {
+          "step": "human-plausible",
+          "percent": 1.93
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 1.77
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 1.77
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 1,
+      "patternFamilyRecall": 1,
+      "recognitionPrecision": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 18.03
+        },
+        {
+          "reason": "class instances",
+          "percent": 10.31
+        },
+        {
+          "reason": "async or generator",
+          "percent": 7.12
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 1.67
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 1.63
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 1.6
+        },
+        {
+          "reason": "functions as values",
+          "percent": 0.75
+        },
+        {
+          "reason": "other: type CompilerOptions: struct field allowJs must be a require",
+          "percent": 0.56
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 0.37
+        },
+        {
+          "reason": "other: type GetInputsFromScriptsOptions: struct field isForwardedAr",
+          "percent": 0
+        },
+        {
+          "reason": "library method not lowered",
+          "percent": 0
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got string",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/typescript/ast-nodes.ts:876",
+          "name": "parseFile",
+          "attributedPercent": 10.31,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.07,
+            "EXTERNAL_DEPENDENCY": 7.86,
+            "RUNTIME": 0.65,
+            "EXTERNAL_NATIVE": 2.29
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.86
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 2.29
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.65
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3226",
+          "name": "SourceFileManager.readRawFile",
+          "attributedPercent": 8.41,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 8.41
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 8.41
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:31896",
+          "name": "walkAST",
+          "attributedPercent": 7.36,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 7.3,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.3
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Program: struct field body: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/graph/build.ts:3262",
+          "name": "build",
+          "attributedPercent": 4.41,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "FUNCTION_SELF": 0.35,
+            "IO": 3.87,
+            "UNANALYZED_PROJECT": 0.19
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 3.87
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.19
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:11456",
+          "name": "glob",
+          "attributedPercent": 2.27,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.83,
+            "RUNTIME": 0.06,
+            "IO": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.45
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.07
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.06
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:MEDIUM",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": true,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "fraction": 0.78,
+            "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+            "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3384",
+          "name": "SourceFileManager.cacheSourceText",
+          "attributedPercent": 1.67,
+          "ownPercent": 1.67,
+          "byTarget": {
+            "FUNCTION_SELF": 1.67
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1914",
+          "name": "resolveSync",
+          "attributedPercent": 1.63,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 1.47,
+            "UNANALYZED_PROJECT": 0.13
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.47
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/fs.ts:2885",
+          "name": "parseYAML",
+          "attributedPercent": 0.94,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.01
+          },
+          "topExternal": [
+            {
+              "origin": "yaml",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "yaml package parsing config/lock files; once per file."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/get-imports-and-exports.ts:1647",
+          "name": "getImportsAndExports",
+          "attributedPercent": 0.75,
+          "ownPercent": 0.62,
+          "byTarget": {
+            "FUNCTION_SELF": 0.62,
+            "RUNTIME": 0.06,
+            "EXTERNAL_DEPENDENCY": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.07
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ResolveModule: functions cannot be lowered as values"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-file orchestration of parse + visitors; own time is small bookkeeping."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/members.ts:634",
+          "name": "handleMemberExpression",
+          "attributedPercent": 0.67,
+          "ownPercent": 0.67,
+          "byTarget": {
+            "FUNCTION_SELF": 0.67
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MemberExpression: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-AST-node visitor logic (Map lookups, shadowing checks) over dynamic ESTree objects; no batchable kernel."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/visitors/calls.ts:4759",
+          "name": "handleCallExpression",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.64,
+          "byTarget": {
+            "FUNCTION_SELF": 0.64
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-call-expression visitor over ESTree nodes."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:6842",
+          "name": "_collectRefsInType",
+          "attributedPercent": 0.59,
+          "ownPercent": 0.59,
+          "byTarget": {
+            "FUNCTION_SELF": 0.59
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive type-reference collector over ESTree nodes (switch on node.type); dynamic object graph."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/load-tsconfig.ts:5050",
+          "name": "loadTSConfig",
+          "attributedPercent": 0.59,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.31,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "get-tsconfig",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.31
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "get-tsconfig: reading and parsing tsconfig files (I/O + JSON)."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/load-tsconfig.ts:3474",
+          "name": "walkReferences",
+          "attributedPercent": 0.56,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.14,
+            "EXTERNAL_DEPENDENCY": 0.42
+          },
+          "topExternal": [
+            {
+              "origin": "get-tsconfig",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.42
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CompilerOptions: struct field allowJs must be a required, non-method property"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:17526",
+          "name": "VariableDeclarator",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.51,
+          "byTarget": {
+            "FUNCTION_SELF": 0.51
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type VariableDeclarator: struct field id: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Visitor callback (VariableDeclarator) over ESTree nodes."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/resolve.ts:1133",
+          "name": "resolvePackageManifestPath",
+          "attributedPercent": 0.51,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 0.51
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.51
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver package.json resolution (N-API), already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:2578",
+          "name": "resolveDeclarationSync",
+          "attributedPercent": 0.5,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 0.5
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.5
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type { path: string; packageJsonPath: string | undefined; } | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/manifest/helpers.ts:291",
+          "name": "loadPackageManifest",
+          "attributedPercent": 0.49,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 0.19,
+            "IO": 0.3
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.3
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.19
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/ast-nodes.ts:1634",
+          "name": "buildLineStarts",
+          "attributedPercent": 0.47,
+          "ownPercent": 0.47,
+          "byTarget": {
+            "FUNCTION_SELF": 0.47
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: method indexOf is not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/scripts.ts:2055",
+          "name": "getScriptCommands",
+          "attributedPercent": 0.41,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "FUNCTION_SELF": 0.05,
+            "EXTERNAL_DEPENDENCY": 0.35
+          },
+          "topExternal": [
+            {
+              "origin": "unbash",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.35
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got string"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/glob.ts:3076",
+          "name": "syncGlob",
+          "attributedPercent": 0.39,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.25,
+            "IO": 0.12
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.19
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.12
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Synchronous directory globbing (fs)."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/binaries/bash-parser.ts:1275",
+          "name": "getDependenciesFromScript",
+          "attributedPercent": 0.38,
+          "ownPercent": 0.06,
+          "byTarget": {
+            "FUNCTION_SELF": 0.06,
+            "EXTERNAL_DEPENDENCY": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "unbash",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type GetInputsFromScriptsOptions: struct field isForwardedArgs must be a required, non-method property"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/loader.ts:285",
+          "name": "load",
+          "attributedPercent": 0.38,
+          "ownPercent": 0.06,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.32,
+            "FUNCTION_SELF": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "jiti",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 0.38,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.38
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.38
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/plugins/vite/visitors/importMetaGlob.ts:394",
+          "name": "CallExpression",
+          "attributedPercent": 0.37,
+          "ownPercent": 0.37,
+          "byTarget": {
+            "FUNCTION_SELF": 0.37
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:17721",
+          "name": "CallExpression",
+          "attributedPercent": 0.35,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "FUNCTION_SELF": 0.35
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/graph-explorer/operations/is-referenced.ts:1093",
+          "name": "walkDown",
+          "attributedPercent": 0.32,
+          "ownPercent": 0.32,
+          "byTarget": {
+            "FUNCTION_SELF": 0.32
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/map-workspaces.ts:500",
+          "name": "mapWorkspaces",
+          "attributedPercent": 0.32,
+          "ownPercent": 0.06,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.26,
+            "FUNCTION_SELF": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.13
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.07
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "vite@v8.3.4",
+      "degraded": "7 config files fail to load (unbuilt plugin-legacy)",
+      "wallMs": 3140,
+      "profiledMs": 3076,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 21.18,
+        "RUNTIME": 1.95,
+        "FUNCTION_SELF": 9.28,
+        "IO": 9.59,
+        "UNANALYZED_PROJECT": 0.91,
+        "EXTERNAL_NATIVE": 4.09,
+        "UNATTRIBUTED": 54.04
+      },
+      "topOrigins": [
+        {
+          "origin": "picomatch",
+          "kind": "PACKAGE",
+          "percent": 19.99
+        },
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 17.74
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 13.73
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 12.32
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 8.3
+        },
+        {
+          "origin": "oxc-parser",
+          "kind": "PACKAGE",
+          "percent": 6.92
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 8.63
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 4.34
+        },
+        {
+          "origin": "tinyglobby",
+          "kind": "PACKAGE",
+          "percent": 1.92
+        },
+        {
+          "origin": "(program)",
+          "kind": "PROGRAM",
+          "percent": 1.31
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 45.96
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 9.28
+        },
+        {
+          "step": "top call sites (18)",
+          "percent": 37.05
+        },
+        {
+          "step": "human-plausible",
+          "percent": 11.52
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 11.11
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 10.24
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0.88,
+      "patternFamilyRecall": 1,
+      "recognitionPrecision": 1,
+      "lowerBlockers": [
+        {
+          "reason": "async or generator",
+          "percent": 15.46
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 10.51
+        },
+        {
+          "reason": "class instances",
+          "percent": 5.52
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 1.86
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 1.81
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 1.33
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 0.62
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got string",
+          "percent": 0
+        },
+        {
+          "reason": "functions as values",
+          "percent": 0
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/util/glob-core.ts:11456",
+          "name": "glob",
+          "attributedPercent": 13.13,
+          "ownPercent": 0.16,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 12.15,
+            "RUNTIME": 0.57,
+            "FUNCTION_SELF": 0.16,
+            "IO": 0.25
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 10.43
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.47
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.57
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.25
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.25
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:HIGH",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": true,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "fraction": 0.78,
+            "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+            "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3226",
+          "name": "SourceFileManager.readRawFile",
+          "attributedPercent": 7.23,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 7.4
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 7.4
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/ast-nodes.ts:876",
+          "name": "parseFile",
+          "attributedPercent": 4.95,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "RUNTIME": 0.34,
+            "EXTERNAL_NATIVE": 1.34,
+            "EXTERNAL_DEPENDENCY": 3.79,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.79
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.32
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.34
+            },
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1914",
+          "name": "resolveSync",
+          "attributedPercent": 1.86,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 1.66,
+            "UNANALYZED_PROJECT": 0.2
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.66
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.2
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:31896",
+          "name": "walkAST",
+          "attributedPercent": 1.75,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.88,
+            "UNANALYZED_PROJECT": 0.13,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.88
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.13
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Program: struct field body: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/loader.ts:285",
+          "name": "load",
+          "attributedPercent": 1.29,
+          "ownPercent": 0,
+          "byTarget": {
+            "RUNTIME": 0.43,
+            "EXTERNAL_DEPENDENCY": 0.32,
+            "IO": 0.56
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.56
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.43
+            },
+            {
+              "origin": "jiti",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1133",
+          "name": "resolvePackageManifestPath",
+          "attributedPercent": 1.2,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 0.65,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.65
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver package.json resolution (N-API), already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/ConfigurationChief.ts:18421",
+          "name": "ConfigurationChief.findWorkspaceByFilePath",
+          "attributedPercent": 0.87,
+          "ownPercent": 0.87,
+          "byTarget": {
+            "FUNCTION_SELF": 0.87
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_DATA_LAYOUT"
+            ],
+            "evidence": "By inspection: a linear startsWith scan over all workspace directories per (memoized) file path.",
+            "note": "A path-segment index built once (prepared state) makes it O(depth). Backstage: about 230 workspaces, 2.9%."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob.ts:3076",
+          "name": "syncGlob",
+          "attributedPercent": 0.72,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.29,
+            "IO": 0.7
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.7
+            },
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.17
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.08
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Synchronous directory globbing (fs)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/graph/build.ts:3262",
+          "name": "build",
+          "attributedPercent": 0.72,
+          "ownPercent": 0.6,
+          "byTarget": {
+            "FUNCTION_SELF": 0.6,
+            "IO": 0.07,
+            "UNANALYZED_PROJECT": 0.02,
+            "RUNTIME": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.07
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3384",
+          "name": "SourceFileManager.cacheSourceText",
+          "attributedPercent": 0.64,
+          "ownPercent": 0.57,
+          "byTarget": {
+            "FUNCTION_SELF": 0.57
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/fs.ts:2885",
+          "name": "parseYAML",
+          "attributedPercent": 0.62,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.74
+          },
+          "topExternal": [
+            {
+              "origin": "yaml",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.74
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "yaml package parsing config/lock files; once per file."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/follow-imports.ts:1163",
+          "name": "extractSpecifiers",
+          "attributedPercent": 0.59,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.65,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.65
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.34,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.34
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/manifest/helpers.ts:291",
+          "name": "loadPackageManifest",
+          "attributedPercent": 0.46,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.28,
+            "RUNTIME": 0.18
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.28
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.18
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/scripts.ts:2055",
+          "name": "getScriptCommands",
+          "attributedPercent": 0.44,
+          "ownPercent": 0.09,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.35,
+            "FUNCTION_SELF": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "unbash",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.35
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got string"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/get-imports-and-exports.ts:1647",
+          "name": "getImportsAndExports",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ResolveModule: functions cannot be lowered as values"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-file orchestration of parse + visitors; own time is small bookkeeping."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/WorkspaceWorker.ts:5056",
+          "name": "WorkspaceWorker.determineEnabledPlugins",
+          "attributedPercent": 0.33,
+          "ownPercent": 0.33,
+          "byTarget": {
+            "FUNCTION_SELF": 0.33
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/WorkspaceWorker.ts:14218",
+          "name": "runPlugin",
+          "attributedPercent": 0.3,
+          "ownPercent": 0.19,
+          "byTarget": {
+            "FUNCTION_SELF": 0.19,
+            "RUNTIME": 0.07,
+            "UNANALYZED_PROJECT": 0.02,
+            "EXTERNAL_DEPENDENCY": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.07
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/fs.ts:617",
+          "name": "isFile",
+          "attributedPercent": 0.3,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 0.28,
+            "RUNTIME": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.28
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
+    },
+    {
+      "workload": "tanstack-router@v1.166.7",
+      "degraded": "~160 config files fail to load (workspace packages not built)",
+      "wallMs": 9823,
+      "profiledMs": 9690,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 28.09,
+        "IO": 8.69,
+        "FUNCTION_SELF": 6.38,
+        "RUNTIME": 2.17,
+        "UNANALYZED_PROJECT": 0.93,
+        "EXTERNAL_NATIVE": 4.48,
+        "UNATTRIBUTED": 48.78
+      },
+      "topOrigins": [
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 33.04
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 19.91
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 11.5
+        },
+        {
+          "origin": "picomatch",
+          "kind": "PACKAGE",
+          "percent": 10.08
+        },
+        {
+          "origin": "jiti",
+          "kind": "PACKAGE",
+          "percent": 6.88
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 4.24
+        },
+        {
+          "origin": "oxc-parser",
+          "kind": "PACKAGE",
+          "percent": 4.07
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 3.29
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 1.33
+        },
+        {
+          "origin": "wrangler",
+          "kind": "PACKAGE",
+          "percent": 0.82
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 51.22
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 6.38
+        },
+        {
+          "step": "top call sites (8)",
+          "percent": 41.13
+        },
+        {
+          "step": "human-plausible",
+          "percent": 21.3
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 4.34
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 2.26
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0.11,
+      "patternFamilyRecall": 0.9,
+      "recognitionPrecision": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 23.76
+        },
+        {
+          "reason": "async or generator",
+          "percent": 9.78
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 2.65
+        },
+        {
+          "reason": "class instances",
+          "percent": 2.63
+        },
+        {
+          "reason": "captured outer state",
+          "percent": 2.11
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 16.98,
+          "ownPercent": 1.18,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 15.29,
+            "UNANALYZED_PROJECT": 0.22,
+            "FUNCTION_SELF": 1.18
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 15.29
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.22
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/loader.ts:285",
+          "name": "load",
+          "attributedPercent": 6.88,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "RUNTIME": 1.34,
+            "EXTERNAL_DEPENDENCY": 3.35,
+            "IO": 2.1,
+            "FUNCTION_SELF": 0.01,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "jiti",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.35
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 2.1
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 1.33
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            },
+            {
+              "origin": "other",
+              "target": "RUNTIME",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3226",
+          "name": "SourceFileManager.readRawFile",
+          "attributedPercent": 5.23,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "IO": 5.22,
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 5.22
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:11456",
+          "name": "glob",
+          "attributedPercent": 2.9,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 2.72,
+            "RUNTIME": 0.11,
+            "FUNCTION_SELF": 0.05,
+            "IO": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 2.24
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.38
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.11
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.11
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:MEDIUM",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": true,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "fraction": 0.78,
+            "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+            "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1914",
+          "name": "resolveSync",
+          "attributedPercent": 2.65,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 2.81,
+            "UNANALYZED_PROJECT": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 2.81
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/ast-nodes.ts:876",
+          "name": "parseFile",
+          "attributedPercent": 2.63,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "RUNTIME": 0.14,
+            "EXTERNAL_DEPENDENCY": 1.62,
+            "EXTERNAL_NATIVE": 0.69,
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.62
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 0.69
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:4832",
+          "name": "isExcluded",
+          "attributedPercent": 2.11,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 1.76,
+            "UNANALYZED_PROJECT": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.76
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.32
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: isIgnored is not a parameter or local of the lowered function"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "CHANGE_ALGORITHM"
+            ],
+            "evidence": "By inspection: `matcher(path) || incr(path)` chains a new closure per batch of pending patterns and walks the chain for every path.",
+            "note": "Materialize the accumulated matcher once. Small share."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:31896",
+          "name": "walkAST",
+          "attributedPercent": 1.58,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.07,
+            "EXTERNAL_DEPENDENCY": 1.18,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 1.18
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.07
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Program: struct field body: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+          },
+          "seenInRuns": 3
+        }
+      ]
+    },
+    {
+      "workload": "backstage (local, no dependencies)",
+      "degraded": "~230 config files fail to load (no dependencies installed)",
+      "wallMs": 5578,
+      "profiledMs": 5498,
+      "attribution": {
+        "EXTERNAL_DEPENDENCY": 21.61,
+        "IO": 20.83,
+        "FUNCTION_SELF": 15.19,
+        "RUNTIME": 1.41,
+        "UNANALYZED_PROJECT": 0.91,
+        "EXTERNAL_NATIVE": 10.2,
+        "UNATTRIBUTED": 29.68
+      },
+      "topOrigins": [
+        {
+          "origin": "(native)",
+          "kind": "NATIVE",
+          "percent": 30.05
+        },
+        {
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 24.06
+        },
+        {
+          "origin": "picomatch",
+          "kind": "PACKAGE",
+          "percent": 13.13
+        },
+        {
+          "origin": "oxc-parser",
+          "kind": "PACKAGE",
+          "percent": 11.61
+        },
+        {
+          "origin": "(garbage collector)",
+          "kind": "GC",
+          "percent": 6.42
+        },
+        {
+          "origin": "node",
+          "kind": "NODE",
+          "percent": 4.65
+        },
+        {
+          "origin": "(idle)",
+          "kind": "IDLE",
+          "percent": 4.01
+        },
+        {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 2.21
+        },
+        {
+          "origin": "tinyglobby",
+          "kind": "PACKAGE",
+          "percent": 0.87
+        },
+        {
+          "origin": "fdir",
+          "kind": "PACKAGE",
+          "percent": 0.58
+        }
+      ],
+      "funnel": [
+        {
+          "step": "runtime (profiled)",
+          "percent": 100
+        },
+        {
+          "step": "attributable to project call sites",
+          "percent": 70.32
+        },
+        {
+          "step": "project's own JavaScript (FUNCTION_SELF)",
+          "percent": 15.19
+        },
+        {
+          "step": "top call sites (11)",
+          "percent": 56.72
+        },
+        {
+          "step": "human-plausible",
+          "percent": 12.88
+        },
+        {
+          "step": "human-evidence-supported",
+          "percent": 8.76
+        },
+        {
+          "step": "CrankTS-recognized (advisor)",
+          "percent": 5.82
+        },
+        {
+          "step": "CrankTS-transformable (a fail-closed pass accepts it)",
+          "percent": 0
+        },
+        {
+          "step": "validated-beneficial",
+          "percent": 0
+        }
+      ],
+      "automatedRecognitionRecall": 0.46,
+      "patternFamilyRecall": 1,
+      "recognitionPrecision": 1,
+      "lowerBlockers": [
+        {
+          "reason": "union or optional types",
+          "percent": 29.34
+        },
+        {
+          "reason": "async or generator",
+          "percent": 8.34
+        },
+        {
+          "reason": "class instances",
+          "percent": 7.82
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 7.4
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 3.5
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 0.74
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3226",
+          "name": "SourceFileManager.readRawFile",
+          "attributedPercent": 19.64,
+          "ownPercent": 0,
+          "byTarget": {
+            "IO": 18.54,
+            "RUNTIME": 0.03,
+            "FUNCTION_SELF": 0
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 18.54
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.03
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "readFileSync of every source file: I/O (the 'NATIVE' share is the fs binding). At most PARALLELIZE of I/O, not a compute transformation."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/ast-nodes.ts:876",
+          "name": "parseFile",
+          "attributedPercent": 7.82,
+          "ownPercent": 0.05,
+          "byTarget": {
+            "RUNTIME": 0.2,
+            "IO": 0.01,
+            "EXTERNAL_DEPENDENCY": 4.67,
+            "EXTERNAL_NATIVE": 2.61,
+            "FUNCTION_SELF": 0.05
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 4.67
+            },
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 2.61
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.2
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.01
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type ParseResult: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser parse: already a native (Rust) parser called through N-API."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:11456",
+          "name": "glob",
+          "attributedPercent": 7.46,
+          "ownPercent": 0.11,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 7.41,
+            "RUNTIME": 0.21,
+            "FUNCTION_SELF": 0.11,
+            "IO": 0.04
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 6.28
+            },
+            {
+              "origin": "tinyglobby",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.81
+            },
+            {
+              "origin": "fdir",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.33
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.21
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.04
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:HIGH",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": true,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "HOIST_INVARIANT_WORK"
+            ],
+            "fraction": 0.78,
+            "evidence": "Measured: picomatch compilation is 75-80% of the call site; input-signature profiling of tinyGlob(patterns, options) shows the options (ignore set) repeating (Vite: 92 distinct values over 4,264 calls, reuse 0.978).",
+            "note": "tinyglobby recompiles the same ignore patterns with picomatch on every glob call: compile once per ignore set. The work sits inside a dependency, so the transformation needs an API change or caching at the call site."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1914",
+          "name": "resolveSync",
+          "attributedPercent": 7.4,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 6.45,
+            "UNANALYZED_PROJECT": 0.06
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 6.45
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.06
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver resolveFileSync (Rust, N-API): its native time is attributed to this JS frame as 'self'. Already native."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:31896",
+          "name": "walkAST",
+          "attributedPercent": 4.27,
+          "ownPercent": 0.15,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 3.98,
+            "FUNCTION_SELF": 0.15,
+            "UNANALYZED_PROJECT": 0.14
+          },
+          "topExternal": [
+            {
+              "origin": "oxc-parser",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 3.98
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.14
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Program: struct field body: array element unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 4.12,
+          "ownPercent": 0.25,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 4.05,
+            "FUNCTION_SELF": 0.25,
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 4.05
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/ConfigurationChief.ts:18421",
+          "name": "ConfigurationChief.findWorkspaceByFilePath",
+          "attributedPercent": 2.94,
+          "ownPercent": 2.77,
+          "byTarget": {
+            "FUNCTION_SELF": 2.77
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "EVIDENCE_SUPPORTED",
+            "confidence": "HIGH",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_DATA_LAYOUT"
+            ],
+            "evidence": "By inspection: a linear startsWith scan over all workspace directories per (memoized) file path.",
+            "note": "A path-segment index built once (prepared state) makes it O(depth). Backstage: about 230 workspaces, 2.9%."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/typescript/visitors/members.ts:634",
+          "name": "handleMemberExpression",
+          "attributedPercent": 1.14,
+          "ownPercent": 1,
+          "byTarget": {
+            "FUNCTION_SELF": 1
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MemberExpression: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-AST-node visitor logic (Map lookups, shadowing checks) over dynamic ESTree objects; no batchable kernel."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/loader.ts:285",
+          "name": "load",
+          "attributedPercent": 0.88,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.22,
+            "RUNTIME": 0.37,
+            "IO": 0.24,
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.37
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.24
+            },
+            {
+              "origin": "jiti",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.22
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/typescript/SourceFileManager.ts:3384",
+          "name": "SourceFileManager.cacheSourceText",
+          "attributedPercent": 0.86,
+          "ownPercent": 0.73,
+          "byTarget": {
+            "FUNCTION_SELF": 0.73
+          },
+          "topExternal": [],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:6842",
+          "name": "_collectRefsInType",
+          "attributedPercent": 0.8,
+          "ownPercent": 0.8,
+          "byTarget": {
+            "FUNCTION_SELF": 0.8
+          },
+          "topExternal": [],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive type-reference collector over ESTree nodes (switch on node.type); dynamic object graph."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/fs.ts:2885",
+          "name": "parseYAML",
+          "attributedPercent": 0.71,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.71
+          },
+          "topExternal": [
+            {
+              "origin": "yaml",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.71
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "yaml package parsing config/lock files; once per file."
+          },
+          "seenInRuns": 1
+        }
+      ]
+    }
+  ]
+}
