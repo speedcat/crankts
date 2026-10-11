@@ -57,6 +57,8 @@ export interface CoverageCallSite {
   readonly ownPercent: number;
   readonly byTarget: Readonly<Partial<Record<AttributionTarget, number>>>;
   readonly topExternal: readonly { readonly origin: string; readonly target: AttributionTarget; readonly percent: number }[];
+  /** Dominant profile-weighted caller paths (function ids, innermost first) with their share of the site. */
+  readonly callerPaths?: readonly { readonly path: readonly string[]; readonly percentOfSite: number }[];
   readonly eligibility: EligibilityKind;
   readonly advisor: readonly string[];
   readonly recognized: boolean;
@@ -144,6 +146,7 @@ export function computeCoverage(result: AnalysisResult, options: CoverageOptions
       ownPercent: site.byTarget.FUNCTION_SELF ?? 0,
       byTarget: site.byTarget,
       topExternal: site.topExternal.map((entry) => ({ origin: entry.origin, target: entry.target, percent: entry.percent })),
+      ...(site.callerPaths ? { callerPaths: site.callerPaths } : {}),
       eligibility: fn.eligibility.kind,
       advisor: recommendations.map((recommendation) => `${recommendation.action}:${recommendation.level}`),
       recognized,

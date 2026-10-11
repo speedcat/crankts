@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      2.7,
-      5.79,
-      11.27
+      4.68,
+      6.12,
+      6.67
     ]
   },
   "subject": {
@@ -32,10 +32,10 @@
       "wallMs": 1301,
       "profiledMs": 1258,
       "attribution": {
-        "FUNCTION_SELF": 8.07,
-        "UNANALYZED_PROJECT": 33.88,
+        "FUNCTION_SELF": 28.11,
+        "UNANALYZED_PROJECT": 14.22,
         "RUNTIME": 1.07,
-        "UNATTRIBUTED": 56.97
+        "UNATTRIBUTED": 56.92
       },
       "topOrigins": [
         {
@@ -81,15 +81,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 43.03
+          "percent": 43.08
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 8.07
+          "percent": 28.11
         },
         {
-          "step": "top call sites (2)",
-          "percent": 36.25
+          "step": "top call sites (4)",
+          "percent": 35.37
         },
         {
           "step": "human-plausible",
@@ -112,31 +112,196 @@
           "percent": 0
         }
       ],
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "method uses this/super",
-          "percent": 32.42
+          "percent": 25.14
         },
         {
-          "reason": "other: generic functions are not lowered",
-          "percent": 3.83
+          "reason": "not a kernel function form",
+          "percent": 10.19
         }
       ],
       "callSites": [
         {
-          "functionId": "src/internal/effect.ts:19474",
-          "name": "FiberImpl.runLoop",
-          "attributedPercent": 32.38,
-          "ownPercent": 2.23,
+          "functionId": "src/internal/effect.ts:44460",
+          "name": "[contA]",
+          "attributedPercent": 18.76,
+          "ownPercent": 14.36,
           "byTarget": {
-            "UNANALYZED_PROJECT": 30.19,
-            "FUNCTION_SELF": 2.23
+            "FUNCTION_SELF": 14.36,
+            "UNANALYZED_PROJECT": 4.4
           },
           "topExternal": [
             {
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
-              "percent": 30.19
+              "percent": 4.4
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:44890",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 82.28
+            },
+            {
+              "path": [
+                "src/internal/core.ts:14059",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 11.09
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:31069",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 6.62
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:39471",
+          "name": "callback@1240",
+          "attributedPercent": 10.19,
+          "ownPercent": 0.48,
+          "byTarget": {
+            "FUNCTION_SELF": 0.48,
+            "UNANALYZED_PROJECT": 9.45
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 9.45
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:31426",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:18061",
+          "name": "FiberImpl.evaluate",
+          "attributedPercent": 3.67,
+          "ownPercent": 2.6,
+          "byTarget": {
+            "FUNCTION_SELF": 2.6,
+            "RUNTIME": 1.07
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 1.07
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:176441",
+                "src/internal/effect.ts:162751",
+                "src/internal/effect.ts:163145"
+              ],
+              "percentOfSite": 50.54
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:33011",
+                "src/Scheduler.ts:6495",
+                "src/Scheduler.ts:6401"
+              ],
+              "percentOfSite": 49.46
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Fiber evaluate step: part of the interpreter."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/internal/effect.ts:19474",
+          "name": "FiberImpl.runLoop",
+          "attributedPercent": 2.23,
+          "ownPercent": 2.23,
+          "byTarget": {
+            "FUNCTION_SELF": 2.23
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:176441",
+                "src/internal/effect.ts:162751"
+              ],
+              "percentOfSite": 64.88
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:33011",
+                "src/Scheduler.ts:6495"
+              ],
+              "percentOfSite": 35.12
             }
           ],
           "eligibility": "BLOCKED",
@@ -157,25 +322,38 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/internal/effect.ts:18061",
-          "name": "FiberImpl.evaluate",
-          "attributedPercent": 4.62,
-          "ownPercent": 3.31,
+          "functionId": "src/internal/effect.ts:31069",
+          "name": "[evaluate]",
+          "attributedPercent": 1.41,
+          "ownPercent": 1.41,
           "byTarget": {
-            "FUNCTION_SELF": 3.31,
-            "RUNTIME": 1.19,
-            "UNANALYZED_PROJECT": 0.12
+            "FUNCTION_SELF": 1.41
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 1.19
+              "path": [
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:33011"
+              ],
+              "percentOfSite": 50.47
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.12
+              "path": [
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:176441"
+              ],
+              "percentOfSite": 36.92
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:33011",
+                "src/Scheduler.ts:6495"
+              ],
+              "percentOfSite": 8.41
             }
           ],
           "eligibility": "BLOCKED",
@@ -191,42 +369,9 @@
           },
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
-            "note": "Fiber evaluate step: part of the interpreter."
+            "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
           },
           "seenInRuns": 1
-        },
-        {
-          "functionId": "src/internal/core.ts:14059",
-          "name": "makeExit",
-          "attributedPercent": 4.39,
-          "ownPercent": 0.91,
-          "byTarget": {
-            "FUNCTION_SELF": 0.91,
-            "UNANALYZED_PROJECT": 2.92
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 2.92
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: generic functions are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Exit allocation (makeExit): object construction for every result."
-          },
-          "seenInRuns": 2
         }
       ]
     },
@@ -235,9 +380,9 @@
       "wallMs": 961,
       "profiledMs": 925,
       "attribution": {
-        "FUNCTION_SELF": 14.49,
-        "UNANALYZED_PROJECT": 23.75,
-        "UNATTRIBUTED": 62.21,
+        "FUNCTION_SELF": 37.63,
+        "UNANALYZED_PROJECT": 0.09,
+        "UNATTRIBUTED": 62.13,
         "RUNTIME": 0
       },
       "topOrigins": [
@@ -284,15 +429,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 37.79
+          "percent": 37.87
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 14.49
+          "percent": 37.63
         },
         {
-          "step": "top call sites (5)",
-          "percent": 32.16
+          "step": "top call sites (7)",
+          "percent": 31.81
         },
         {
           "step": "human-plausible",
@@ -315,38 +460,95 @@
           "percent": 0
         }
       ],
+      "phenomena": [
+        {
+          "kind": "RECOMPUTATION",
+          "functionId": "src/Stream.ts:46122",
+          "call": "src/Stream.ts:1649:23",
+          "callee": "Arr.range",
+          "upperBoundPercent": 2.94,
+          "evidence": [
+            "7320 calls, 244 distinct inputs (reuse 0.967)",
+            "callee cost 3.04%",
+            "2 call sites"
+          ],
+          "hypothesis": "`Arr.range` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+        }
+      ],
       "lowerBlockers": [
         {
-          "reason": "type without Kernel IR form (any, DOM, library classes)",
-          "percent": 20.06
+          "reason": "not a kernel function form",
+          "percent": 26.44
         },
         {
-          "reason": "not a kernel function form",
-          "percent": 8.53
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 2.85
         },
         {
           "reason": "method uses this/super",
-          "percent": 2.88
-        },
-        {
-          "reason": "tuples",
-          "percent": 0
+          "percent": 1.82
         }
       ],
       "callSites": [
         {
-          "functionId": "src/internal/effect.ts:47705",
-          "name": "mapCont",
-          "attributedPercent": 16.7,
-          "ownPercent": 0,
+          "functionId": "src/Array.ts:105556",
+          "name": "callback@3690",
+          "attributedPercent": 8.64,
+          "ownPercent": 8.29,
           "byTarget": {
-            "UNANALYZED_PROJECT": 16.7
+            "FUNCTION_SELF": 8.29
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 16.7
+              "path": [
+                "src/Function.ts:3788",
+                "src/Channel.ts:63984",
+                "src/internal/effect.ts:47705"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/Stream.ts:49385",
+          "name": "callback@1766",
+          "attributedPercent": 5.81,
+          "ownPercent": 5.81,
+          "byTarget": {
+            "FUNCTION_SELF": 5.81
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/Array.ts:105556",
+                "src/Function.ts:3788",
+                "src/Channel.ts:63984"
+              ],
+              "percentOfSite": 90.2
+            },
+            {
+              "path": [
+                "src/Function.ts:3788",
+                "src/Channel.ts:63984",
+                "src/internal/effect.ts:47705"
+              ],
+              "percentOfSite": 9.8
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -357,29 +559,40 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type { readonly payload: any; }: struct field payload: has no Kernel IR type"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
           },
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
-            "note": "Stream continuation (`mapCont`): closure chains over Exit values."
+            "note": "Stream/Channel closure per element (user `map`/`filter` functions)."
           },
           "seenInRuns": 3
         },
         {
           "functionId": "src/Stream.ts:217230",
           "name": "loop",
-          "attributedPercent": 4.39,
+          "attributedPercent": 4.31,
           "ownPercent": 4.56,
           "byTarget": {
-            "FUNCTION_SELF": 4.56,
-            "UNANALYZED_PROJECT": 0.07
+            "FUNCTION_SELF": 4.56
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.07
+              "path": [
+                "src/internal/effect.ts:31426",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 93.08
+            },
+            {
+              "path": [
+                "src/Stream.ts:217419",
+                "src/internal/effect.ts:47919",
+                "src/internal/core.ts:14059"
+              ],
+              "percentOfSite": 6.92
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -408,6 +621,24 @@
             "FUNCTION_SELF": 4.99
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:47919",
+                "src/internal/effect.ts:22249",
+                "src/internal/effect.ts:47705"
+              ],
+              "percentOfSite": 98.37
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:47919",
+                "src/internal/core.ts:14059",
+                "src/internal/effect.ts:19474"
+              ],
+              "percentOfSite": 1.63
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -426,52 +657,37 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/internal/effect.ts:19474",
-          "name": "FiberImpl.runLoop",
-          "attributedPercent": 3.57,
-          "ownPercent": 0.32,
-          "byTarget": {
-            "UNANALYZED_PROJECT": 2.55,
-            "FUNCTION_SELF": 0.32
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 2.55
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: methods that use `this` or `super` are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "The fiber run loop: a bytecode-style interpreter over Effect primitives with a mutable fiber (`this`), continuation stack, and scheduler. It is the runtime itself."
-          },
-          "seenInRuns": 2
-        },
-        {
           "functionId": "src/internal/effect.ts:47919",
           "name": "andThenCont",
-          "attributedPercent": 3.52,
+          "attributedPercent": 2.85,
           "ownPercent": 2.93,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.42,
+            "UNANALYZED_PROJECT": 0.09,
             "FUNCTION_SELF": 2.93
           },
           "topExternal": [
             {
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
-              "percent": 0.42
+              "percent": 0.09
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:22249",
+                "src/internal/effect.ts:47705",
+                "src/internal/core.ts:14059"
+              ],
+              "percentOfSite": 89.07
+            },
+            {
+              "path": [
+                "src/internal/core.ts:14059",
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061"
+              ],
+              "percentOfSite": 10.93
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -492,19 +708,22 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/Array.ts:6902",
-          "name": "range",
-          "attributedPercent": 3.04,
-          "ownPercent": 0.49,
+          "functionId": "src/Function.ts:3788",
+          "name": "callback@133",
+          "attributedPercent": 2.6,
+          "ownPercent": 2.6,
           "byTarget": {
-            "UNANALYZED_PROJECT": 2.55,
-            "FUNCTION_SELF": 0.49
+            "FUNCTION_SELF": 2.6
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 2.55
+              "path": [
+                "src/Channel.ts:63984",
+                "src/internal/effect.ts:47705",
+                "src/internal/core.ts:14059"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -515,14 +734,94 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type [number, ...number[]]: tuples are not lowered"
+              "lowering: FunctionExpression is not a kernel function (declaration, const arrow, or method)"
             ]
           },
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
-            "note": "Array.range builds a plain array of numbers (native fill/push)."
+            "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
           },
-          "seenInRuns": 1
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/internal/effect.ts:31426",
+          "name": "[evaluate]",
+          "attributedPercent": 2.58,
+          "ownPercent": 1.82,
+          "byTarget": {
+            "FUNCTION_SELF": 1.82
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:33011"
+              ],
+              "percentOfSite": 96.77
+            },
+            {
+              "path": [
+                "src/internal/effect.ts:19474",
+                "src/internal/effect.ts:18061",
+                "src/internal/effect.ts:182070"
+              ],
+              "percentOfSite": 3.23
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/Array.ts:6153",
+          "name": "callback@218",
+          "attributedPercent": 1.8,
+          "ownPercent": 2.55,
+          "byTarget": {
+            "FUNCTION_SELF": 2.55
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/Function.ts:3681",
+                "src/Array.ts:6902",
+                "src/Stream.ts:46122"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
+          },
+          "seenInRuns": 3
         }
       ]
     },
@@ -531,9 +830,8 @@
       "wallMs": 1664,
       "profiledMs": 1629,
       "attribution": {
-        "FUNCTION_SELF": 40.69,
-        "UNANALYZED_PROJECT": 23.56,
-        "UNATTRIBUTED": 35.75
+        "FUNCTION_SELF": 64.71,
+        "UNATTRIBUTED": 35.29
       },
       "topOrigins": [
         {
@@ -574,15 +872,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 64.25
+          "percent": 64.71
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 40.69
+          "percent": 64.71
         },
         {
-          "step": "top call sites (3)",
-          "percent": 55.26
+          "step": "top call sites (6)",
+          "percent": 54.25
         },
         {
           "step": "human-plausible",
@@ -607,31 +905,47 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
-          "reason": "union or optional types",
-          "percent": 34.76
+          "reason": "not a kernel function form",
+          "percent": 20.43
         },
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
           "percent": 20.34
+        },
+        {
+          "reason": "union or optional types",
+          "percent": 13.19
         }
       ],
       "callSites": [
         {
           "functionId": "src/SchemaAST.ts:69168",
           "name": "onItem",
-          "attributedPercent": 34.76,
+          "attributedPercent": 13.19,
           "ownPercent": 13.48,
           "byTarget": {
-            "FUNCTION_SELF": 13.48,
-            "UNANALYZED_PROJECT": 22.32
+            "FUNCTION_SELF": 13.48
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 22.32
+              "path": [
+                "src/internal/effect.ts:161132",
+                "src/SchemaAST.ts:65272",
+                "src/SchemaAST.ts:66431"
+              ],
+              "percentOfSite": 99.64
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:65272",
+                "src/SchemaAST.ts:66431",
+                "src/SchemaAST.ts:88146"
+              ],
+              "percentOfSite": 0.36
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -652,6 +966,59 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "src/SchemaAST.ts:88146",
+          "name": "callback@3120",
+          "attributedPercent": 10.86,
+          "ownPercent": 11.74,
+          "byTarget": {
+            "FUNCTION_SELF": 11.74
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132",
+                "src/SchemaAST.ts:65272"
+              ],
+              "percentOfSite": 96.82
+            },
+            {
+              "path": [
+                "src/SchemaParser.ts:36158",
+                "src/Schema.ts:64016",
+                "src/Schema.ts:76172"
+              ],
+              "percentOfSite": 2
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:65272",
+                "src/SchemaAST.ts:66431",
+                "src/SchemaParser.ts:36158"
+              ],
+              "percentOfSite": 0.79
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "src/internal/effect.ts:161132",
           "name": "runSequential",
           "attributedPercent": 10.26,
@@ -660,6 +1027,24 @@
             "FUNCTION_SELF": 9.98
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/SchemaAST.ts:65272",
+                "src/SchemaAST.ts:66431",
+                "src/SchemaAST.ts:88146"
+              ],
+              "percentOfSite": 99.05
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:88146",
+                "src/SchemaAST.ts:69168",
+                "src/SchemaAST.ts:65272"
+              ],
+              "percentOfSite": 0.95
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -686,6 +1071,32 @@
             "FUNCTION_SELF": 9.49
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/SchemaAST.ts:88146",
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132"
+              ],
+              "percentOfSite": 78.81
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:91546",
+                "src/SchemaAST.ts:88146",
+                "src/SchemaAST.ts:69168"
+              ],
+              "percentOfSite": 18.23
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:91546",
+                "src/SchemaAST.ts:88146",
+                "src/SchemaParser.ts:36158"
+              ],
+              "percentOfSite": 1.49
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -708,6 +1119,111 @@
               "a measured gain"
             ],
             "note": "assignProperty/assignProperties copies keys dynamically onto freshly created objects (9.5% in the schema workload, own time). A shape-preserving construction is an algorithmic/layout change, not a mechanical one."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/SchemaAST.ts:141837",
+          "name": "callback@4832",
+          "attributedPercent": 4.91,
+          "ownPercent": 5.59,
+          "byTarget": {
+            "FUNCTION_SELF": 5.59
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/SchemaAST.ts:88146",
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132"
+              ],
+              "percentOfSite": 48.55
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132",
+                "src/SchemaAST.ts:65272"
+              ],
+              "percentOfSite": 45.65
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:65272",
+                "src/SchemaAST.ts:66431",
+                "src/SchemaAST.ts:88146"
+              ],
+              "percentOfSite": 4.97
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/SchemaAST.ts:66431",
+          "name": "callback@2458",
+          "attributedPercent": 4.39,
+          "ownPercent": 4.28,
+          "byTarget": {
+            "FUNCTION_SELF": 4.28
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/SchemaAST.ts:88146",
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132"
+              ],
+              "percentOfSite": 87.13
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:69168",
+                "src/internal/effect.ts:161132",
+                "src/SchemaAST.ts:65272"
+              ],
+              "percentOfSite": 10.83
+            },
+            {
+              "path": [
+                "src/SchemaAST.ts:88146",
+                "src/SchemaParser.ts:36158",
+                "src/Schema.ts:49077"
+              ],
+              "percentOfSite": 2.04
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
           },
           "seenInRuns": 3
         }

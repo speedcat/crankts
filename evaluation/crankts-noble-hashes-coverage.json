@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      5.25,
-      12.35,
-      15.96
+      4.82,
+      5.01,
+      5.9
     ]
   },
   "subject": {
@@ -32,8 +32,7 @@
       "wallMs": 4028,
       "profiledMs": 4001,
       "attribution": {
-        "FUNCTION_SELF": 95.44,
-        "UNANALYZED_PROJECT": 0.02,
+        "FUNCTION_SELF": 95.47,
         "UNATTRIBUTED": 4.53
       },
       "topOrigins": [
@@ -84,7 +83,7 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 95.44
+          "percent": 95.47
         },
         {
           "step": "top call sites (6)",
@@ -113,6 +112,34 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [
+        {
+          "kind": "RECOMPUTATION",
+          "functionId": "src/blake2.ts:17994",
+          "call": "src/blake2.ts:506:40",
+          "callee": "G2s",
+          "upperBoundPercent": 5.04,
+          "evidence": [
+            "8570880 calls, 285694 distinct inputs (reuse 0.967)",
+            "callee cost 5.21%",
+            "8 call sites"
+          ],
+          "hypothesis": "`G2s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+        },
+        {
+          "kind": "RECOMPUTATION",
+          "functionId": "src/blake2.ts:17994",
+          "call": "src/blake2.ts:505:40",
+          "callee": "G1s",
+          "upperBoundPercent": 4.87,
+          "evidence": [
+            "8570880 calls, 285693 distinct inputs (reuse 0.967)",
+            "callee cost 5.04%",
+            "8 call sites"
+          ],
+          "hypothesis": "`G1s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
@@ -137,6 +164,24 @@
             "FUNCTION_SELF": 37.73
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/sha3.ts:7918",
+                "src/sha3.ts:8090",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 99.92
+            },
+            {
+              "path": [
+                "src/sha3.ts:7918",
+                "src/sha3.ts:9295",
+                "src/sha3.ts:9987"
+              ],
+              "percentOfSite": 0.08
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -171,7 +216,25 @@
             "FUNCTION_SELF": 14.94
           },
           "topExternal": [],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake2.ts:22239",
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 55.77
+            },
+            {
+              "path": [
+                "src/blake3.ts:4697",
+                "src/blake3.ts:5355",
+                "src/blake2.ts:5895"
+              ],
+              "percentOfSite": 44.23
+            }
+          ],
+          "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -205,6 +268,15 @@
             "FUNCTION_SELF": 6.99
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/_md.ts:3549",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -239,7 +311,24 @@
             "FUNCTION_SELF": 6.53
           },
           "topExternal": [],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake2.ts:12848",
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 96.99
+            },
+            {
+              "path": [
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 3.01
+            }
+          ],
+          "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -273,7 +362,24 @@
             "FUNCTION_SELF": 5.47
           },
           "topExternal": [],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake2.ts:12848",
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 96.23
+            },
+            {
+              "path": [
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 3.77
+            }
+          ],
+          "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -307,6 +413,32 @@
             "FUNCTION_SELF": 5.21
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake2.ts:17994",
+                "src/blake2.ts:22239",
+                "src/blake2.ts:5895"
+              ],
+              "percentOfSite": 55.44
+            },
+            {
+              "path": [
+                "src/blake2.ts:17994",
+                "src/blake3.ts:4697",
+                "src/blake3.ts:5355"
+              ],
+              "percentOfSite": 36.03
+            },
+            {
+              "path": [
+                "src/blake2.ts:22239",
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 5.19
+            }
+          ],
           "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -341,6 +473,32 @@
             "FUNCTION_SELF": 4.86
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake2.ts:17994",
+                "src/blake2.ts:22239",
+                "src/blake2.ts:5895"
+              ],
+              "percentOfSite": 50.08
+            },
+            {
+              "path": [
+                "src/blake2.ts:17994",
+                "src/blake3.ts:4697",
+                "src/blake3.ts:5355"
+              ],
+              "percentOfSite": 38.88
+            },
+            {
+              "path": [
+                "src/blake2.ts:22239",
+                "src/blake2.ts:5895",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 8.04
+            }
+          ],
           "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -373,9 +531,9 @@
       "wallMs": 1648,
       "profiledMs": 1618,
       "attribution": {
-        "UNANALYZED_PROJECT": 0.04,
-        "FUNCTION_SELF": 95.56,
-        "UNATTRIBUTED": 4.4
+        "FUNCTION_SELF": 95.6,
+        "UNATTRIBUTED": 4.4,
+        "UNANALYZED_PROJECT": 0
       },
       "topOrigins": [
         {
@@ -420,7 +578,7 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 95.56
+          "percent": 95.6
         },
         {
           "step": "top call sites (4)",
@@ -449,6 +607,7 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "method uses this/super",
@@ -477,6 +636,29 @@
             "FUNCTION_SELF": 33.14
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/_md.ts:4883",
+                "src/pbkdf2.ts:3566",
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 99.15
+            },
+            {
+              "path": [
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 0.37
+            },
+            {
+              "path": [
+                "src/pbkdf2.ts:3566",
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 0.37
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -511,6 +693,32 @@
             "FUNCTION_SELF": 22.05
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/argon2.ts:4758",
+                "src/argon2.ts:5290",
+                "src/argon2.ts:17726"
+              ],
+              "percentOfSite": 89.83
+            },
+            {
+              "path": [
+                "src/argon2.ts:17726",
+                "src/argon2.ts:20712",
+                "src/argon2.ts:23222"
+              ],
+              "percentOfSite": 9.8
+            },
+            {
+              "path": [
+                "src/argon2.ts:5290",
+                "src/argon2.ts:17726",
+                "src/argon2.ts:20712"
+              ],
+              "percentOfSite": 0.37
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -545,6 +753,16 @@
             "FUNCTION_SELF": 16.65
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/argon2.ts:17726",
+                "src/argon2.ts:20712",
+                "src/argon2.ts:23222"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -579,6 +797,14 @@
             "FUNCTION_SELF": 4.84
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -605,6 +831,23 @@
             "FUNCTION_SELF": 4.63
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/_md.ts:4883",
+                "src/pbkdf2.ts:3566",
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 99.16
+            },
+            {
+              "path": [
+                "src/pbkdf2.ts:3566",
+                "src/pbkdf2.ts:5086"
+              ],
+              "percentOfSite": 0.84
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -629,9 +872,9 @@
       "wallMs": 2834,
       "profiledMs": 2808,
       "attribution": {
-        "FUNCTION_SELF": 87.98,
-        "UNANALYZED_PROJECT": 3.85,
-        "UNATTRIBUTED": 8.16
+        "FUNCTION_SELF": 95.25,
+        "UNANALYZED_PROJECT": 0.19,
+        "UNATTRIBUTED": 4.55
       },
       "topOrigins": [
         {
@@ -677,15 +920,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 91.84
+          "percent": 95.45
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 87.98
+          "percent": 95.25
         },
         {
-          "step": "top call sites (5)",
-          "percent": 75.7
+          "step": "top call sites (7)",
+          "percent": 77.07
         },
         {
           "step": "human-plausible",
@@ -710,14 +953,50 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [
+        {
+          "kind": "RECOMPUTATION",
+          "functionId": "src/blake2.ts:17994",
+          "call": "src/blake2.ts:505:40",
+          "callee": "G1s",
+          "upperBoundPercent": 1.36,
+          "evidence": [
+            "2100000 calls, 1792 distinct inputs (reuse 0.999)",
+            "callee cost 1.36%",
+            "8 call sites"
+          ],
+          "hypothesis": "`G1s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+        },
+        {
+          "kind": "RECOMPUTATION",
+          "functionId": "src/blake2.ts:17994",
+          "call": "src/blake2.ts:506:40",
+          "callee": "G2s",
+          "upperBoundPercent": 1.04,
+          "evidence": [
+            "2100000 calls, 1792 distinct inputs (reuse 0.999)",
+            "callee cost 1.04%",
+            "8 call sites"
+          ],
+          "hypothesis": "`G2s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
-          "percent": 51.29
+          "percent": 47.57
         },
         {
           "reason": "method uses this/super",
-          "percent": 23.64
+          "percent": 24.62
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 2.69
+        },
+        {
+          "reason": "default/optional/rest parameters",
+          "percent": 2.05
         }
       ],
       "callSites": [
@@ -730,6 +1009,16 @@
             "FUNCTION_SELF": 34.54
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/sha3.ts:7918",
+                "src/sha3.ts:9295",
+                "src/sha3.ts:9987"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -764,6 +1053,32 @@
             "FUNCTION_SELF": 22.82
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/_md.ts:4883",
+                "src/hmac.ts:1588",
+                "src/hmac.ts:2057"
+              ],
+              "percentOfSite": 25.55
+            },
+            {
+              "path": [
+                "src/_md.ts:3549",
+                "src/hmac.ts:540",
+                "src/hmac.ts:3869"
+              ],
+              "percentOfSite": 25.28
+            },
+            {
+              "path": [
+                "src/_md.ts:4883",
+                "src/_md.ts:6856",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 12.29
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -798,6 +1113,32 @@
             "FUNCTION_SELF": 7.64
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/_md.ts:3257",
+                "src/sha2.ts:2256",
+                "src/sha2.ts:4965"
+              ],
+              "percentOfSite": 48.24
+            },
+            {
+              "path": [
+                "src/_md.ts:4883",
+                "src/hmac.ts:1588",
+                "src/hmac.ts:2057"
+              ],
+              "percentOfSite": 18.4
+            },
+            {
+              "path": [
+                "src/_md.ts:3549",
+                "src/hmac.ts:540",
+                "src/hmac.ts:3869"
+              ],
+              "percentOfSite": 17.75
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -824,7 +1165,17 @@
             "FUNCTION_SELF": 5.11
           },
           "topExternal": [],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake3.ts:8811",
+                "src/blake3.ts:9835",
+                "src/blake3.ts:10548"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "SUPPORTED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -850,19 +1201,35 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/utils.ts:33012",
-          "name": "hashC",
-          "attributedPercent": 3.51,
-          "ownPercent": 0.43,
+          "functionId": "src/hmac.ts:540",
+          "name": "_HMAC.constructor",
+          "attributedPercent": 2.69,
+          "ownPercent": 2.9,
           "byTarget": {
-            "UNANALYZED_PROJECT": 3.08,
-            "FUNCTION_SELF": 0.43
+            "FUNCTION_SELF": 2.9
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 3.08
+              "path": [
+                "src/hmac.ts:3869"
+              ],
+              "percentOfSite": 80.26
+            },
+            {
+              "path": [
+                "src/hmac.ts:4062",
+                "src/hkdf.ts:2816",
+                "src/hkdf.ts:6703"
+              ],
+              "percentOfSite": 12.45
+            },
+            {
+              "path": [
+                "src/hmac.ts:4062",
+                "src/hkdf.ts:6703"
+              ],
+              "percentOfSite": 7.29
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -873,14 +1240,91 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type TArg<Uint8Array<ArrayBufferLike>>: unions (including optional values) are not lowered"
+              "lowering: Constructor is not a kernel function (declaration, const arrow, or method)"
             ]
           },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Glue around the compression functions: buffer bookkeeping, loops over blocks, or scrypt/pbkdf2 driver code; no separate transformation."
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils.ts:13884",
+          "name": "clean",
+          "attributedPercent": 2.05,
+          "ownPercent": 2.02,
+          "byTarget": {
+            "FUNCTION_SELF": 2.02
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/blake3.ts:8412",
+                "src/blake3.ts:11324",
+                "src/blake3.ts:11705"
+              ],
+              "percentOfSite": 15.73
+            },
+            {
+              "path": [
+                "src/sha2.ts:4582",
+                "src/hmac.ts:2832",
+                "src/hmac.ts:1588"
+              ],
+              "percentOfSite": 15.73
+            },
+            {
+              "path": [
+                "src/sha2.ts:4524",
+                "src/_md.ts:3549",
+                "src/hmac.ts:540"
+              ],
+              "percentOfSite": 14.48
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "PARALLELIZE:HIGH",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
+            ]
           },
           "seenInRuns": 3
+        },
+        {
+          "functionId": "src/sha3.ts:9987",
+          "name": "Keccak.writeInto",
+          "attributedPercent": 1.94,
+          "ownPercent": 1.94,
+          "byTarget": {
+            "FUNCTION_SELF": 1.94
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/sha3.ts:11001",
+                "src/sha3.ts:11354",
+                "src/utils.ts:33012"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
         }
       ]
     }

@@ -59,6 +59,9 @@ export function evaluateEligibility(
       addBlocker("DYNAMIC_CALL", `Dynamic call through '${edge.callee}'.`, "blocked", edge.line);
     } else if (edge.kind === "UNRESOLVED") {
       addBlocker("UNRESOLVED_CALL", `Call to '${edge.callee}' could not be resolved.`, "conditional", edge.line);
+    } else if (edge.kind === "CONSTRUCTOR" && !edge.to && ERROR_CONSTRUCTORS.has(edge.callee)) {
+      // `throw new TypeError(…)` is a guard: a native kernel traps there and the TypeScript path throws.
+      continue;
     } else if ((edge.kind === "EXTERNAL" || edge.kind === "CONSTRUCTOR") && !edge.to) {
       addBlocker("UNKNOWN_EXTERNAL_CALL", `External call '${edge.callee}' has no in-project implementation.`, "conditional", edge.line);
     }
@@ -329,10 +332,25 @@ function isSafeIndexedCollection(type: ts.Type, facade: CompilerFacade): boolean
   if (facade.checker.isArrayType(type) || facade.checker.isTupleType(type)) {
     return true;
   }
+  // Aliases and generic wrappers around arrays and typed arrays (`TArg<Uint32Array>`, unions of typed arrays):
+  // safe when every union member is, or when an intersection contains one.
+  if (type.isUnion()) {
+    return type.types.every((member) => isSafeIndexedCollection(member, facade));
+  }
+  if (type.isIntersection()) {
+    return type.types.some((member) => isSafeIndexedCollection(member, facade));
+  }
 
   const typeName = type.getSymbol()?.getName();
-  return typeName !== undefined && typedArrayNames.has(typeName);
+  if (typeName !== undefined && typedArrayNames.has(typeName)) {
+    return true;
+  }
+  const apparent = facade.checker.getApparentType(type);
+  const apparentName = apparent.getSymbol()?.getName();
+  return apparent !== type && apparentName !== undefined && typedArrayNames.has(apparentName);
 }
+
+const ERROR_CONSTRUCTORS = new Set(["Error", "TypeError", "RangeError", "SyntaxError", "ReferenceError", "EvalError", "URIError", "AggregateError"]);
 
 function isGlobalIdentifier(identifier: ts.Identifier, facade: CompilerFacade): boolean {
   const symbol = facade.checker.getSymbolAtLocation(identifier);

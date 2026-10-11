@@ -49,6 +49,26 @@ export function renderTextReport(result: AnalysisResult, options: ReportOptions 
           ? [`  N-API time inside project frames (not project compute): ${attribution.nativeAddonSelfPercent.toFixed(1)}%`]
           : []),
       );
+      // Why is it hot: the top call sites, what they cause, and who calls them (profile-weighted).
+      const nameOf = new Map(result.functions.map((fn) => [fn.id, fn.name]));
+      const sites = result.functions
+        .filter((fn) => fn.observedCpu?.callSite)
+        .sort((left, right) => (right.observedCpu?.callSite?.attributedMicros ?? 0) - (left.observedCpu?.callSite?.attributedMicros ?? 0))
+        .slice(0, 5);
+      if (sites.length > 0) {
+        lines.push("  Top call sites (attributed time; own JS; largest external; dominant caller path):");
+        for (const fn of sites) {
+          const site = fn.observedCpu?.callSite;
+          if (!site) continue;
+          const external = site.topExternal[0];
+          const callers = site.callerPaths?.[0];
+          lines.push(
+            `    ${fn.name} (${fn.id}): ${site.attributedPercent.toFixed(1)}%, own ${(site.byTarget.FUNCTION_SELF ?? 0).toFixed(1)}%`
+            + (external ? `, ${external.origin} ${external.percent.toFixed(1)}%` : "")
+            + (callers && callers.path.length > 0 ? `; via ${callers.path.map((id) => nameOf.get(id) ?? id).join(" ← ")} (${callers.percentOfSite.toFixed(0)}%)` : ""),
+          );
+        }
+      }
     }
   }
   if (result.allocationProfile) {

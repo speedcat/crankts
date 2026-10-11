@@ -50,5 +50,49 @@
   "src/Array.ts:6902": {
     "transformability": "NOT_TRANSFORMABLE",
     "note": "Array.range builds a plain array of numbers (native fill/push)."
+  },
+  "src/internal/effect.ts:44460": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+  },
+  "src/internal/effect.ts:39471": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+  },
+  "src/internal/effect.ts:31069": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+  },
+  "src/Array.ts:105556": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
+  },
+  "src/Stream.ts:49385": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Stream/Channel closure per element (user `map`/`filter` functions)."
+  },
+  "src/Function.ts:3788": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
+  },
+  "src/internal/effect.ts:31426": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Effect runtime: generator-driven primitives (`Effect.gen` iterator stepping, `[contA]`/`[evaluate]` continuations) executed by the fiber interpreter."
+  },
+  "src/Array.ts:6153": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "`dual`/`pipe` wrappers and Array.map over user callbacks: the cost is the callbacks and native Array methods."
+  },
+  "src/SchemaAST.ts:88146": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
+  },
+  "src/SchemaAST.ts:141837": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
+  },
+  "src/SchemaAST.ts:66431": {
+    "transformability": "NOT_TRANSFORMABLE",
+    "note": "Schema parser closure (compiled once per schema; a struct fast path already exists): per-value dispatch over Exit values."
   }
 }

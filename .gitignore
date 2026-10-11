@@ -157,3 +157,5 @@ test/.generated/
 evaluation/arc-platform/coverage.json
 evaluation/arc-platform/annotations.json
 evaluation/arc-platform/REPORT.md
+evaluation/arc-platform/scripts/generate-data.mjs
+evaluation/arc-platform/study.ts

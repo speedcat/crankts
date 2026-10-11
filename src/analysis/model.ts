@@ -369,6 +369,12 @@ export interface InputRepetition {
   readonly reuseRatio: number;
   /** Best reuse ratio over substantial argument paths (fingerprint ≥ 200 chars: pattern lists, sources), e.g. `args[1].ignore`. */
   readonly bestPath?: { readonly path: string; readonly distinct: number; readonly reuseRatio: number };
+  /** Calls whose inputs carry values, not only object identities (no arguments, buffers, class instances). */
+  readonly contentCalls?: number;
+  /** Identity overlap between collections in the arguments: share of B's elements that are the same objects as in A. */
+  readonly identity?: readonly { readonly pair: string; readonly meanOverlap: number; readonly meanElements: number; readonly calls: number }[];
+  /** Other probed sites that received the same argument content (duplicate processing across call sites). */
+  readonly sharedWith?: readonly { readonly site: string; readonly distinct: number; readonly shareOfDistinct: number }[];
 }
 
 export interface CandidateIsland {
@@ -437,6 +443,11 @@ export interface CallSiteObservation {
    * `scan*`, `tokenize*`, …): the runtime evidence for HOIST_INVARIANT_WORK at call sites into dependencies.
    */
   readonly entries?: readonly CallSiteEntry[];
+  /**
+   * Profile-weighted caller paths (v0.2.6e): the analyzed functions above this one on the sampled stacks,
+   * innermost first, up to three levels, with the share of this call site's attributed time.
+   */
+  readonly callerPaths?: readonly { readonly path: readonly FunctionId[]; readonly percentOfSite: number }[];
 }
 
 export interface CallSiteEntry {

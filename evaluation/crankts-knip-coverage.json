@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      5.5,
-      15.21,
-      17.31
+      6.26,
+      9.6,
+      7.59
     ]
   },
   "subject": {
@@ -32,13 +32,13 @@
       "wallMs": 979,
       "profiledMs": 936,
       "attribution": {
-        "EXTERNAL_DEPENDENCY": 21.39,
+        "EXTERNAL_DEPENDENCY": 21.45,
         "IO": 16.42,
-        "FUNCTION_SELF": 12.47,
+        "FUNCTION_SELF": 14.39,
         "RUNTIME": 1.46,
-        "UNANALYZED_PROJECT": 1.27,
         "EXTERNAL_NATIVE": 3.72,
-        "UNATTRIBUTED": 43.29
+        "UNATTRIBUTED": 42.71,
+        "UNANALYZED_PROJECT": 0.12
       },
       "topOrigins": [
         {
@@ -99,23 +99,23 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 56.71
+          "percent": 57.29
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 12.47
+          "percent": 14.39
         },
         {
-          "step": "top call sites (20)",
-          "percent": 45.61
+          "step": "top call sites (22)",
+          "percent": 46.11
         },
         {
           "step": "human-plausible",
-          "percent": 4.66
+          "percent": 1.14
         },
         {
           "step": "human-evidence-supported",
-          "percent": 3.52
+          "percent": 1.14
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -131,46 +131,55 @@
         }
       ],
       "automatedRecognitionRecall": 0,
-      "patternFamilyRecall": 0.48,
+      "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
-          "percent": 22.7
+          "percent": 21.22
         },
         {
           "reason": "class instances",
           "percent": 9.28
         },
         {
-          "reason": "captured outer state",
-          "percent": 2.85
+          "reason": "not a kernel function form",
+          "percent": 4.79
         },
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
           "percent": 2.5
         },
         {
-          "reason": "async or generator",
-          "percent": 2.34
-        },
-        {
           "reason": "default/optional/rest parameters",
           "percent": 2.26
         },
         {
-          "reason": "method uses this/super",
-          "percent": 1.69
+          "reason": "async or generator",
+          "percent": 1.86
         },
         {
-          "reason": "not a kernel function form",
-          "percent": 1.14
+          "reason": "method uses this/super",
+          "percent": 1.68
         },
         {
           "reason": "functions as values",
           "percent": 0.93
         },
         {
+          "reason": "captured outer state",
+          "percent": 0.56
+        },
+        {
           "reason": "other: expected a boolean (no truthiness coercion), got string",
+          "percent": 0.32
+        },
+        {
+          "reason": "other: type IdToFileMap: map value sets are not lowered; prepare th",
+          "percent": 0
+        },
+        {
+          "reason": "library method not lowered",
           "percent": 0
         },
         {
@@ -199,6 +208,23 @@
               "origin": "node",
               "target": "RUNTIME",
               "percent": 0.19
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 96.41
+            },
+            {
+              "path": [
+                "src/graph/build.ts:7171",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 3.59
             }
           ],
           "eligibility": "BLOCKED",
@@ -246,6 +272,27 @@
               "percent": 0.55
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 91.17
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 6.84
+            },
+            {
+              "path": [
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.75
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -267,11 +314,10 @@
         {
           "functionId": "src/typescript/visitors/walk.ts:31896",
           "name": "walkAST",
-          "attributedPercent": 6.4,
+          "attributedPercent": 6.13,
           "ownPercent": 0.17,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 6.17,
-            "UNANALYZED_PROJECT": 0.32,
             "FUNCTION_SELF": 0.17
           },
           "topExternal": [
@@ -279,11 +325,24 @@
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 6.17
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 98.87
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.32
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 1.13
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -304,46 +363,40 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/util/glob-core.ts:4832",
-          "name": "isExcluded",
+          "functionId": "src/util/glob-core.ts:4758",
+          "name": "callback@119",
           "attributedPercent": 2.4,
-          "ownPercent": 0,
+          "ownPercent": 0.55,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 1.96,
-            "UNANALYZED_PROJECT": 0.55
+            "FUNCTION_SELF": 0.55
           },
           "topExternal": [
             {
               "origin": "picomatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.96
-            },
+            }
+          ],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.55
+              "path": [
+                "src/util/glob-core.ts:4832",
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
           "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: isIgnored is not a parameter or local of the lowered function"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "EVIDENCE_SUPPORTED",
-            "confidence": "HIGH",
-            "patterns": [
-              "CHANGE_ALGORITHM"
-            ],
-            "evidence": "By inspection: `matcher(path) || incr(path)` chains a new closure per batch of pending patterns and walks the chain for every path.",
-            "note": "Materialize the accumulated matcher once. Small share."
           },
           "seenInRuns": 3
         },
@@ -360,6 +413,14 @@
               "origin": "yaml",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.6
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/fs.ts:2151"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -400,6 +461,22 @@
               "origin": "node",
               "target": "RUNTIME",
               "percent": 0.1
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 94.93
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:3762",
+                "src/util/glob-core.ts:13613",
+                "src/run.ts:1435"
+              ],
+              "percentOfSite": 5.07
             }
           ],
           "eligibility": "BLOCKED",
@@ -445,6 +522,31 @@
               "percent": 0.13
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 59.28
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 27.98
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 12.74
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -478,6 +580,16 @@
             "FUNCTION_SELF": 1.29
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -510,6 +622,23 @@
               "percent": 1.14
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 87.74
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 12.26
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -528,25 +657,44 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/util/glob-core.ts:14502",
-          "name": "isGitIgnored",
+          "functionId": "src/util/glob-core.ts:14353",
+          "name": "callback@380",
           "attributedPercent": 1.14,
-          "ownPercent": 0.08,
+          "ownPercent": 0.07,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 0.94,
-            "UNANALYZED_PROJECT": 0.07,
-            "FUNCTION_SELF": 0.08
+            "FUNCTION_SELF": 0.07
           },
           "topExternal": [
             {
               "origin": "picomatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.94
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 73.21
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.07
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 13.39
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 6.7
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -557,20 +705,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "MEDIUM",
-            "patterns": [
-              "PREPARE_STATE",
-              "CHANGE_ALGORITHM"
-            ],
-            "missingEvidence": [
-              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
-            ],
-            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
           },
           "seenInRuns": 3
         },
@@ -587,6 +723,16 @@
               "origin": "(N-API call)",
               "target": "EXTERNAL_NATIVE",
               "percent": 0.85
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/helpers.ts:291",
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -615,6 +761,24 @@
             "FUNCTION_SELF": 0.9
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/exports.ts:1494",
+                "src/typescript/visitors/walk.ts:17220",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 95.5
+            },
+            {
+              "path": [
+                "src/typescript/visitors/exports.ts:12863",
+                "src/typescript/visitors/walk.ts:17294",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 4.5
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -641,6 +805,16 @@
             "FUNCTION_SELF": 0.74
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -660,6 +834,34 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "src/util/glob-core.ts:8851",
+          "name": "callback@233",
+          "attributedPercent": 0.62,
+          "ownPercent": 0.62,
+          "byTarget": {
+            "FUNCTION_SELF": 0.62
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
           "functionId": "src/util/glob-core.ts:8771",
           "name": "walk",
           "attributedPercent": 0.56,
@@ -673,6 +875,14 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.49
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -709,6 +919,16 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:2312",
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -735,6 +955,16 @@
             "FUNCTION_SELF": 0.52
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17526",
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -763,6 +993,15 @@
               "percent": 0.5
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:4832",
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -778,88 +1017,34 @@
           "seenInRuns": 1
         },
         {
-          "functionId": "src/util/load-tsconfig.ts:5050",
-          "name": "loadTSConfig",
+          "functionId": "src/util/glob-core.ts:8440",
+          "name": "callback@220",
           "attributedPercent": 0.48,
-          "ownPercent": 0,
+          "ownPercent": 0.48,
           "byTarget": {
-            "EXTERNAL_DEPENDENCY": 0.27,
-            "IO": 0.15,
-            "RUNTIME": 0.06
+            "FUNCTION_SELF": 0.48
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "get-tsconfig",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.27
-            },
-            {
-              "origin": "node",
-              "target": "IO",
-              "percent": 0.15
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.06
+              "path": [
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "KEEP_TS:MEDIUM"
+            "PARALLELIZE:HIGH"
           ],
           "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: generators and async functions are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
           },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "get-tsconfig: reading and parsing tsconfig files (I/O + JSON)."
-          },
-          "seenInRuns": 2
-        },
-        {
-          "functionId": "src/graph/build.ts:3262",
-          "name": "build",
-          "attributedPercent": 0.48,
-          "ownPercent": 0.26,
-          "byTarget": {
-            "FUNCTION_SELF": 0.26,
-            "UNANALYZED_PROJECT": 0.07,
-            "IO": 0.07
-          },
-          "topExternal": [
-            {
-              "origin": "node",
-              "target": "IO",
-              "percent": 0.07
-            },
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.07
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: generators and async functions are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
-          },
-          "seenInRuns": 3
+          "seenInRuns": 1
         },
         {
           "functionId": "src/typescript/visitors/calls.ts:4759",
@@ -870,6 +1055,16 @@
             "FUNCTION_SELF": 0.4
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17721",
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -896,6 +1091,16 @@
             "FUNCTION_SELF": 0.43
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17220",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -914,48 +1119,74 @@
           "seenInRuns": 1
         },
         {
-          "functionId": "src/util/scripts.ts:2055",
-          "name": "getScriptCommands",
-          "attributedPercent": 0.41,
+          "functionId": "src/util/load-tsconfig.ts:5050",
+          "name": "loadTSConfig",
+          "attributedPercent": 0.42,
           "ownPercent": 0,
           "byTarget": {
-            "EXTERNAL_DEPENDENCY": 0.41
+            "EXTERNAL_DEPENDENCY": 0.27,
+            "IO": 0.15,
+            "RUNTIME": 0.06
           },
           "topExternal": [
             {
-              "origin": "unbash",
+              "origin": "get-tsconfig",
               "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.41
+              "percent": 0.27
+            },
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.15
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.06
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
           "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: expected a boolean (no truthiness coercion), got string"
+              "lowering: generators and async functions are not lowered"
             ]
           },
-          "seenInRuns": 1
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "get-tsconfig: reading and parsing tsconfig files (I/O + JSON)."
+          },
+          "seenInRuns": 3
         },
         {
           "functionId": "src/ProjectPrincipal.ts:10799",
           "name": "ProjectPrincipal.analyzeSourceFile",
           "attributedPercent": 0.4,
-          "ownPercent": 0.33,
+          "ownPercent": 0.4,
           "byTarget": {
-            "FUNCTION_SELF": 0.33,
-            "UNANALYZED_PROJECT": 0.07
+            "FUNCTION_SELF": 0.4
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.07
+              "path": [
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -972,6 +1203,53 @@
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Per-file analysis orchestration."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/scripts.ts:2055",
+          "name": "getScriptCommands",
+          "attributedPercent": 0.39,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.32
+          },
+          "topExternal": [
+            {
+              "origin": "unbash",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.32
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/bun/index.ts:677",
+                "src/plugins/bun/index.ts:1047",
+                "src/plugins/bun/index.ts:957"
+              ],
+              "percentOfSite": 58.9
+            },
+            {
+              "path": [
+                "src/plugins/node/index.ts:997",
+                "src/plugins/node/index.ts:775",
+                "src/plugins/node/index.ts:1440"
+              ],
+              "percentOfSite": 41.1
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got string"
+            ]
           },
           "seenInRuns": 2
         },
@@ -996,6 +1274,16 @@
               "percent": 0.12
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1010,6 +1298,46 @@
           "seenInRuns": 1
         },
         {
+          "functionId": "src/typescript/get-imports-and-exports.ts:5624",
+          "name": "addImport",
+          "attributedPercent": 0.36,
+          "ownPercent": 0.36,
+          "byTarget": {
+            "FUNCTION_SELF": 0.36
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 81.25
+            },
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 18.75
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
           "functionId": "src/typescript/visitors/walk.ts:17721",
           "name": "CallExpression",
           "attributedPercent": 0.35,
@@ -1018,6 +1346,16 @@
             "FUNCTION_SELF": 0.35
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1032,6 +1370,118 @@
           "seenInRuns": 1
         },
         {
+          "functionId": "src/typescript/visitors/walk.ts:17857",
+          "name": "MemberExpression",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MemberExpression: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/module-graph.ts:2378",
+          "name": "addValue",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:4052",
+                "src/typescript/get-imports-and-exports.ts:5624",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type IdToFileMap: map value sets are not lowered; prepare them into a Map<string, number> index"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/util/path.ts:858",
+          "name": "isInNodeModules",
+          "attributedPercent": 0.34,
+          "ownPercent": 0.34,
+          "byTarget": {
+            "FUNCTION_SELF": 0.34
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 40
+            },
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:5917",
+                "src/ProjectPrincipal.ts:6499",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 20
+            },
+            {
+              "path": [
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 20
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: method includes is not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
           "functionId": "src/util/module-graph.ts:163",
           "name": "updateImportMaps",
           "attributedPercent": 0.32,
@@ -1040,6 +1490,16 @@
             "FUNCTION_SELF": 0.32
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/module-graph.ts:1064",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1052,6 +1512,42 @@
             ]
           },
           "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/visitors/members.ts:634",
+          "name": "handleMemberExpression",
+          "attributedPercent": 0.31,
+          "ownPercent": 0.31,
+          "byTarget": {
+            "FUNCTION_SELF": 0.31
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17857",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MemberExpression: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-AST-node visitor logic (Map lookups, shadowing checks) over dynamic ESTree objects; no batchable kernel."
+          },
+          "seenInRuns": 1
         }
       ]
     },
@@ -1060,13 +1556,13 @@
       "wallMs": 1052,
       "profiledMs": 1002,
       "attribution": {
-        "EXTERNAL_DEPENDENCY": 20.8,
-        "RUNTIME": 1.16,
-        "FUNCTION_SELF": 12.96,
+        "EXTERNAL_DEPENDENCY": 20.86,
+        "FUNCTION_SELF": 13.98,
+        "RUNTIME": 1.23,
         "EXTERNAL_NATIVE": 4.72,
         "IO": 12.79,
-        "UNANALYZED_PROJECT": 1.38,
-        "UNATTRIBUTED": 46.88
+        "UNANALYZED_PROJECT": 0.42,
+        "UNATTRIBUTED": 46.82
       },
       "topOrigins": [
         {
@@ -1127,19 +1623,19 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 53.12
+          "percent": 53.18
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 12.96
+          "percent": 13.98
         },
         {
-          "step": "top call sites (20)",
-          "percent": 42.69
+          "step": "top call sites (21)",
+          "percent": 42.79
         },
         {
           "step": "human-plausible",
-          "percent": 1.93
+          "percent": 1.77
         },
         {
           "step": "human-evidence-supported",
@@ -1147,7 +1643,7 @@
         },
         {
           "step": "CrankTS-recognized (advisor)",
-          "percent": 1.77
+          "percent": 0
         },
         {
           "step": "CrankTS-transformable (a fail-closed pass accepts it)",
@@ -1158,29 +1654,29 @@
           "percent": 0
         }
       ],
-      "automatedRecognitionRecall": 1,
+      "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
-      "recognitionPrecision": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
-          "percent": 18.03
+          "percent": 18.45
         },
         {
           "reason": "class instances",
           "percent": 10.31
         },
         {
+          "reason": "not a kernel function form",
+          "percent": 5.71
+        },
+        {
           "reason": "async or generator",
-          "percent": 7.12
+          "percent": 2.92
         },
         {
           "reason": "method uses this/super",
           "percent": 1.67
-        },
-        {
-          "reason": "not a kernel function form",
-          "percent": 1.63
         },
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
@@ -1199,11 +1695,11 @@
           "percent": 0.37
         },
         {
-          "reason": "other: type GetInputsFromScriptsOptions: struct field isForwardedAr",
-          "percent": 0
+          "reason": "library method not lowered",
+          "percent": 0.37
         },
         {
-          "reason": "library method not lowered",
+          "reason": "other: type GetInputsFromScriptsOptions: struct field isForwardedAr",
           "percent": 0
         },
         {
@@ -1245,6 +1741,29 @@
               "percent": 0.07
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 78.58
+            },
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 17.41
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 4.02
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -1276,6 +1795,23 @@
               "origin": "node",
               "target": "IO",
               "percent": 8.41
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 98.76
+            },
+            {
+              "path": [
+                "src/graph/build.ts:7171",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 1.24
             }
           ],
           "eligibility": "BLOCKED",
@@ -1311,6 +1847,24 @@
               "percent": 7.3
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 73.91
+            },
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 26.09
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1329,42 +1883,39 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/graph/build.ts:3262",
-          "name": "build",
-          "attributedPercent": 4.41,
-          "ownPercent": 0.35,
+          "functionId": "src/typescript/get-published-type-dependencies.ts:5361",
+          "name": "callback@143",
+          "attributedPercent": 4,
+          "ownPercent": 0.12,
           "byTarget": {
-            "FUNCTION_SELF": 0.35,
             "IO": 3.87,
-            "UNANALYZED_PROJECT": 0.19
+            "FUNCTION_SELF": 0.12
           },
           "topExternal": [
             {
               "origin": "node",
               "target": "IO",
               "percent": 3.87
-            },
+            }
+          ],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.19
+              "path": [
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
           "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
           "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: generators and async functions are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
           },
           "seenInRuns": 3
         },
@@ -1405,12 +1956,37 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 64.97
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 22.08
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 12.95
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "HOIST_INVARIANT_WORK:MEDIUM",
+            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
-          "recognized": true,
+          "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
@@ -1438,6 +2014,16 @@
             "FUNCTION_SELF": 1.67
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1476,6 +2062,31 @@
               "percent": 0.13
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 84.11
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:6696",
+                "src/WorkspaceWorker.ts:12630"
+              ],
+              "percentOfSite": 8.07
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 3.91
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1506,6 +2117,14 @@
               "origin": "yaml",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/fs.ts:2151"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1548,6 +2167,23 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 54.75
+            },
+            {
+              "path": [
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 45.25
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -1575,6 +2211,16 @@
             "FUNCTION_SELF": 0.67
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17857",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1593,32 +2239,6 @@
           "seenInRuns": 1
         },
         {
-          "functionId": "src/typescript/visitors/calls.ts:4759",
-          "name": "handleCallExpression",
-          "attributedPercent": 0.64,
-          "ownPercent": 0.64,
-          "byTarget": {
-            "FUNCTION_SELF": 0.64
-          },
-          "topExternal": [],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Per-call-expression visitor over ESTree nodes."
-          },
-          "seenInRuns": 2
-        },
-        {
           "functionId": "src/typescript/visitors/walk.ts:6842",
           "name": "_collectRefsInType",
           "attributedPercent": 0.59,
@@ -1627,6 +2247,24 @@
             "FUNCTION_SELF": 0.59
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/exports.ts:1494",
+                "src/typescript/visitors/walk.ts:17220",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 89.37
+            },
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799"
+              ],
+              "percentOfSite": 10.63
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1658,6 +2296,21 @@
               "origin": "get-tsconfig",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.31
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 64.45
+            },
+            {
+              "path": [
+                "src/graph/build.ts:3262",
+                "src/run.ts:1435"
+              ],
+              "percentOfSite": 35.55
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1698,6 +2351,23 @@
               "percent": 0.14
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262",
+                "src/run.ts:1435"
+              ],
+              "percentOfSite": 77.94
+            },
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 22.06
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1712,6 +2382,42 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "src/typescript/visitors/calls.ts:4759",
+          "name": "handleCallExpression",
+          "attributedPercent": 0.52,
+          "ownPercent": 0.64,
+          "byTarget": {
+            "FUNCTION_SELF": 0.64
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17721",
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CallExpression: struct field callee: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Per-call-expression visitor over ESTree nodes."
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "src/typescript/visitors/walk.ts:17526",
           "name": "VariableDeclarator",
           "attributedPercent": 0.51,
@@ -1720,6 +2426,24 @@
             "FUNCTION_SELF": 0.51
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 88.53
+            },
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361"
+              ],
+              "percentOfSite": 11.47
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1752,6 +2476,16 @@
               "percent": 0.51
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/helpers.ts:291",
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1782,6 +2516,23 @@
               "origin": "(N-API call)",
               "target": "EXTERNAL_NATIVE",
               "percent": 0.5
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 53.92
+            },
+            {
+              "path": [
+                "src/typescript/get-published-type-dependencies.ts:4421",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 46.08
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1818,6 +2569,16 @@
               "percent": 0.19
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1835,11 +2596,29 @@
           "functionId": "src/typescript/ast-nodes.ts:1634",
           "name": "buildLineStarts",
           "attributedPercent": 0.47,
-          "ownPercent": 0.47,
+          "ownPercent": 0.37,
           "byTarget": {
-            "FUNCTION_SELF": 0.47
+            "FUNCTION_SELF": 0.37
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 84.28
+            },
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 15.72
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1851,7 +2630,7 @@
               "lowering: method indexOf is not lowered"
             ]
           },
-          "seenInRuns": 1
+          "seenInRuns": 2
         },
         {
           "functionId": "src/util/scripts.ts:2055",
@@ -1867,6 +2646,24 @@
               "origin": "unbash",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.35
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/bun/index.ts:677",
+                "src/plugins/bun/index.ts:1047",
+                "src/plugins/bun/index.ts:957"
+              ],
+              "percentOfSite": 85.43
+            },
+            {
+              "path": [
+                "src/plugins/node/index.ts:997",
+                "src/plugins/node/index.ts:775",
+                "src/plugins/node/index.ts:1440"
+              ],
+              "percentOfSite": 14.57
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1909,6 +2706,16 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:2312",
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1942,6 +2749,24 @@
               "percent": 0.32
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/binaries/index.ts:519",
+                "src/binaries/index.ts:368",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 50.55
+            },
+            {
+              "path": [
+                "src/binaries/index.ts:519",
+                "src/binaries/index.ts:368",
+                "src/WorkspaceWorker.ts:11985"
+              ],
+              "percentOfSite": 49.45
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -1972,6 +2797,15 @@
               "percent": 0.32
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/plugin.ts:1396",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1990,8 +2824,8 @@
           "seenInRuns": 2
         },
         {
-          "functionId": "src/util/glob-core.ts:14502",
-          "name": "isGitIgnored",
+          "functionId": "src/util/glob-core.ts:14353",
+          "name": "callback@380",
           "attributedPercent": 0.38,
           "ownPercent": 0,
           "byTarget": {
@@ -2004,6 +2838,23 @@
               "percent": 0.38
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 84.45
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 15.55
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2012,20 +2863,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "MEDIUM",
-            "patterns": [
-              "PREPARE_STATE",
-              "CHANGE_ALGORITHM"
-            ],
-            "missingEvidence": [
-              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
-            ],
-            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
           },
           "seenInRuns": 1
         },
@@ -2038,6 +2877,16 @@
             "FUNCTION_SELF": 0.37
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2060,6 +2909,16 @@
             "FUNCTION_SELF": 0.35
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31424",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2074,6 +2933,39 @@
           "seenInRuns": 2
         },
         {
+          "functionId": "src/graph/build.ts:3262",
+          "name": "build",
+          "attributedPercent": 0.35,
+          "ownPercent": 0.35,
+          "byTarget": {
+            "FUNCTION_SELF": 0.35
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+          },
+          "seenInRuns": 1
+        },
+        {
           "functionId": "src/graph-explorer/operations/is-referenced.ts:1093",
           "name": "walkDown",
           "attributedPercent": 0.32,
@@ -2082,6 +2974,24 @@
             "FUNCTION_SELF": 0.32
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph-explorer/operations/is-referenced.ts:625",
+                "src/graph-explorer/explorer.ts:1234",
+                "src/graph/analyze.ts:5854"
+              ],
+              "percentOfSite": 60.53
+            },
+            {
+              "path": [
+                "src/graph-explorer/operations/is-referenced.ts:1888",
+                "src/graph-explorer/operations/is-referenced.ts:625",
+                "src/graph-explorer/explorer.ts:1234"
+              ],
+              "percentOfSite": 39.47
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2121,6 +3031,18 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ConfigurationChief.ts:6732"
+              ],
+              "percentOfSite": 80.27
+            },
+            {
+              "path": [],
+              "percentOfSite": 19.73
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2130,6 +3052,70 @@
             "accepted": [],
             "rejected": [
               "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/typescript/visitors/walk.ts:17857",
+          "name": "MemberExpression",
+          "attributedPercent": 0.32,
+          "ownPercent": 0.32,
+          "byTarget": {
+            "FUNCTION_SELF": 0.32
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type MemberExpression: unions (including optional values) are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/binaries/index.ts:368",
+          "name": "getInputsFromScripts",
+          "attributedPercent": 0.3,
+          "ownPercent": 0.3,
+          "byTarget": {
+            "FUNCTION_SELF": 0.3
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | string[] | Set<string>: unions (including optional values) are not lowered"
             ]
           },
           "seenInRuns": 1
@@ -2144,11 +3130,11 @@
       "attribution": {
         "EXTERNAL_DEPENDENCY": 21.18,
         "RUNTIME": 1.95,
-        "FUNCTION_SELF": 9.28,
+        "FUNCTION_SELF": 10.37,
         "IO": 9.59,
-        "UNANALYZED_PROJECT": 0.91,
+        "UNANALYZED_PROJECT": 0.26,
         "EXTERNAL_NATIVE": 4.09,
-        "UNATTRIBUTED": 54.04
+        "UNATTRIBUTED": 53.59
       },
       "topOrigins": [
         {
@@ -2209,19 +3195,19 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 45.96
+          "percent": 46.41
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 9.28
+          "percent": 10.37
         },
         {
-          "step": "top call sites (18)",
-          "percent": 37.05
+          "step": "top call sites (21)",
+          "percent": 37.21
         },
         {
           "step": "human-plausible",
-          "percent": 11.52
+          "percent": 11.11
         },
         {
           "step": "human-evidence-supported",
@@ -2240,17 +3226,31 @@
           "percent": 0
         }
       ],
-      "automatedRecognitionRecall": 0.88,
+      "automatedRecognitionRecall": 0.92,
       "patternFamilyRecall": 1,
       "recognitionPrecision": 1,
+      "phenomena": [
+        {
+          "kind": "INVARIANT_ARGUMENT",
+          "functionId": "src/util/glob-core.ts:11456",
+          "call": "src/util/glob-core.ts:340:23",
+          "callee": "tinyGlob",
+          "upperBoundPercent": 9.12,
+          "evidence": [
+            "args[1]: 92 distinct values over 4264 calls (reuse 0.978); whole call reuse 0",
+            "callee cost 9.33% (coarse bound)"
+          ],
+          "hypothesis": "`tinyGlob` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once."
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "async or generator",
-          "percent": 15.46
+          "percent": 15.36
         },
         {
           "reason": "union or optional types",
-          "percent": 10.51
+          "percent": 9.97
         },
         {
           "reason": "class instances",
@@ -2258,7 +3258,7 @@
         },
         {
           "reason": "not a kernel function form",
-          "percent": 1.86
+          "percent": 2.62
         },
         {
           "reason": "method uses this/super",
@@ -2266,7 +3266,7 @@
         },
         {
           "reason": "default/optional/rest parameters",
-          "percent": 1.33
+          "percent": 1.45
         },
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
@@ -2278,6 +3278,10 @@
         },
         {
           "reason": "functions as values",
+          "percent": 0
+        },
+        {
+          "reason": "other: generic functions are not lowered",
           "percent": 0
         }
       ],
@@ -2320,6 +3324,31 @@
               "percent": 0.25
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 57.01
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 39.51
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 3.12
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:HIGH",
@@ -2357,6 +3386,30 @@
               "origin": "node",
               "target": "IO",
               "percent": 7.4
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 93
+            },
+            {
+              "path": [
+                "src/graph/build.ts:7171",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 6.71
+            },
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.29
             }
           ],
           "eligibility": "BLOCKED",
@@ -2409,6 +3462,29 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 83.54
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 12.93
+            },
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 3.17
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -2448,6 +3524,31 @@
               "percent": 0.2
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 67.84
+            },
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:5624"
+              ],
+              "percentOfSite": 17.72
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 8.29
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2468,11 +3569,10 @@
         {
           "functionId": "src/typescript/visitors/walk.ts:31896",
           "name": "walkAST",
-          "attributedPercent": 1.75,
+          "attributedPercent": 1.64,
           "ownPercent": 0.02,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 1.88,
-            "UNANALYZED_PROJECT": 0.13,
             "FUNCTION_SELF": 0.02
           },
           "topExternal": [
@@ -2480,11 +3580,24 @@
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.88
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 85.53
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.13
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 14.47
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2531,6 +3644,15 @@
               "percent": 0.32
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/plugin.ts:1396",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2569,6 +3691,16 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/helpers.ts:291",
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2595,6 +3727,32 @@
             "FUNCTION_SELF": 0.87
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375"
+              ],
+              "percentOfSite": 53.17
+            },
+            {
+              "path": [
+                "src/util/to-source-path.ts:3727",
+                "src/typescript/resolve-module-names.ts:7496",
+                "src/typescript/resolve-module-names.ts:7772"
+              ],
+              "percentOfSite": 16.9
+            },
+            {
+              "path": [
+                "src/run.ts:3382",
+                "src/ProjectPrincipal.ts:4375",
+                "src/typescript/SourceFileManager.ts:812"
+              ],
+              "percentOfSite": 11.09
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2649,6 +3807,30 @@
               "percent": 0.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:2312",
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 85.94
+            },
+            {
+              "path": [
+                "src/typescript/glob-imports.ts:633",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 7.26
+            },
+            {
+              "path": [
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 4.48
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2667,52 +3849,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/graph/build.ts:3262",
-          "name": "build",
-          "attributedPercent": 0.72,
-          "ownPercent": 0.6,
-          "byTarget": {
-            "FUNCTION_SELF": 0.6,
-            "IO": 0.07,
-            "UNANALYZED_PROJECT": 0.02,
-            "RUNTIME": 0.02
-          },
-          "topExternal": [
-            {
-              "origin": "node",
-              "target": "IO",
-              "percent": 0.07
-            },
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.02
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.02
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: generators and async functions are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "src/typescript/SourceFileManager.ts:3384",
           "name": "SourceFileManager.cacheSourceText",
           "attributedPercent": 0.64,
@@ -2721,6 +3857,16 @@
             "FUNCTION_SELF": 0.57
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2753,6 +3899,14 @@
               "percent": 0.74
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/fs.ts:2151"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -2772,6 +3926,58 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "src/graph/build.ts:3262",
+          "name": "build",
+          "attributedPercent": 0.61,
+          "ownPercent": 0.6,
+          "byTarget": {
+            "FUNCTION_SELF": 0.6,
+            "IO": 0.02,
+            "RUNTIME": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.02
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 89.31
+            },
+            {
+              "path": [
+                "src/run.ts:1435"
+              ],
+              "percentOfSite": 10.69
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generators and async functions are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Async orchestration of the module graph; inclusive time belongs to callees, its own time is native fs/stat calls."
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "src/typescript/follow-imports.ts:1163",
           "name": "extractSpecifiers",
           "attributedPercent": 0.59,
@@ -2785,6 +3991,15 @@
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.65
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2801,22 +4016,51 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/util/glob-core.ts:14502",
-          "name": "isGitIgnored",
-          "attributedPercent": 0.51,
-          "ownPercent": 0.07,
+          "functionId": "src/util/fs.ts:617",
+          "name": "isFile",
+          "attributedPercent": 0.48,
+          "ownPercent": 0.02,
           "byTarget": {
-            "EXTERNAL_DEPENDENCY": 0.34,
-            "FUNCTION_SELF": 0.07
+            "RUNTIME": 0.06,
+            "IO": 0.39,
+            "FUNCTION_SELF": 0.02
           },
           "topExternal": [
             {
-              "origin": "picomatch",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.34
+              "origin": "node",
+              "target": "IO",
+              "percent": 0.39
+            },
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.06
             }
           ],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/mise/index.ts:709",
+                "src/WorkspaceWorker.ts:5056"
+              ],
+              "percentOfSite": 39.02
+            },
+            {
+              "path": [
+                "src/plugins/bun/index.ts:1144",
+                "src/WorkspaceWorker.ts:5056"
+              ],
+              "percentOfSite": 17.66
+            },
+            {
+              "path": [
+                "src/util/load-tsconfig.ts:5050",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 17.38
+            }
+          ],
+          "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -2824,22 +4068,10 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+              "lowering: parameters must be plain identifiers without default, optional, or rest"
             ]
           },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "MEDIUM",
-            "patterns": [
-              "PREPARE_STATE",
-              "CHANGE_ALGORITHM"
-            ],
-            "missingEvidence": [
-              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
-            ],
-            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
-          },
-          "seenInRuns": 3
+          "seenInRuns": 2
         },
         {
           "functionId": "src/manifest/helpers.ts:291",
@@ -2860,6 +4092,16 @@
               "origin": "node",
               "target": "RUNTIME",
               "percent": 0.18
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2891,6 +4133,24 @@
               "percent": 0.35
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/bun/index.ts:677",
+                "src/plugins/bun/index.ts:1047",
+                "src/plugins/bun/index.ts:957"
+              ],
+              "percentOfSite": 73.2
+            },
+            {
+              "path": [
+                "src/plugins/node/index.ts:997",
+                "src/plugins/node/index.ts:775",
+                "src/plugins/node/index.ts:1440"
+              ],
+              "percentOfSite": 26.8
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -2906,6 +4166,90 @@
           "seenInRuns": 1
         },
         {
+          "functionId": "src/util/glob-core.ts:14353",
+          "name": "callback@380",
+          "attributedPercent": 0.44,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.34
+          },
+          "topExternal": [
+            {
+              "origin": "picomatch",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.34
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 87.78
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:6696"
+              ],
+              "percentOfSite": 12.22
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 0
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/glob-core.ts:8440",
+          "name": "callback@220",
+          "attributedPercent": 0.4,
+          "ownPercent": 0.3,
+          "byTarget": {
+            "FUNCTION_SELF": 0.3
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "PARALLELIZE:HIGH"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 2
+        },
+        {
           "functionId": "src/typescript/get-imports-and-exports.ts:1647",
           "name": "getImportsAndExports",
           "attributedPercent": 0.34,
@@ -2914,6 +4258,23 @@
             "FUNCTION_SELF": 0.34
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 92.72
+            },
+            {
+              "path": [
+                "src/typescript/get-published-type-dependencies.ts:5361",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 7.28
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -2936,11 +4297,24 @@
           "functionId": "src/WorkspaceWorker.ts:5056",
           "name": "WorkspaceWorker.determineEnabledPlugins",
           "attributedPercent": 0.33,
-          "ownPercent": 0.33,
+          "ownPercent": 0.25,
           "byTarget": {
-            "FUNCTION_SELF": 0.33
+            "FUNCTION_SELF": 0.25
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 90.8
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:4963",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 9.2
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2952,17 +4326,16 @@
               "lowering: methods that use `this` or `super` are not lowered"
             ]
           },
-          "seenInRuns": 1
+          "seenInRuns": 2
         },
         {
           "functionId": "src/WorkspaceWorker.ts:14218",
           "name": "runPlugin",
-          "attributedPercent": 0.3,
+          "attributedPercent": 0.28,
           "ownPercent": 0.19,
           "byTarget": {
             "FUNCTION_SELF": 0.19,
             "RUNTIME": 0.07,
-            "UNANALYZED_PROJECT": 0.02,
             "EXTERNAL_DEPENDENCY": 0.02
           },
           "topExternal": [
@@ -2972,14 +4345,21 @@
               "percent": 0.07
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.02
-            },
-            {
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 83.52
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 16.48
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2997,27 +4377,40 @@
           "seenInRuns": 1
         },
         {
-          "functionId": "src/util/fs.ts:617",
-          "name": "isFile",
-          "attributedPercent": 0.3,
-          "ownPercent": 0,
+          "functionId": "src/util/array.ts:127",
+          "name": "compact",
+          "attributedPercent": 0.25,
+          "ownPercent": 0.25,
           "byTarget": {
-            "IO": 0.28,
-            "RUNTIME": 0.02
+            "FUNCTION_SELF": 0.25
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "node",
-              "target": "IO",
-              "percent": 0.28
+              "path": [
+                "src/util/glob.ts:1166",
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 45.45
             },
             {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.02
+              "path": [
+                "src/util/glob.ts:1166",
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 26.66
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:10803",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 9.7
             }
           ],
-          "eligibility": "BLOCKED",
+          "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -3025,7 +4418,7 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: parameters must be plain identifiers without default, optional, or rest"
+              "lowering: generic functions are not lowered"
             ]
           },
           "seenInRuns": 1
@@ -3039,12 +4432,12 @@
       "profiledMs": 9690,
       "attribution": {
         "EXTERNAL_DEPENDENCY": 28.09,
+        "FUNCTION_SELF": 7.53,
         "IO": 8.69,
-        "FUNCTION_SELF": 6.38,
         "RUNTIME": 2.17,
-        "UNANALYZED_PROJECT": 0.93,
+        "UNANALYZED_PROJECT": 0.08,
         "EXTERNAL_NATIVE": 4.48,
-        "UNATTRIBUTED": 48.78
+        "UNATTRIBUTED": 48.46
       },
       "topOrigins": [
         {
@@ -3105,23 +4498,23 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 51.22
+          "percent": 51.54
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 6.38
+          "percent": 7.53
         },
         {
-          "step": "top call sites (8)",
-          "percent": 41.13
+          "step": "top call sites (10)",
+          "percent": 41.55
         },
         {
           "step": "human-plausible",
-          "percent": 21.3
+          "percent": 3.37
         },
         {
           "step": "human-evidence-supported",
-          "percent": 4.34
+          "percent": 2.26
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -3136,52 +4529,69 @@
           "percent": 0
         }
       ],
-      "automatedRecognitionRecall": 0.11,
-      "patternFamilyRecall": 0.9,
+      "automatedRecognitionRecall": 0.66,
+      "patternFamilyRecall": 1,
       "recognitionPrecision": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
-          "reason": "union or optional types",
-          "percent": 23.76
+          "reason": "not a kernel function form",
+          "percent": 20.48
         },
         {
           "reason": "async or generator",
           "percent": 9.78
         },
         {
-          "reason": "not a kernel function form",
-          "percent": 2.65
+          "reason": "union or optional types",
+          "percent": 8.64
         },
         {
           "reason": "class instances",
           "percent": 2.63
-        },
-        {
-          "reason": "captured outer state",
-          "percent": 2.11
         }
       ],
       "callSites": [
         {
-          "functionId": "src/util/glob-core.ts:14502",
-          "name": "isGitIgnored",
-          "attributedPercent": 16.98,
-          "ownPercent": 1.18,
+          "functionId": "src/util/glob-core.ts:14353",
+          "name": "callback@380",
+          "attributedPercent": 15.81,
+          "ownPercent": 0.22,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 15.29,
-            "UNANALYZED_PROJECT": 0.22,
-            "FUNCTION_SELF": 1.18
+            "FUNCTION_SELF": 0.22
           },
           "topExternal": [
             {
               "origin": "picomatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 15.29
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 93.38
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.22
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 4
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028"
+              ],
+              "percentOfSite": 1.8
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3192,20 +4602,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "MEDIUM",
-            "patterns": [
-              "PREPARE_STATE",
-              "CHANGE_ALGORITHM"
-            ],
-            "missingEvidence": [
-              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
-            ],
-            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
           },
           "seenInRuns": 3
         },
@@ -3248,6 +4646,19 @@
               "percent": 0.01
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/plugin.ts:1396",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 99.52
+            },
+            {
+              "path": [],
+              "percentOfSite": 0.48
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3279,6 +4690,29 @@
               "origin": "node",
               "target": "IO",
               "percent": 5.22
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 85.9
+            },
+            {
+              "path": [
+                "src/graph/build.ts:7171",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 13.98
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 0.12
             }
           ],
           "eligibility": "BLOCKED",
@@ -3336,6 +4770,31 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 67.81
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 27.54
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 3.98
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:MEDIUM",
@@ -3379,6 +4838,31 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.07
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 93.68
+            },
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:5624"
+              ],
+              "percentOfSite": 2.58
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 2.4
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3426,6 +4910,21 @@
               "percent": 0.14
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 78.73
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 21.27
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -3445,56 +4944,49 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/util/glob-core.ts:4832",
-          "name": "isExcluded",
+          "functionId": "src/util/glob-core.ts:4758",
+          "name": "callback@119",
           "attributedPercent": 2.11,
-          "ownPercent": 0,
+          "ownPercent": 0.32,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 1.76,
-            "UNANALYZED_PROJECT": 0.32
+            "FUNCTION_SELF": 0.32
           },
           "topExternal": [
             {
               "origin": "picomatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.76
-            },
+            }
+          ],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.32
+              "path": [
+                "src/util/glob-core.ts:4832",
+                "src/util/glob-core.ts:8851"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
           "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: isIgnored is not a parameter or local of the lowered function"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "EVIDENCE_SUPPORTED",
-            "confidence": "HIGH",
-            "patterns": [
-              "CHANGE_ALGORITHM"
-            ],
-            "evidence": "By inspection: `matcher(path) || incr(path)` chains a new closure per batch of pending patterns and walks the chain for every path.",
-            "note": "Materialize the accumulated matcher once. Small share."
           },
           "seenInRuns": 3
         },
         {
           "functionId": "src/typescript/visitors/walk.ts:31896",
           "name": "walkAST",
-          "attributedPercent": 1.58,
+          "attributedPercent": 1.52,
           "ownPercent": 0.05,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.07,
             "EXTERNAL_DEPENDENCY": 1.18,
             "FUNCTION_SELF": 0.05
           },
@@ -3503,11 +4995,16 @@
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.18
-            },
+            }
+          ],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.07
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3526,6 +5023,121 @@
             "note": "oxc-parser's JS visitor (walkNode) over the parsed ESTree: dependency code walking a dynamic object graph; per-node work is tiny and type-dispatched."
           },
           "seenInRuns": 3
+        },
+        {
+          "functionId": "src/util/resolve.ts:1133",
+          "name": "resolvePackageManifestPath",
+          "attributedPercent": 1.25,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_NATIVE": 1.25,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "(N-API call)",
+              "target": "EXTERNAL_NATIVE",
+              "percent": 1.25
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/manifest/helpers.ts:291",
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237"
+              ],
+              "percentOfSite": 99.49
+            },
+            {
+              "path": [
+                "src/manifest/index.ts:339",
+                "src/DependencyDeputy.ts:2237",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.51
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type string | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "oxc-resolver package.json resolution (N-API), already native."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/util/glob-core.ts:14502",
+          "name": "isGitIgnored",
+          "attributedPercent": 1.16,
+          "ownPercent": 1.18,
+          "byTarget": {
+            "FUNCTION_SELF": 1.18
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 96.91
+            },
+            {
+              "path": [
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375"
+              ],
+              "percentOfSite": 2.07
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:6696",
+                "src/WorkspaceWorker.ts:12630"
+              ],
+              "percentOfSite": 0.54
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "MEDIUM",
+            "patterns": [
+              "PREPARE_STATE",
+              "CHANGE_ALGORITHM"
+            ],
+            "missingEvidence": [
+              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
+            ],
+            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
+          },
+          "seenInRuns": 3
         }
       ]
     },
@@ -3535,13 +5147,13 @@
       "wallMs": 5578,
       "profiledMs": 5498,
       "attribution": {
-        "EXTERNAL_DEPENDENCY": 21.61,
+        "EXTERNAL_DEPENDENCY": 21.63,
+        "FUNCTION_SELF": 16.7,
         "IO": 20.83,
-        "FUNCTION_SELF": 15.19,
         "RUNTIME": 1.41,
-        "UNANALYZED_PROJECT": 0.91,
         "EXTERNAL_NATIVE": 10.2,
-        "UNATTRIBUTED": 29.68
+        "UNANALYZED_PROJECT": 0.11,
+        "UNATTRIBUTED": 28.84
       },
       "topOrigins": [
         {
@@ -3602,19 +5214,19 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 70.32
+          "percent": 71.16
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 15.19
+          "percent": 16.7
         },
         {
-          "step": "top call sites (11)",
-          "percent": 56.72
+          "step": "top call sites (12)",
+          "percent": 57.1
         },
         {
           "step": "human-plausible",
-          "percent": 12.88
+          "percent": 8.76
         },
         {
           "step": "human-evidence-supported",
@@ -3622,7 +5234,7 @@
         },
         {
           "step": "CrankTS-recognized (advisor)",
-          "percent": 5.82
+          "percent": 0
         },
         {
           "step": "CrankTS-transformable (a fail-closed pass accepts it)",
@@ -3633,13 +5245,17 @@
           "percent": 0
         }
       ],
-      "automatedRecognitionRecall": 0.46,
+      "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
-      "recognitionPrecision": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
-          "percent": 29.34
+          "percent": 25.03
+        },
+        {
+          "reason": "not a kernel function form",
+          "percent": 11.07
         },
         {
           "reason": "async or generator",
@@ -3650,16 +5266,12 @@
           "percent": 7.82
         },
         {
-          "reason": "not a kernel function form",
-          "percent": 7.4
-        },
-        {
           "reason": "method uses this/super",
-          "percent": 3.5
+          "percent": 3.71
         },
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
-          "percent": 0.74
+          "percent": 0.8
         }
       ],
       "callSites": [
@@ -3683,6 +5295,30 @@
               "origin": "node",
               "target": "RUNTIME",
               "percent": 0.03
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 92.3
+            },
+            {
+              "path": [
+                "src/graph/build.ts:7171",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 6.41
+            },
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 1.29
             }
           ],
           "eligibility": "BLOCKED",
@@ -3734,6 +5370,28 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 93.92
+            },
+            {
+              "path": [
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 5.68
+            },
+            {
+              "path": [
+                "src/typescript/ast-nodes.ts:1196",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.26
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3792,12 +5450,37 @@
               "percent": 0.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 60.89
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/WorkspaceWorker.ts:14218",
+                "src/WorkspaceWorker.ts:10803"
+              ],
+              "percentOfSite": 27.04
+            },
+            {
+              "path": [
+                "src/util/glob.ts:1990",
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 11.36
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
-            "HOIST_INVARIANT_WORK:HIGH",
+            "HOIST_INVARIANT_WORK:LOW",
             "KEEP_TS:MEDIUM"
           ],
-          "recognized": true,
+          "recognized": false,
           "support": {
             "accepted": [],
             "rejected": [
@@ -3837,6 +5520,31 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 94.74
+            },
+            {
+              "path": [
+                "src/typescript/resolve-module-names.ts:8818",
+                "src/typescript/resolve-module-names.ts:8379",
+                "src/typescript/get-imports-and-exports.ts:5624"
+              ],
+              "percentOfSite": 4.75
+            },
+            {
+              "path": [
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.51
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3857,23 +5565,27 @@
         {
           "functionId": "src/typescript/visitors/walk.ts:31896",
           "name": "walkAST",
-          "attributedPercent": 4.27,
+          "attributedPercent": 4.16,
           "ownPercent": 0.15,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 3.98,
-            "FUNCTION_SELF": 0.15,
-            "UNANALYZED_PROJECT": 0.14
+            "FUNCTION_SELF": 0.15
           },
           "topExternal": [
             {
               "origin": "oxc-parser",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 3.98
-            },
+            }
+          ],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.14
+              "path": [
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799",
+                "src/graph/build.ts:20626"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3894,25 +5606,44 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "src/util/glob-core.ts:14502",
-          "name": "isGitIgnored",
-          "attributedPercent": 4.12,
-          "ownPercent": 0.25,
+          "functionId": "src/util/glob-core.ts:14353",
+          "name": "callback@380",
+          "attributedPercent": 3.72,
+          "ownPercent": 0.02,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 4.05,
-            "FUNCTION_SELF": 0.25,
-            "UNANALYZED_PROJECT": 0.02
+            "FUNCTION_SELF": 0.02
           },
           "topExternal": [
             {
               "origin": "picomatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 4.05
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/glob-core.ts:13262",
+                "src/util/glob.ts:1990"
+              ],
+              "percentOfSite": 97.6
             },
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.02
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/util/create-input-handler.ts:1899",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 1.6
+            },
+            {
+              "path": [
+                "src/util/glob-core.ts:14502",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 0.53
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3923,20 +5654,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type boolean | undefined: unions (including optional values) are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "MEDIUM",
-            "patterns": [
-              "PREPARE_STATE",
-              "CHANGE_ALGORITHM"
-            ],
-            "missingEvidence": [
-              "a prefilter/merge of the patterns that provably preserves gitignore/picomatch semantics"
-            ],
-            "note": "Gitignore check: picomatch arrayMatcher runs hundreds of separate regexes per path (memoized per path). An algorithmic opportunity, not a mechanically derivable one."
           },
           "seenInRuns": 3
         },
@@ -3949,6 +5668,31 @@
             "FUNCTION_SELF": 2.77
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/graph/build.ts:20626",
+                "src/graph/build.ts:26028",
+                "src/ProjectPrincipal.ts:7375"
+              ],
+              "percentOfSite": 89.98
+            },
+            {
+              "path": [
+                "src/util/to-source-path.ts:4763",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 6.29
+            },
+            {
+              "path": [
+                "src/util/to-source-path.ts:3727",
+                "src/typescript/resolve-module-names.ts:7496",
+                "src/typescript/resolve-module-names.ts:7772"
+              ],
+              "percentOfSite": 2.18
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3981,6 +5725,16 @@
             "FUNCTION_SELF": 1
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:17857",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4001,7 +5755,7 @@
         {
           "functionId": "src/util/loader.ts:285",
           "name": "load",
-          "attributedPercent": 0.88,
+          "attributedPercent": 0.85,
           "ownPercent": 0.02,
           "byTarget": {
             "EXTERNAL_DEPENDENCY": 0.22,
@@ -4026,6 +5780,19 @@
               "percent": 0.22
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/plugin.ts:1396",
+                "src/WorkspaceWorker.ts:14218"
+              ],
+              "percentOfSite": 97.39
+            },
+            {
+              "path": [],
+              "percentOfSite": 2.61
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4041,17 +5808,27 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "jiti: loading and transpiling config files (module loading, fs stat/read)."
           },
-          "seenInRuns": 2
+          "seenInRuns": 3
         },
         {
           "functionId": "src/typescript/SourceFileManager.ts:3384",
           "name": "SourceFileManager.cacheSourceText",
-          "attributedPercent": 0.86,
+          "attributedPercent": 0.77,
           "ownPercent": 0.73,
           "byTarget": {
             "FUNCTION_SELF": 0.73
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/SourceFileManager.ts:812",
+                "src/ProjectPrincipal.ts:7375",
+                "src/graph/build.ts:3262"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4067,17 +5844,43 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "cacheSourceText: SHA-1 of file contents (native crypto) and Map insert."
           },
-          "seenInRuns": 2
+          "seenInRuns": 3
         },
         {
           "functionId": "src/typescript/visitors/walk.ts:6842",
           "name": "_collectRefsInType",
-          "attributedPercent": 0.8,
-          "ownPercent": 0.8,
+          "attributedPercent": 0.74,
+          "ownPercent": 0.61,
           "byTarget": {
-            "FUNCTION_SELF": 0.8
+            "FUNCTION_SELF": 0.61
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/typescript/visitors/exports.ts:1494",
+                "src/typescript/visitors/walk.ts:17220",
+                "src/typescript/visitors/walk.ts:31896"
+              ],
+              "percentOfSite": 93.48
+            },
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:11020",
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647"
+              ],
+              "percentOfSite": 4.63
+            },
+            {
+              "path": [
+                "src/typescript/visitors/walk.ts:31896",
+                "src/typescript/get-imports-and-exports.ts:1647",
+                "src/ProjectPrincipal.ts:10799"
+              ],
+              "percentOfSite": 1.9
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4093,7 +5896,7 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Recursive type-reference collector over ESTree nodes (switch on node.type); dynamic object graph."
           },
-          "seenInRuns": 2
+          "seenInRuns": 3
         },
         {
           "functionId": "src/util/fs.ts:2885",
@@ -4108,6 +5911,14 @@
               "origin": "yaml",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.71
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/util/fs.ts:2151"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",

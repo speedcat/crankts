@@ -194,6 +194,16 @@ export function loadV8CpuProfile(
     }
     const siteFunctionId = siteNodeId === undefined ? undefined : functionByProfileNode.get(siteNodeId);
     if (siteNodeId !== undefined && siteFunctionId) {
+      // Caller path: the next distinct analyzed functions above the site (recursion collapsed), up to 3.
+      const path: FunctionId[] = [];
+      for (let up = parentByNode.get(siteNodeId); up !== undefined && path.length < 3; up = parentByNode.get(up)) {
+        const caller = functionByProfileNode.get(up);
+        if (caller && caller !== siteFunctionId && caller !== path[path.length - 1]) path.push(caller);
+      }
+      const site = attribution.get(siteFunctionId) ?? newSiteAccumulator();
+      const key = path.join("\u0001");
+      site.callers.set(key, (site.callers.get(key) ?? 0) + durationMicros);
+      attribution.set(siteFunctionId, site);
       if (belowSite.length === 0) {
         const native = durationMicros * addonShare(nodeById.get(siteNodeId) as V8ProfileNode, siteFunctionId);
         nativeAddonSelfMicros += native;
@@ -284,10 +294,11 @@ interface SiteAccumulator {
   readonly byTarget: Partial<Record<AttributionTarget, number>>;
   readonly external: Map<string, { target: AttributionTarget; micros: number }>;
   readonly entries: Map<string, { micros: number; compileLikeMicros: number }>;
+  readonly callers: Map<string, number>;
 }
 
 function newSiteAccumulator(): SiteAccumulator {
-  return { byTarget: {}, external: new Map(), entries: new Map() };
+  return { byTarget: {}, external: new Map(), entries: new Map(), callers: new Map() };
 }
 
 /** Frames that build reusable state from their input: compilers, parsers, scanners, pattern expansion. */
@@ -325,6 +336,10 @@ function callSiteObservation(site: SiteAccumulator, totalSampleMicros: number): 
       })
       .sort((left, right) => right.micros - left.micros)
       .slice(0, 8),
+    callerPaths: [...site.callers]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 3)
+      .map(([key, micros]) => ({ path: key === "" ? [] : key.split("\u0001"), percentOfSite: percentOf(micros, attributedMicros) })),
   };
 }
 
@@ -566,7 +581,15 @@ export function matchFunction(
     ? exactMatches
     : candidates.filter((functionAnalysis) => functionAnalysis.name.endsWith(`.${profileName}`));
   if (matches.length === 0) {
-    return undefined;
+    // V8's inferred names differ from source names for computed-key methods (`[evaluate](…)`), object-literal
+    // methods passed to factories, and some anonymous functions. Fall back to the position: the only analyzed
+    // function that starts on the frame's line (unambiguous only; source maps are not used).
+    if (callFrame.lineNumber === undefined || callFrame.lineNumber < 0) {
+      return undefined;
+    }
+    const startLine = callFrame.lineNumber + 1;
+    const atLine = candidates.filter((functionAnalysis) => functionAnalysis.line === startLine);
+    return atLine.length === 1 ? atLine[0] : undefined;
   }
   if (matches.length === 1 || callFrame.lineNumber === undefined || callFrame.lineNumber < 0) {
     return matches[0];

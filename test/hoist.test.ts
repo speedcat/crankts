@@ -56,6 +56,6 @@ describe("HOIST_INVARIANT_WORK detection (v0.2.6d)", () => {
     });
     expect(child.status, child.stderr).toBe(0);
     // 50 calls, two distinct patterns ("a+b" 45×, "c" 5×).
-    expect(readInputSignatures([signatures]).get(key)).toEqual({ calls: 50, distinctSignatures: 2, reuseRatio: 0.96 });
+    expect(readInputSignatures([signatures]).get(key)).toMatchObject({ calls: 50, distinctSignatures: 2, reuseRatio: 0.96 });
   });
 });

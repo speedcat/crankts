@@ -150,6 +150,74 @@ describe("call-site attribution and acceleration coverage", () => {
     expect(assessment?.observedWorkload).toMatchObject({ cpuSamplePercent: 50, ownCpuSamplePercent: 12.5 });
   });
 
+  it("records profile-weighted caller paths and matches frames by start line when V8 names differ", () => {
+    const root = temporary();
+    mkdirSync(join(root, "src"));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "paths" }));
+    writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true }, include: ["src"] }));
+    writeFileSync(join(root, "src/index.ts"), [
+      "const step = Symbol(\"step\");",
+      "export const proto = {",
+      "  [step](value: number): number {",
+      "    return value * 2;",
+      "  },",
+      "};",
+      "export function inner(value: number): number {",
+      "  return proto[step](value) + 1;",
+      "}",
+      "export function outer(values: number[]): number {",
+      "  let total = 0;",
+      "  for (const value of values) total += inner(value);",
+      "  return total;",
+      "}",
+      "",
+    ].join("\n"));
+    const url = pathToFileURL(join(root, "src/index.ts")).href;
+    const frame = (functionName: string, lineNumber: number) => ({ functionName, scriptId: "1", url, lineNumber, columnNumber: 0 });
+    const profilePath = join(root, "run.cpuprofile");
+    writeFileSync(profilePath, JSON.stringify({
+      nodes: [
+        { id: 1, callFrame: { functionName: "(root)", scriptId: "0", url: "", lineNumber: -1, columnNumber: -1 }, children: [2] },
+        { id: 2, callFrame: frame("outer", 9), children: [3] },
+        { id: 3, callFrame: frame("inner", 6), children: [4] },
+        // V8 names the computed-key method after something else; it starts on line 3 (0-based 2).
+        { id: 4, callFrame: frame("makeProto", 2) },
+      ],
+      startTime: 0,
+      endTime: 300,
+      samples: [4, 4, 3],
+      timeDeltas: [100, 100, 100],
+    }));
+    const analysis = analyzeProject(root, { profilePath });
+    const byName = (name: string) => analysis.functions.find((fn) => fn.name === name);
+    const method = analysis.functions.find((fn) => fn.line === 3);
+    expect(method?.observedCpu?.callSite?.byTarget.FUNCTION_SELF).toBeCloseTo(66.67, 1);
+    expect(method?.observedCpu?.callSite?.callerPaths).toEqual([{ path: [byName("inner")?.id, byName("outer")?.id], percentOfSite: 100 }]);
+    expect(byName("inner")?.observedCpu?.callSite?.callerPaths).toEqual([{ path: [byName("outer")?.id], percentOfSite: 100 }]);
+  });
+
+  it("treats typed-array aliases as indexed collections and error constructors in throws as guards", () => {
+    const root = temporary();
+    mkdirSync(join(root, "src"));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "kernels" }));
+    writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true, lib: ["ES2022"] }, include: ["src"] }));
+    writeFileSync(join(root, "src/index.ts"), [
+      "type Bytes<T> = T extends Uint32Array ? Uint32Array<ArrayBufferLike> : T;",
+      "export function mix(state: Bytes<Uint32Array>, rounds: number): number {",
+      "  if (state.length !== 16) throw new RangeError(\"state\");",
+      "  let acc = 0;",
+      "  for (let round = 0; round < rounds; round++) {",
+      "    for (let i = 0; i < 16; i++) acc = (acc + state[i]!) | 0;",
+      "  }",
+      "  return acc;",
+      "}",
+      "",
+    ].join("\n"));
+    const analysis = analyzeProject(root);
+    const mix = analysis.functions.find((fn) => fn.name === "mix");
+    expect(mix?.eligibility).toEqual({ kind: "SUPPORTED" });
+  });
+
   it("falls back to the bundled compiler when the project's TypeScript has no checker API (TypeScript 7)", () => {
     const root = temporary();
     mkdirSync(join(root, "src"));

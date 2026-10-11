@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      5.21,
-      14.2,
-      16.87
+      5.3,
+      9,
+      7.45
     ]
   },
   "subject": {
@@ -131,6 +131,7 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "class instances",
@@ -194,6 +195,16 @@
               "percent": 0.19
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/entry-point.ts:9301",
+                "utils/entry-point.ts:4056",
+                "application.ts:13490"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -224,6 +235,16 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 6.08
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:18869",
+                "converter/converter.ts:17753",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -274,6 +295,16 @@
               "percent": 0.05
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/MarkedPlugin.tsx:2783",
+                "output/themes/MarkedPlugin.tsx:17787",
+                "utils-common/events.ts:1943"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -321,6 +352,32 @@
               "percent": 0.07
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 80.34
+            },
+            {
+              "path": [
+                "converter/symbols.ts:29696",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 18.51
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354"
+              ],
+              "percentOfSite": 0.63
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -352,6 +409,32 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 2.78
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:7082"
+              ],
+              "percentOfSite": 94.07
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:6382"
+              ],
+              "percentOfSite": 5.18
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:21153"
+              ],
+              "percentOfSite": 0.75
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -393,6 +476,32 @@
               "percent": 0.05
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 49.55
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 23.72
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:18389"
+              ],
+              "percentOfSite": 12.5
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -424,6 +533,15 @@
               "origin": "lunr",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 2.18
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -475,6 +593,32 @@
               "percent": 0.05
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:356"
+              ],
+              "percentOfSite": 57.62
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 38.28
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:1961"
+              ],
+              "percentOfSite": 4.1
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -499,6 +643,24 @@
             "FUNCTION_SELF": 1.25
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 99.63
+            },
+            {
+              "path": [
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 0.37
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -525,6 +687,16 @@
             "FUNCTION_SELF": 0.85
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -556,6 +728,16 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.12
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:2855",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -604,6 +786,32 @@
               "percent": 0.12
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:12155",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 31.19
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:8648",
+                "converter/plugins/ImplementsPlugin.ts:22086"
+              ],
+              "percentOfSite": 14.86
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:18389"
+              ],
+              "percentOfSite": 12.11
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -634,6 +842,24 @@
               "origin": "minimatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.7
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995"
+              ],
+              "percentOfSite": 56.04
+            },
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/context.ts:5814",
+                "converter/context.ts:4969"
+              ],
+              "percentOfSite": 43.96
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -673,6 +899,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.14
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 69.52
+            },
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:21153",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 12.81
+            },
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092"
+              ],
+              "percentOfSite": 12.4
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -718,6 +970,28 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/plugins/JavascriptIndexPlugin.ts:2212",
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 86.41
+            },
+            {
+              "path": [],
+              "percentOfSite": 4.84
+            },
+            {
+              "path": [
+                "output/plugins/NavigationPlugin.ts:738",
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 4.83
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -749,6 +1023,16 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.59
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/comments/blockLexer.ts:2239",
+                "converter/comments/blockLexer.ts:198",
+                "converter/comments/parser.ts:1211"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -784,6 +1068,16 @@
               "percent": 0.51
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "application.ts:35048",
+                "application.ts:13826",
+                "cli.ts:1264"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -810,6 +1104,32 @@
             "FUNCTION_SELF": 0.48
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:10439",
+                "converter/context.ts:5814",
+                "converter/context.ts:4969"
+              ],
+              "percentOfSite": 19.17
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "validation/exports.ts:2286",
+                "application.ts:24685"
+              ],
+              "percentOfSite": 14.38
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "models/ProjectReflection.ts:12755",
+                "converter/context.ts:12155"
+              ],
+              "percentOfSite": 14.06
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -849,6 +1169,32 @@
               "percent": 0.09
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:26017"
+              ],
+              "percentOfSite": 57.57
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:18389"
+              ],
+              "percentOfSite": 15.83
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:8625"
+              ],
+              "percentOfSite": 9.09
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -880,6 +1226,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.3
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/comments/index.ts:3150",
+                "converter/comments/index.ts:3890",
+                "converter/comments/index.ts:5009"
+              ],
+              "percentOfSite": 64.07
+            },
+            {
+              "path": [
+                "converter/comments/index.ts:3150",
+                "converter/comments/index.ts:3890",
+                "converter/comments/index.ts:8267"
+              ],
+              "percentOfSite": 33.33
+            },
+            {
+              "path": [
+                "converter/plugins/ImplementsPlugin.ts:19191",
+                "converter/plugins/ImplementsPlugin.ts:17121",
+                "converter/plugins/ImplementsPlugin.ts:3777"
+              ],
+              "percentOfSite": 2.6
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -915,6 +1287,16 @@
               "percent": 0.28
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:7082"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -946,6 +1328,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/partials/member.tsx:303",
+                "output/themes/default/partials/members.tsx:277",
+                "output/themes/default/templates/reflection.tsx:365"
+              ],
+              "percentOfSite": 37.24
+            },
+            {
+              "path": [
+                "output/themes/default/partials/navigation.tsx:5437",
+                "output/themes/default/partials/navigation.tsx:7044",
+                "output/themes/default/partials/navigation.tsx:5218"
+              ],
+              "percentOfSite": 31.39
+            },
+            {
+              "path": [
+                "output/themes/lib.tsx:4318",
+                "output/themes/default/partials/index.tsx:328",
+                "output/themes/default/partials/index.tsx:1802"
+              ],
+              "percentOfSite": 31.38
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -981,6 +1389,32 @@
               "percent": 0.32
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354"
+              ],
+              "percentOfSite": 43.69
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:10596"
+              ],
+              "percentOfSite": 26.89
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:21153"
+              ],
+              "percentOfSite": 19.33
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1013,6 +1447,21 @@
               "percent": 0.37
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/utilities/repository.ts:4025",
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 82.49
+            },
+            {
+              "path": [
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 17.51
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1039,6 +1488,16 @@
             "FUNCTION_SELF": 0.36
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:2953",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1077,6 +1536,19 @@
               "percent": 0.12
             }
           ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 74.33
+            },
+            {
+              "path": [
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 25.67
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1109,6 +1581,24 @@
               "percent": 0.31
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 77.88
+            },
+            {
+              "path": [
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 22.12
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1135,6 +1625,16 @@
             "FUNCTION_SELF": 0.34
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2953",
+                "utils-common/jsx.ts:4249"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1174,6 +1674,24 @@
               "percent": 0.09
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:26017"
+              ],
+              "percentOfSite": 62.08
+            },
+            {
+              "path": [
+                "converter/plugins/ImplementsPlugin.ts:13547",
+                "utils-common/events.ts:1943",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 37.92
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1200,6 +1718,24 @@
             "FUNCTION_SELF": 0.34
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/sort.ts:5828",
+                "converter/plugins/GroupPlugin.ts:3403",
+                "converter/plugins/GroupPlugin.ts:2402"
+              ],
+              "percentOfSite": 93.53
+            },
+            {
+              "path": [
+                "utils/sort.ts:5828",
+                "converter/plugins/CategoryPlugin.ts:4801",
+                "converter/plugins/CategoryPlugin.ts:3899"
+              ],
+              "percentOfSite": 6.47
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1239,6 +1775,32 @@
               "percent": 0.1
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:12840",
+                "converter/context.ts:5814",
+                "converter/context.ts:4969"
+              ],
+              "percentOfSite": 36.32
+            },
+            {
+              "path": [
+                "converter/context.ts:12840",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 34.43
+            },
+            {
+              "path": [
+                "converter/context.ts:12840",
+                "converter/symbols.ts:31737",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 14.62
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1270,6 +1832,16 @@
               "origin": "node",
               "target": "RUNTIME",
               "percent": 0.24
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/converter.ts:21298",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -1395,6 +1967,7 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "class instances",
@@ -1450,6 +2023,16 @@
               "percent": 0.28
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/entry-point.ts:9301",
+                "utils/entry-point.ts:4056",
+                "application.ts:13490"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1480,6 +2063,16 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 10.04
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:18869",
+                "converter/converter.ts:17753",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1519,6 +2112,24 @@
               "percent": 0.55
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 84.5
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:356"
+              ],
+              "percentOfSite": 15.5
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1548,6 +2159,24 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 1.53
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:7082"
+              ],
+              "percentOfSite": 82.71
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:6382"
+              ],
+              "percentOfSite": 17.29
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1598,6 +2227,16 @@
               "percent": 0.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/MarkedPlugin.tsx:2783",
+                "output/themes/MarkedPlugin.tsx:17787",
+                "utils-common/events.ts:1943"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1639,6 +2278,15 @@
               "percent": 0.89
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1671,6 +2319,21 @@
               "percent": 0.66
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/utilities/repository.ts:4025",
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 75.49
+            },
+            {
+              "path": [
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 24.51
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1701,6 +2364,16 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.79
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/plugins/AssetsPlugin.ts:3422",
+                "utils-common/events.ts:1943",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -1736,6 +2409,24 @@
               "percent": 0.75
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 74.13
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 25.87
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1767,6 +2458,20 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.74
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "application.ts:35048",
+                "application.ts:13826",
+                "cli.ts:1264"
+              ],
+              "percentOfSite": 94.69
+            },
+            {
+              "path": [],
+              "percentOfSite": 5.31
             }
           ],
           "eligibility": "BLOCKED",
@@ -1802,6 +2507,16 @@
               "percent": 0.11
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:2855",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1835,6 +2550,24 @@
             "FUNCTION_SELF": 0.46
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 98.86
+            },
+            {
+              "path": [
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 1.14
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1861,6 +2594,16 @@
             "FUNCTION_SELF": 0.42
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1887,6 +2630,16 @@
             "FUNCTION_SELF": 0.38
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/sort.ts:5828",
+                "converter/plugins/GroupPlugin.ts:3403",
+                "converter/plugins/GroupPlugin.ts:2402"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2008,6 +2761,7 @@
           "percent": 0
         }
       ],
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "class instances",
@@ -2046,6 +2800,16 @@
               "percent": 0.27
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/entry-point.ts:9301",
+                "utils/entry-point.ts:4056",
+                "application.ts:13490"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2078,6 +2842,16 @@
               "percent": 10.28
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:18869",
+                "converter/converter.ts:17753",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2108,6 +2882,26 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 8.1
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/converter.ts:12472"
+              ],
+              "percentOfSite": 97.88
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 1.01
+            },
+            {
+              "path": [],
+              "percentOfSite": 0.65
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2149,6 +2943,32 @@
               "percent": 0.05
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 91.47
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 4.43
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:39278"
+              ],
+              "percentOfSite": 4.1
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2181,6 +3001,21 @@
               "percent": 2.34
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/utilities/repository.ts:4025",
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 95.35
+            },
+            {
+              "path": [
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 4.65
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2205,7 +3040,7 @@
       "wallMs": 2418,
       "profiledMs": 2312,
       "attribution": {
-        "UNANALYZED_PROJECT": 2.6,
+        "UNANALYZED_PROJECT": 2.58,
         "FUNCTION_SELF": 10.41,
         "EXTERNAL_DEPENDENCY": 40.4,
         "RUNTIME": 3.94,
@@ -2304,6 +3139,7 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "class instances",
@@ -2367,6 +3203,16 @@
               "percent": 0.16
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/entry-point.ts:9301",
+                "utils/entry-point.ts:4056",
+                "application.ts:13490"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2397,6 +3243,16 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 9.56
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:18869",
+                "converter/converter.ts:17753",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2447,6 +3303,16 @@
               "percent": 0.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/MarkedPlugin.tsx:2783",
+                "output/themes/MarkedPlugin.tsx:17787",
+                "utils-common/events.ts:1943"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2494,6 +3360,32 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:7082"
+              ],
+              "percentOfSite": 85.17
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:6382"
+              ],
+              "percentOfSite": 11.84
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:3790"
+              ],
+              "percentOfSite": 2.99
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2533,6 +3425,32 @@
               "percent": 0.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 55.73
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 25.78
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:14339",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 6.27
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2570,6 +3488,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.05
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:10596"
+              ],
+              "percentOfSite": 69.17
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:16219"
+              ],
+              "percentOfSite": 20.96
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:11790"
+              ],
+              "percentOfSite": 3.59
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2620,6 +3564,32 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:1961"
+              ],
+              "percentOfSite": 38.35
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 34.22
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:356"
+              ],
+              "percentOfSite": 27.44
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -2655,6 +3625,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 67.05
+            },
+            {
+              "path": [
+                "converter/symbols.ts:29696",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 22.2
+            },
+            {
+              "path": [
+                "converter/symbols.ts:44649",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 6.41
             }
           ],
           "eligibility": "BLOCKED",
@@ -2696,6 +3692,15 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2722,6 +3727,16 @@
             "FUNCTION_SELF": 1.05
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2753,6 +3768,16 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.22
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:2855",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -2795,6 +3820,24 @@
               "percent": 1.04
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:32574"
+              ],
+              "percentOfSite": 62.86
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/converter.ts:12472"
+              ],
+              "percentOfSite": 37.14
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2821,6 +3864,24 @@
             "FUNCTION_SELF": 1.16
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 99.1
+            },
+            {
+              "path": [
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 0.9
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2854,6 +3915,21 @@
               "percent": 0.39
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/utilities/repository.ts:4025",
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 70.51
+            },
+            {
+              "path": [
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 29.49
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2885,6 +3961,16 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.58
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "application.ts:35048",
+                "application.ts:13826",
+                "cli.ts:1264"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -2932,6 +4018,32 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:12155",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 43.73
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:8648",
+                "converter/types.ts:6382"
+              ],
+              "percentOfSite": 24.12
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/types.ts:6382",
+                "converter/types.ts:3790"
+              ],
+              "percentOfSite": 14.78
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2963,6 +4075,32 @@
               "origin": "minimatch",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.42
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995"
+              ],
+              "percentOfSite": 65.37
+            },
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/context.ts:5814",
+                "converter/context.ts:4969"
+              ],
+              "percentOfSite": 30.75
+            },
+            {
+              "path": [
+                "converter/converter.ts:22278",
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995"
+              ],
+              "percentOfSite": 3.88
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3004,6 +4142,19 @@
               "percent": 0.18
             }
           ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 67.12
+            },
+            {
+              "path": [
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 32.88
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3030,6 +4181,32 @@
             "FUNCTION_SELF": 0.45
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "output/formatter.tsx:15397",
+                "models/types.ts:1260"
+              ],
+              "percentOfSite": 51.15
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "converter/plugins/LinkResolverPlugin.ts:997",
+                "converter/plugins/LinkResolverPlugin.ts:912"
+              ],
+              "percentOfSite": 13.37
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "models/ProjectReflection.ts:12755",
+                "converter/context.ts:12155"
+              ],
+              "percentOfSite": 9.3
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3062,6 +4239,32 @@
               "percent": 0.41
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/declaration-maps.ts:309",
+                "converter/factories/symbol-id.ts:710",
+                "converter/context.ts:12781"
+              ],
+              "percentOfSite": 48.26
+            },
+            {
+              "path": [
+                "utils/fs.ts:8044",
+                "utils/fs.ts:8785",
+                "utils/fs.ts:9415"
+              ],
+              "percentOfSite": 46.34
+            },
+            {
+              "path": [
+                "utils/fs.ts:8044",
+                "utils/fs.ts:8785",
+                "converter/plugins/PackagePlugin.ts:2190"
+              ],
+              "percentOfSite": 5.4
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3092,6 +4295,15 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.41
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/options/readers/typedoc.ts:866",
+                "utils/options/options.ts:7071"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -3218,6 +4430,7 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "class instances",
@@ -3280,6 +4493,16 @@
               "percent": 0.13
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/entry-point.ts:9301",
+                "utils/entry-point.ts:4056",
+                "application.ts:13490"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3328,6 +4551,16 @@
               "percent": 0.4
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/MarkedPlugin.tsx:2783",
+                "output/themes/MarkedPlugin.tsx:17787",
+                "utils-common/events.ts:1943"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3366,6 +4599,16 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 10.65
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:18869",
+                "converter/converter.ts:17753",
+                "converter/converter.ts:10401"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3413,6 +4656,32 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 60.66
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:7354",
+                "converter/factories/signature.ts:1697"
+              ],
+              "percentOfSite": 24.2
+            },
+            {
+              "path": [
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:1697",
+                "converter/converter.ts:13092"
+              ],
+              "percentOfSite": 8.41
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3444,6 +4713,32 @@
               "origin": "typescript",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 3.71
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/symbols.ts:7082"
+              ],
+              "percentOfSite": 87.5
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:6382"
+              ],
+              "percentOfSite": 10.18
+            },
+            {
+              "path": [
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459",
+                "converter/types.ts:3790"
+              ],
+              "percentOfSite": 2.32
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3499,6 +4794,32 @@
               "percent": 0.01
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:356"
+              ],
+              "percentOfSite": 55.98
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 36.31
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "output/themes/MarkedPlugin.tsx:3903",
+                "output/themes/default/partials/comment.tsx:1961"
+              ],
+              "percentOfSite": 7.72
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -3530,6 +4851,15 @@
               "percent": 1.11
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3556,6 +4886,16 @@
             "FUNCTION_SELF": 1.11
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/comments/blockLexer.ts:2239",
+                "converter/comments/blockLexer.ts:198",
+                "converter/comments/parser.ts:835"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3589,6 +4929,23 @@
             "FUNCTION_SELF": 2.24
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 99.35
+            },
+            {
+              "path": [
+                "output/plugins/IconsPlugin.tsx:1619",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 0.65
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3615,6 +4972,32 @@
             "FUNCTION_SELF": 1.08
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 91.83
+            },
+            {
+              "path": [
+                "utils-common/jsx.ts:4249",
+                "utils-common/jsx.ts:2740",
+                "utils/highlighter.tsx:5546"
+              ],
+              "percentOfSite": 7.63
+            },
+            {
+              "path": [
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 0.54
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3652,6 +5035,32 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/context.ts:5814",
+                "converter/context.ts:4969"
+              ],
+              "percentOfSite": 53.27
+            },
+            {
+              "path": [
+                "converter/converter.ts:22622",
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995"
+              ],
+              "percentOfSite": 40.84
+            },
+            {
+              "path": [
+                "converter/converter.ts:22278",
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995"
+              ],
+              "percentOfSite": 5.89
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3692,6 +5101,32 @@
               "percent": 0.17
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 82.23
+            },
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092"
+              ],
+              "percentOfSite": 13.64
+            },
+            {
+              "path": [
+                "converter/factories/signature.ts:1697",
+                "converter/symbols.ts:21153",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 4.13
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -3729,6 +5164,32 @@
               "percent": 0.17
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:12155",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 41.84
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:10439",
+                "converter/types.ts:3790"
+              ],
+              "percentOfSite": 11.66
+            },
+            {
+              "path": [
+                "converter/context.ts:12781",
+                "converter/context.ts:10439",
+                "converter/factories/signature.ts:7354"
+              ],
+              "percentOfSite": 10.43
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3760,6 +5221,24 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.55
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:5814",
+                "converter/context.ts:4969",
+                "converter/symbols.ts:10596"
+              ],
+              "percentOfSite": 91.88
+            },
+            {
+              "path": [
+                "converter/converter.ts:22003",
+                "converter/context.ts:9995",
+                "converter/symbols.ts:3622"
+              ],
+              "percentOfSite": 8.12
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3800,6 +5279,21 @@
               "percent": 0
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/utilities/repository.ts:4025",
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 92.95
+            },
+            {
+              "path": [
+                "converter/utilities/repository.ts:9647"
+              ],
+              "percentOfSite": 7.05
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3830,6 +5324,16 @@
               "origin": "node",
               "target": "IO",
               "percent": 0.56
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "application.ts:35048",
+                "application.ts:13826",
+                "cli.ts:1264"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -3871,6 +5375,32 @@
               "percent": 0.07
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 77.88
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017"
+              ],
+              "percentOfSite": 8.85
+            },
+            {
+              "path": [
+                "converter/symbols.ts:21153",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 8.85
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3910,6 +5440,16 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/comments/discovery.ts:8882",
+                "converter/comments/index.ts:5009",
+                "converter/context.ts:12840"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3941,6 +5481,16 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.17
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/themes/default/DefaultTheme.tsx:2855",
+                "output/themes/default/DefaultTheme.tsx:4648",
+                "output/renderer.ts:12324"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -3989,6 +5539,32 @@
               "percent": 0.01
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:10596"
+              ],
+              "percentOfSite": 65.3
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/symbols.ts:26017"
+              ],
+              "percentOfSite": 16.07
+            },
+            {
+              "path": [
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092",
+                "converter/factories/signature.ts:11790"
+              ],
+              "percentOfSite": 11.17
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4015,6 +5591,16 @@
             "FUNCTION_SELF": 0.48
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/jsx.ts:2953",
+                "utils-common/jsx.ts:2740",
+                "output/themes/default/DefaultTheme.tsx:4648"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4041,6 +5627,32 @@
             "FUNCTION_SELF": 0.47
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "output/formatter.tsx:15397",
+                "models/types.ts:1260"
+              ],
+              "percentOfSite": 42.44
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:12945",
+                "models/ProjectReflection.ts:12755",
+                "converter/context.ts:12155"
+              ],
+              "percentOfSite": 10.15
+            },
+            {
+              "path": [
+                "models/ProjectReflection.ts:13476",
+                "models/ProjectReflection.ts:4210",
+                "converter/context.ts:10439"
+              ],
+              "percentOfSite": 9.52
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4080,6 +5692,32 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:26017"
+              ],
+              "percentOfSite": 40.3
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:21153"
+              ],
+              "percentOfSite": 22.43
+            },
+            {
+              "path": [
+                "utils-common/events.ts:1943",
+                "converter/context.ts:8061",
+                "converter/symbols.ts:18389"
+              ],
+              "percentOfSite": 17.11
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4106,6 +5744,24 @@
             "FUNCTION_SELF": 0.41
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/comments/blockLexer.ts:198",
+                "converter/comments/parser.ts:835",
+                "converter/comments/parser.ts:1804"
+              ],
+              "percentOfSite": 74.71
+            },
+            {
+              "path": [
+                "converter/comments/blockLexer.ts:198",
+                "converter/comments/parser.ts:1211",
+                "converter/comments/parser.ts:18298"
+              ],
+              "percentOfSite": 25.29
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4139,6 +5795,32 @@
               "percent": 0.23
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/context.ts:8648",
+                "converter/types.ts:6382",
+                "converter/types.ts:3790"
+              ],
+              "percentOfSite": 41.42
+            },
+            {
+              "path": [
+                "converter/context.ts:8648",
+                "converter/types.ts:3790",
+                "converter/converter.ts:13092"
+              ],
+              "percentOfSite": 33.48
+            },
+            {
+              "path": [
+                "converter/context.ts:8648",
+                "converter/plugins/ImplementsPlugin.ts:22086",
+                "converter/plugins/ImplementsPlugin.ts:14053"
+              ],
+              "percentOfSite": 25.1
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4170,6 +5852,24 @@
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
               "percent": 0.3
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "converter/symbols.ts:26017",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 77.28
+            },
+            {
+              "path": [
+                "converter/symbols.ts:18389",
+                "converter/symbols.ts:3622",
+                "converter/symbols.ts:6459"
+              ],
+              "percentOfSite": 22.72
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -4217,6 +5917,24 @@
               "percent": 0.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "output/plugins/JavascriptIndexPlugin.ts:2212",
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 92.92
+            },
+            {
+              "path": [
+                "output/plugins/HierarchyPlugin.ts:1176",
+                "output/renderer.ts:11724",
+                "output/renderer.ts:10467"
+              ],
+              "percentOfSite": 7.08
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -4243,6 +5961,16 @@
             "FUNCTION_SELF": 0.33
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "utils/sort.ts:5828",
+                "converter/plugins/GroupPlugin.ts:3403",
+                "converter/plugins/GroupPlugin.ts:2402"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"

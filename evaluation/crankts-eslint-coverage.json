@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      5.63,
-      13.3,
-      16.43
+      4.27,
+      6.73,
+      6.95
     ]
   },
   "subject": {
@@ -34,9 +34,9 @@
       "attribution": {
         "IO": 0.91,
         "EXTERNAL_DEPENDENCY": 54.03,
-        "UNANALYZED_PROJECT": 3.12,
-        "FUNCTION_SELF": 17.08,
+        "FUNCTION_SELF": 20.18,
         "RUNTIME": 1.71,
+        "UNANALYZED_PROJECT": 0.05,
         "UNATTRIBUTED": 23.25
       },
       "topOrigins": [
@@ -102,11 +102,11 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 17.08
+          "percent": 20.18
         },
         {
-          "step": "top call sites (12)",
-          "percent": 61.6
+          "step": "top call sites (13)",
+          "percent": 61.59
         },
         {
           "step": "human-plausible",
@@ -131,10 +131,11 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 0.25,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "method uses this/super",
-          "percent": 45.06
+          "percent": 43.24
         },
         {
           "reason": "other: type Object: struct field constructor: struct field apply mu",
@@ -153,30 +154,34 @@
           "percent": 3.26
         },
         {
+          "reason": "not a kernel function form",
+          "percent": 1.5
+        },
+        {
           "reason": "class instances",
-          "percent": 0.97
+          "percent": 0.74
         },
         {
           "reason": "async or generator",
-          "percent": 0.7
+          "percent": 0.67
         },
         {
           "reason": "other: type Function: struct field apply must be a required, non-me",
-          "percent": 0
+          "percent": 0.64
         }
       ],
       "callSites": [
         {
           "functionId": "linter/source-code-visitor.js:4354",
           "name": "SourceCodeVisitor.callSync",
-          "attributedPercent": 41.18,
+          "attributedPercent": 41.1,
           "ownPercent": 1.51,
           "byTarget": {
             "FUNCTION_SELF": 1.51,
             "EXTERNAL_DEPENDENCY": 38.78,
             "IO": 0.58,
             "RUNTIME": 0.37,
-            "UNANALYZED_PROJECT": 0.04
+            "UNANALYZED_PROJECT": 0.01
           },
           "topExternal": [
             {
@@ -203,6 +208,16 @@
               "origin": "eslint-plugin-unicorn",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 3.08
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -246,6 +261,16 @@
               "origin": "debug",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -302,6 +327,16 @@
               "percent": 0.14
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:19830",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -339,6 +374,16 @@
               "percent": 0.69
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -372,6 +417,16 @@
               "percent": 3.02
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:4598",
+                "linter/source-code-traverser.js:5235",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -398,19 +453,30 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "languages/js/source-code/token-store/cursors.js:1854",
-          "name": "CursorFactory.createBaseCursor",
-          "attributedPercent": 2.09,
-          "ownPercent": 0.57,
+          "functionId": "languages/js/source-code/token-store/backward-token-comment-cursor.js:1051",
+          "name": "BackwardTokenCommentCursor.constructor",
+          "attributedPercent": 1.5,
+          "ownPercent": 1.5,
           "byTarget": {
-            "FUNCTION_SELF": 0.57,
-            "UNANALYZED_PROJECT": 1.61
+            "FUNCTION_SELF": 1.5
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 1.61
+              "path": [
+                "languages/js/source-code/token-store/cursors.js:1854",
+                "languages/js/source-code/token-store/cursors.js:2886",
+                "languages/js/source-code/token-store/index.js:3080"
+              ],
+              "percentOfSite": 85.31
+            },
+            {
+              "path": [
+                "languages/js/source-code/token-store/cursors.js:1854",
+                "languages/js/source-code/token-store/cursors.js:2886",
+                "languages/js/source-code/token-store/index.js:4748"
+              ],
+              "percentOfSite": 14.69
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -421,12 +487,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: methods that use `this` or `super` are not lowered"
+              "lowering: Constructor is not a kernel function (declaration, const arrow, or method)"
             ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
           "seenInRuns": 3
         },
@@ -456,6 +518,16 @@
               "percent": 0.01
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -482,6 +554,24 @@
             "FUNCTION_SELF": 1
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 97.91
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 2.09
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -509,19 +599,14 @@
         {
           "functionId": "linter/linter.js:19095",
           "name": "runRules",
-          "attributedPercent": 0.97,
+          "attributedPercent": 0.74,
           "ownPercent": 0.48,
           "byTarget": {
             "FUNCTION_SELF": 0.48,
-            "UNANALYZED_PROJECT": 0.24,
-            "EXTERNAL_DEPENDENCY": 0.26
+            "EXTERNAL_DEPENDENCY": 0.26,
+            "UNANALYZED_PROJECT": 0.01
           },
           "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.24
-            },
             {
               "origin": "eslint-plugin-jsdoc",
               "target": "EXTERNAL_DEPENDENCY",
@@ -541,6 +626,21 @@
               "origin": "eslint-plugin-eslint-plugin",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.03
+            },
+            {
+              "origin": "eslint-plugin-n",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.03
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:32475",
+                "linter/linter.js:42326",
+                "linter/linter.js:43440"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -561,46 +661,12 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "linter/linter.js:32475",
-          "name": "Linter.#flatVerifyWithoutProcessors",
-          "attributedPercent": 0.71,
-          "ownPercent": 0.44,
-          "byTarget": {
-            "FUNCTION_SELF": 0.44,
-            "UNANALYZED_PROJECT": 0.17
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.17
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: methods that use `this` or `super` are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "eslint/eslint-helpers.js:10696",
           "name": "entryFilter",
-          "attributedPercent": 0.7,
+          "attributedPercent": 0.67,
           "ownPercent": 0,
           "byTarget": {
-            "EXTERNAL_DEPENDENCY": 0.57,
-            "UNANALYZED_PROJECT": 0.03
+            "EXTERNAL_DEPENDENCY": 0.56
           },
           "topExternal": [
             {
@@ -616,17 +682,18 @@
             {
               "origin": "@eslint/object-schema",
               "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.13
-            },
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.03
+              "percent": 0.12
             },
             {
               "origin": "debug",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -649,12 +716,22 @@
         {
           "functionId": "linter/source-code-visitor.js:1305",
           "name": "setListenerRuleId",
-          "attributedPercent": 0.7,
-          "ownPercent": 0.7,
+          "attributedPercent": 0.64,
+          "ownPercent": 0.58,
           "byTarget": {
-            "FUNCTION_SELF": 0.7
+            "FUNCTION_SELF": 0.58
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:22617",
+                "linter/linter.js:19830",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -670,7 +747,7 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
           },
-          "seenInRuns": 1
+          "seenInRuns": 3
         },
         {
           "functionId": "config/flat-config-schema.js:3829",
@@ -688,6 +765,15 @@
               "percent": 0.6
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "config/flat-config-schema.js:12368",
+                "eslint/eslint-helpers.js:10696"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -702,6 +788,229 @@
             "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
           "seenInRuns": 1
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/cursors.js:1854",
+          "name": "CursorFactory.createBaseCursor",
+          "attributedPercent": 0.57,
+          "ownPercent": 0.57,
+          "byTarget": {
+            "FUNCTION_SELF": 0.57
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/token-store/cursors.js:2886",
+                "languages/js/source-code/token-store/index.js:3080",
+                "languages/js/source-code/token-store/index.js:11735"
+              ],
+              "percentOfSite": 77.1
+            },
+            {
+              "path": [
+                "languages/js/source-code/token-store/cursors.js:2886",
+                "languages/js/source-code/token-store/index.js:4748",
+                "languages/js/source-code/token-store/index.js:20457"
+              ],
+              "percentOfSite": 10.68
+            },
+            {
+              "path": [
+                "languages/js/source-code/token-store/cursors.js:2886",
+                "languages/js/source-code/token-store/index.js:4748",
+                "languages/js/source-code/token-store/index.js:15332"
+              ],
+              "percentOfSite": 8.78
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "linter/linter.js:32475",
+          "name": "Linter.#flatVerifyWithoutProcessors",
+          "attributedPercent": 0.56,
+          "ownPercent": 0.56,
+          "byTarget": {
+            "FUNCTION_SELF": 0.56
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:42326",
+                "linter/linter.js:43440",
+                "linter/linter.js:28231"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "languages/js/source-code/token-store/utils.js:2855",
+          "name": "getLastIndex",
+          "attributedPercent": 0.53,
+          "ownPercent": 0.53,
+          "byTarget": {
+            "FUNCTION_SELF": 0.53
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/token-store/backward-token-comment-cursor.js:1051",
+                "languages/js/source-code/token-store/cursors.js:1854",
+                "languages/js/source-code/token-store/cursors.js:2886"
+              ],
+              "percentOfSite": 97.3
+            },
+            {
+              "path": [
+                "languages/js/source-code/token-store/backward-token-cursor.js:1054",
+                "languages/js/source-code/token-store/cursors.js:1854",
+                "languages/js/source-code/token-store/cursors.js:2886"
+              ],
+              "percentOfSite": 2.05
+            },
+            {
+              "path": [
+                "languages/js/source-code/token-store/forward-token-cursor.js:1031",
+                "languages/js/source-code/token-store/index.js:7048",
+                "languages/js/source-code/token-store/index.js:18149"
+              ],
+              "percentOfSite": 0.64
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any[]: array element has no Kernel IR type"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "shared/traverser.js:3106",
+          "name": "Traverser._traverse",
+          "attributedPercent": 0.49,
+          "ownPercent": 0.49,
+          "byTarget": {
+            "FUNCTION_SELF": 0.49
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "languages/js/source-code/source-code.js:33679"
+              ],
+              "percentOfSite": 93.76
+            },
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "rules/no-unmodified-loop-condition.js:7844"
+              ],
+              "percentOfSite": 6.24
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Recursive AST walk over dynamic nodes with `this`-bound state; per-node dispatch."
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:8821",
+          "name": "SourceCodeTraverser.traverseSync",
+          "attributedPercent": 0.45,
+          "ownPercent": 0.44,
+          "byTarget": {
+            "FUNCTION_SELF": 0.44,
+            "EXTERNAL_DEPENDENCY": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "eslint-plugin-jsdoc",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 1
         }
       ]
     },
@@ -711,10 +1020,10 @@
       "profiledMs": 3209,
       "attribution": {
         "EXTERNAL_DEPENDENCY": 29.56,
-        "FUNCTION_SELF": 43.67,
+        "FUNCTION_SELF": 49.02,
         "RUNTIME": 2.01,
-        "UNANALYZED_PROJECT": 5.72,
         "IO": 0.24,
+        "UNANALYZED_PROJECT": 0.22,
         "UNATTRIBUTED": 18.79
       },
       "topOrigins": [
@@ -780,11 +1089,11 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 43.67
+          "percent": 49.02
         },
         {
           "step": "top call sites (25)",
-          "percent": 59.47
+          "percent": 56.57
         },
         {
           "step": "human-plausible",
@@ -809,38 +1118,52 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 0.52,
+      "phenomena": [
+        {
+          "kind": "INVARIANT_ARGUMENT",
+          "functionId": "languages/js/index.js:1721",
+          "call": "languages/js/index.js:50:9",
+          "callee": "eslintScope.analyze",
+          "upperBoundPercent": 5.79,
+          "evidence": [
+            "args[1]: 1 distinct values over 353 calls (reuse 0.997); whole call reuse 0",
+            "callee cost 5.81% (coarse bound)"
+          ],
+          "hypothesis": "`eslintScope.analyze` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once."
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "union or optional types",
-          "percent": 15.58
-        },
-        {
-          "reason": "method uses this/super",
-          "percent": 12.12
+          "percent": 14.03
         },
         {
           "reason": "other: type Object: struct field constructor: struct field apply mu",
           "percent": 11.98
         },
         {
+          "reason": "method uses this/super",
+          "percent": 11.41
+        },
+        {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
           "percent": 8.61
         },
         {
+          "reason": "not a kernel function form",
+          "percent": 3.58
+        },
+        {
           "reason": "class instances",
-          "percent": 3.14
-        },
-        {
-          "reason": "other: type LintResult[]: array element struct field messages: arra",
-          "percent": 2.7
-        },
-        {
-          "reason": "other: expected a boolean (no truthiness coercion), got struct",
-          "percent": 1.43
+          "percent": 2.77
         },
         {
           "reason": "other: type Function: struct field apply must be a required, non-me",
           "percent": 1.07
+        },
+        {
+          "reason": "other: expected a boolean (no truthiness coercion), got struct",
+          "percent": 0.86
         },
         {
           "reason": "default/optional/rest parameters",
@@ -849,10 +1172,6 @@
         {
           "reason": "other: type RuleDefinition<RuleDefinitionTypeOptions>: struct field",
           "percent": 0.5
-        },
-        {
-          "reason": "other: type Ajv: struct field validate must be a required, non-meth",
-          "percent": 0.49
         }
       ],
       "callSites": [
@@ -880,6 +1199,16 @@
               "origin": "debug",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.04
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -913,6 +1242,16 @@
               "origin": "esquery",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 6.93
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:4598",
+                "linter/source-code-traverser.js:5235",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -960,6 +1299,16 @@
               "percent": 1.42
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -993,6 +1342,16 @@
               "percent": 0.08
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1019,6 +1378,24 @@
             "FUNCTION_SELF": 4.59
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 99.63
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 0.37
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1046,17 +1423,27 @@
         {
           "functionId": "linter/source-code-visitor.js:4354",
           "name": "SourceCodeVisitor.callSync",
-          "attributedPercent": 3.06,
+          "attributedPercent": 2.8,
           "ownPercent": 2.68,
           "byTarget": {
             "FUNCTION_SELF": 2.68,
-            "UNANALYZED_PROJECT": 0.24
+            "UNANALYZED_PROJECT": 0.04
           },
           "topExternal": [
             {
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
-              "percent": 0.24
+              "percent": 0.04
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1077,44 +1464,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "eslint/eslint.js:38474",
-          "name": "format",
-          "attributedPercent": 2.7,
-          "ownPercent": 0,
-          "byTarget": {
-            "RUNTIME": 1.02,
-            "UNANALYZED_PROJECT": 1.68
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 1.68
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 1.02
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type LintResult[]: array element struct field messages: array element struct field endColumn must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "shared/traverser.js:3106",
           "name": "Traverser._traverse",
           "attributedPercent": 1.75,
@@ -1123,6 +1472,24 @@
             "FUNCTION_SELF": 1.89
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "languages/js/source-code/source-code.js:33679"
+              ],
+              "percentOfSite": 99.86
+            },
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "rules/no-unmodified-loop-condition.js:7844"
+              ],
+              "percentOfSite": 0.14
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1143,17 +1510,20 @@
         {
           "functionId": "linter/source-code-traverser.js:8821",
           "name": "SourceCodeTraverser.traverseSync",
-          "attributedPercent": 1.72,
+          "attributedPercent": 1.66,
           "ownPercent": 1.74,
           "byTarget": {
-            "FUNCTION_SELF": 1.74,
-            "UNANALYZED_PROJECT": 0.02
+            "FUNCTION_SELF": 1.74
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.02
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1182,6 +1552,16 @@
             "FUNCTION_SELF": 1.72
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/token-store/index.js:9158",
+                "languages/js/source-code/source-code.js:10159",
+                "languages/js/index.js:10121"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1205,19 +1585,22 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "linter/interpolate.js:997",
-          "name": "interpolate",
-          "attributedPercent": 1.43,
-          "ownPercent": 0.82,
+          "functionId": "linter/source-code-visitor.js:1305",
+          "name": "setListenerRuleId",
+          "attributedPercent": 1.07,
+          "ownPercent": 0.96,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.59,
-            "FUNCTION_SELF": 0.82
+            "FUNCTION_SELF": 0.96
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.59
+              "path": [
+                "linter/linter.js:22617",
+                "linter/linter.js:19830",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1228,29 +1611,92 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: expected a boolean (no truthiness coercion), got struct"
+              "lowering: type Function: struct field apply must be a required, non-method property"
             ]
           },
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "cli-engine/formatters/stylish.js:600",
+          "name": "callback@21",
+          "attributedPercent": 1.04,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "RUNTIME": 1.02,
+            "FUNCTION_SELF": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 1.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2795",
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194"
+              ],
+              "percentOfSite": 62.44
+            },
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:3744",
+                "cli-engine/formatters/stylish.js:3705",
+                "cli-engine/formatters/stylish.js:2423"
+              ],
+              "percentOfSite": 33.89
+            },
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194",
+                "eslint/eslint.js:38474"
+              ],
+              "percentOfSite": 3.67
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
           },
           "seenInRuns": 3
         },
         {
           "functionId": "linter/linter.js:19095",
           "name": "runRules",
-          "attributedPercent": 1.37,
+          "attributedPercent": 0.99,
           "ownPercent": 0.95,
           "byTarget": {
             "FUNCTION_SELF": 0.95,
-            "UNANALYZED_PROJECT": 0.5
+            "UNANALYZED_PROJECT": 0.04
           },
           "topExternal": [
             {
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
-              "percent": 0.5
+              "percent": 0.04
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:32475",
+                "linter/linter.js:42326",
+                "linter/linter.js:43440"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1271,65 +1717,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "languages/js/index.js:10121",
-          "name": "createSourceCode",
-          "attributedPercent": 1.13,
-          "ownPercent": 0.19,
-          "byTarget": {
-            "UNANALYZED_PROJECT": 0.94,
-            "FUNCTION_SELF": 0.19
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.94
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type File: struct field body: unions (including optional values) are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
-          "functionId": "linter/source-code-visitor.js:1305",
-          "name": "setListenerRuleId",
-          "attributedPercent": 1.07,
-          "ownPercent": 0.96,
-          "byTarget": {
-            "FUNCTION_SELF": 0.96
-          },
-          "topExternal": [],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type Function: struct field apply must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Dispatch over dynamic AST nodes and rule listeners (callbacks, class instances, `this`): the cost of running user rules."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "linter/code-path-analysis/code-path-analyzer.js:10752",
           "name": "processCodePathToEnter",
           "attributedPercent": 0.93,
@@ -1345,6 +1732,16 @@
               "percent": 0.27
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:19718",
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1354,6 +1751,90 @@
             "accepted": [],
             "rejected": [
               "lowering: type CodePathAnalyzer: class instances are not lowered"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "languages/js/source-code/source-code.js:10159",
+          "name": "SourceCode.constructor",
+          "attributedPercent": 0.92,
+          "ownPercent": 0.92,
+          "byTarget": {
+            "FUNCTION_SELF": 0.92
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: Constructor is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "linter/interpolate.js:997",
+          "name": "interpolate",
+          "attributedPercent": 0.86,
+          "ownPercent": 0.82,
+          "byTarget": {
+            "FUNCTION_SELF": 0.82
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/sort-keys.js:3854"
+              ],
+              "percentOfSite": 80.63
+            },
+            {
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/one-var.js:13655"
+              ],
+              "percentOfSite": 5.04
+            },
+            {
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/max-lines-per-function.js:4455"
+              ],
+              "percentOfSite": 4.88
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expected a boolean (no truthiness coercion), got struct"
             ]
           },
           "annotation": {
@@ -1376,6 +1857,16 @@
               "origin": "debug",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.41
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:20319",
+                "languages/js/source-code/source-code.js:35373",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1411,6 +1902,14 @@
               "percent": 0.31
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "cli.js:3696"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1427,22 +1926,25 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "linter/linter.js:32475",
-          "name": "Linter.#flatVerifyWithoutProcessors",
-          "attributedPercent": 0.57,
-          "ownPercent": 0.2,
+          "functionId": "linter/interpolate.js:1446",
+          "name": "callback@51",
+          "attributedPercent": 0.59,
+          "ownPercent": 0.59,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.24,
-            "FUNCTION_SELF": 0.2
+            "FUNCTION_SELF": 0.59
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.24
+              "path": [
+                "linter/interpolate.js:997",
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345"
+              ],
+              "percentOfSite": 100
             }
           ],
-          "eligibility": "CONDITIONAL",
+          "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -1450,14 +1952,42 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: methods that use `this` or `super` are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
           },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "cli-engine/formatters/stylish.js:3705",
+          "name": "callback@129",
+          "attributedPercent": 0.53,
+          "ownPercent": 0.53,
+          "byTarget": {
+            "FUNCTION_SELF": 0.53
           },
-          "seenInRuns": 2
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194",
+                "eslint/eslint.js:38474"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
         },
         {
           "functionId": "config/config.js:12014",
@@ -1482,6 +2012,16 @@
               "origin": "fast-json-stable-stringify",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "config/config.js:18782",
+                "config/config.js:13207",
+                "config/flat-config-array.js:6548"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1510,6 +2050,38 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "shared/text-table.js:2054",
+          "name": "callback@53",
+          "attributedPercent": 0.51,
+          "ownPercent": 0.43,
+          "byTarget": {
+            "FUNCTION_SELF": 0.43
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/text-table.js:1614",
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "linter/code-path-analysis/code-path-analyzer.js:19718",
           "name": "CodePathAnalyzer.enterNode",
           "attributedPercent": 0.51,
@@ -1518,6 +2090,16 @@
             "FUNCTION_SELF": 0.5
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1544,6 +2126,16 @@
             "FUNCTION_SELF": 0.55
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:19830",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1570,6 +2162,24 @@
             "FUNCTION_SELF": 0.7
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630"
+              ],
+              "percentOfSite": 97.21
+            },
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "languages/js/source-code/source-code.js:33679"
+              ],
+              "percentOfSite": 2.79
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1577,94 +2187,6 @@
             "accepted": [],
             "rejected": [
               "lowering: type any: has no Kernel IR type"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
-          "functionId": "config/config.js:1984",
-          "name": "getAjv",
-          "attributedPercent": 0.49,
-          "ownPercent": 0,
-          "byTarget": {
-            "RUNTIME": 0.1,
-            "EXTERNAL_DEPENDENCY": 0.37,
-            "IO": 0.04
-          },
-          "topExternal": [
-            {
-              "origin": "uri-js",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.31
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.1
-            },
-            {
-              "origin": "node",
-              "target": "IO",
-              "percent": 0.04
-            },
-            {
-              "origin": "ajv",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.04
-            },
-            {
-              "origin": "json-schema-traverse",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.02
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type Ajv: struct field validate must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
-          "functionId": "rules/sort-keys.js:3854",
-          "name": "Property",
-          "attributedPercent": 0.45,
-          "ownPercent": 0.16,
-          "byTarget": {
-            "FUNCTION_SELF": 0.16,
-            "UNANALYZED_PROJECT": 0.26
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.26
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type (AssignmentProperty & NodeParentExtension) | (Property & NodeParentExtension): unions (including optional values) are not lowered"
             ]
           },
           "annotation": {
@@ -1682,6 +2204,16 @@
             "FUNCTION_SELF": 0.38
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1706,6 +2238,24 @@
             "FUNCTION_SELF": 0.41
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 95.16
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 4.84
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -1713,32 +2263,6 @@
             "accepted": [],
             "rejected": [
               "lowering: type (SimpleLiteral & NodeParentExtension) | (RegExpLiteral & NodeParentExtension) | (BigIntLiteral & NodeParentExtension): unions (including optional values) are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 1
-        },
-        {
-          "functionId": "languages/js/source-code/token-store/cursor.js:1811",
-          "name": "Cursor.getAllTokens",
-          "attributedPercent": 0.39,
-          "ownPercent": 0.39,
-          "byTarget": {
-            "FUNCTION_SELF": 0.39
-          },
-          "topExternal": [],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: methods that use `this` or `super` are not lowered"
             ]
           },
           "annotation": {
@@ -1761,6 +2285,32 @@
               "origin": "eslint-scope",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.13
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-alert.js:3038",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 33.22
+            },
+            {
+              "path": [
+                "rules/no-undef-init.js:1275",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 16.6
+            },
+            {
+              "path": [
+                "rules/no-regex-spaces.js:4218",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 16.6
             }
           ],
           "eligibility": "BLOCKED",
@@ -1787,11 +2337,11 @@
       "wallMs": 4605,
       "profiledMs": 4496,
       "attribution": {
-        "UNANALYZED_PROJECT": 1.5,
+        "FUNCTION_SELF": 33.68,
         "EXTERNAL_DEPENDENCY": 35.46,
-        "FUNCTION_SELF": 32.25,
         "RUNTIME": 0.25,
         "IO": 0.09,
+        "UNANALYZED_PROJECT": 0.03,
         "UNATTRIBUTED": 30.41
       },
       "topOrigins": [
@@ -1857,15 +2407,15 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 32.25
+          "percent": 33.68
         },
         {
-          "step": "top call sites (18)",
-          "percent": 55.72
+          "step": "top call sites (19)",
+          "percent": 56.04
         },
         {
           "step": "human-plausible",
-          "percent": 2.96
+          "percent": 3.35
         },
         {
           "step": "human-evidence-supported",
@@ -1885,11 +2435,12 @@
         }
       ],
       "automatedRecognitionRecall": 0,
-      "patternFamilyRecall": 1,
+      "patternFamilyRecall": 0.91,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
-          "percent": 26.66
+          "percent": 26.55
         },
         {
           "reason": "union or optional types",
@@ -1905,7 +2456,7 @@
         },
         {
           "reason": "class instances",
-          "percent": 2.57
+          "percent": 2.54
         },
         {
           "reason": "async or generator",
@@ -1931,6 +2482,16 @@
               "origin": "eslint-scope",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 3.89
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -1970,6 +2531,16 @@
               "percent": 2.81
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -1996,6 +2567,24 @@
             "FUNCTION_SELF": 3.35
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 99.58
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 0.42
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2022,6 +2611,16 @@
             "FUNCTION_SELF": 2.77
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2048,6 +2647,24 @@
             "FUNCTION_SELF": 2.91
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "languages/js/source-code/source-code.js:33679"
+              ],
+              "percentOfSite": 99.97
+            },
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630"
+              ],
+              "percentOfSite": 0.03
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2081,6 +2698,16 @@
               "percent": 0.9
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2107,6 +2734,16 @@
             "FUNCTION_SELF": 1.85
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/token-store/index.js:9158",
+                "languages/js/source-code/source-code.js:10159",
+                "languages/js/index.js:10121"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -2138,6 +2775,16 @@
             "FUNCTION_SELF": 1.32
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2169,6 +2816,32 @@
               "origin": "eslint-scope",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.25
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-redeclare.js:3390",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 32.21
+            },
+            {
+              "path": [
+                "rules/no-regex-spaces.js:4218",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 17.38
+            },
+            {
+              "path": [
+                "rules/no-useless-assignment.js:15760",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 14.1
             }
           ],
           "eligibility": "BLOCKED",
@@ -2204,6 +2877,24 @@
               "percent": 0.32
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:19718",
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 98.52
+            },
+            {
+              "path": [
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630"
+              ],
+              "percentOfSite": 1.48
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2230,6 +2921,16 @@
             "FUNCTION_SELF": 0.95
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -2261,6 +2962,24 @@
               "percent": 0.27
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:20319",
+                "languages/js/source-code/source-code.js:35373",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 99.82
+            },
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106",
+                "languages/js/source-code/source-code.js:35215"
+              ],
+              "percentOfSite": 0.18
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2279,50 +2998,22 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "languages/js/source-code/source-code.js:2908",
-          "name": "sortedMerge",
-          "attributedPercent": 0.94,
-          "ownPercent": 0.94,
-          "byTarget": {
-            "FUNCTION_SELF": 0.94
-          },
-          "topExternal": [],
-          "eligibility": "CONDITIONAL",
-          "advisor": [],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type Token[]: array element has no Kernel IR type"
-            ]
-          },
-          "annotation": {
-            "transformability": "PLAUSIBLE",
-            "confidence": "LOW",
-            "patterns": [
-              "PACK_DATA"
-            ],
-            "missingEvidence": [
-              "merge of two token/comment arrays by range start; only worthwhile if a columnar token layout exists"
-            ],
-            "note": "sortedMerge of tokens and comments."
-          },
-          "seenInRuns": 2
-        },
-        {
           "functionId": "rules/no-unused-vars.js:21262",
           "name": "collectUnusedVariables",
-          "attributedPercent": 0.88,
+          "attributedPercent": 0.75,
           "ownPercent": 0.87,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.09,
             "FUNCTION_SELF": 0.87
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.09
+              "path": [
+                "rules/no-unused-vars.js:49582",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -2351,6 +3042,16 @@
             "FUNCTION_SELF": 0.66
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-redeclare.js:2411",
+                "rules/no-redeclare.js:3390",
+                "linter/source-code-visitor.js:4354"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -2375,6 +3076,16 @@
             "FUNCTION_SELF": 0.63
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2400,6 +3111,47 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "languages/js/source-code/source-code.js:2908",
+          "name": "sortedMerge",
+          "attributedPercent": 0.61,
+          "ownPercent": 0.39,
+          "byTarget": {
+            "FUNCTION_SELF": 0.39
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:10159",
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type Token[]: array element has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "PLAUSIBLE",
+            "confidence": "LOW",
+            "patterns": [
+              "PACK_DATA"
+            ],
+            "missingEvidence": [
+              "merge of two token/comment arrays by range start; only worthwhile if a columnar token layout exists"
+            ],
+            "note": "sortedMerge of tokens and comments."
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "linter/code-path-analysis/code-path-analyzer.js:19718",
           "name": "CodePathAnalyzer.enterNode",
           "attributedPercent": 0.55,
@@ -2408,6 +3160,16 @@
             "FUNCTION_SELF": 0.55
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2426,19 +3188,58 @@
           "seenInRuns": 2
         },
         {
+          "functionId": "rules/constructor-super.js:7464",
+          "name": "onCodePathSegmentStart",
+          "attributedPercent": 0.53,
+          "ownPercent": 0.53,
+          "byTarget": {
+            "FUNCTION_SELF": 0.53
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type CodePathSegment: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 1
+        },
+        {
           "functionId": "rules/no-useless-assignment.js:8066",
           "name": "verifyAssignmentIsUsed",
-          "attributedPercent": 0.55,
+          "attributedPercent": 0.52,
           "ownPercent": 0.52,
           "byTarget": {
-            "FUNCTION_SELF": 0.52,
-            "UNANALYZED_PROJECT": 0.03
+            "FUNCTION_SELF": 0.52
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.03
+              "path": [
+                "rules/no-useless-assignment.js:7131",
+                "rules/no-useless-assignment.js:16100",
+                "linter/source-code-visitor.js:4354"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2459,32 +3260,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "rules/constructor-super.js:7464",
-          "name": "onCodePathSegmentStart",
-          "attributedPercent": 0.53,
-          "ownPercent": 0.53,
-          "byTarget": {
-            "FUNCTION_SELF": 0.53
-          },
-          "topExternal": [],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type CodePathSegment: has no Kernel IR type"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 1
-        },
-        {
           "functionId": "linter/esquery.js:13063",
           "name": "matches",
           "attributedPercent": 0.48,
@@ -2497,6 +3272,16 @@
               "origin": "esquery",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.48
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:4598",
+                "linter/source-code-traverser.js:5235",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2522,22 +3307,31 @@
             ],
             "note": "esquery selector matching per visited node; ESLint already prefilters by node type, so only attribute/complex selectors reach it."
           },
-          "seenInRuns": 1
+          "seenInRuns": 2
         },
         {
-          "functionId": "languages/js/index.js:10121",
-          "name": "createSourceCode",
-          "attributedPercent": 0.45,
-          "ownPercent": 0.06,
+          "functionId": "rules/no-misleading-character-class.js:5924",
+          "name": "getStaticValueOrRegex",
+          "attributedPercent": 0.43,
+          "ownPercent": 0,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.39,
-            "FUNCTION_SELF": 0.06
+            "EXTERNAL_DEPENDENCY": 0.43
           },
           "topExternal": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.39
+              "origin": "@eslint-community/eslint-utils",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.43
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-misleading-character-class.js:14296",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2548,12 +3342,8 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+              "lowering: type any: has no Kernel IR type"
             ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
           "seenInRuns": 1
         }
@@ -2566,9 +3356,9 @@
       "attribution": {
         "EXTERNAL_DEPENDENCY": 33.94,
         "RUNTIME": 2.09,
-        "UNANALYZED_PROJECT": 5.38,
-        "FUNCTION_SELF": 42.11,
+        "FUNCTION_SELF": 47.68,
         "IO": 0.27,
+        "UNANALYZED_PROJECT": 0.16,
         "UNATTRIBUTED": 14.73
       },
       "topOrigins": [
@@ -2634,11 +3424,11 @@
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 42.11
+          "percent": 47.68
         },
         {
           "step": "top call sites (25)",
-          "percent": 56.37
+          "percent": 53.3
         },
         {
           "step": "human-plausible",
@@ -2663,45 +3453,38 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 0.43,
+      "phenomena": [],
       "lowerBlockers": [
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",
-          "percent": 14.98
+          "percent": 14.67
         },
         {
           "reason": "union or optional types",
-          "percent": 12.06
+          "percent": 11.55
         },
         {
           "reason": "method uses this/super",
-          "percent": 11.1
+          "percent": 10.77
         },
         {
           "reason": "other: type Object: struct field constructor: struct field apply mu",
           "percent": 9.98
         },
         {
-          "reason": "other: type LintResult[]: array element struct field messages: arra",
-          "percent": 2.94
+          "reason": "not a kernel function form",
+          "percent": 2.34
         },
         {
           "reason": "class instances",
-          "percent": 2.68
+          "percent": 2.24
         },
         {
           "reason": "default/optional/rest parameters",
           "percent": 0.78
         },
         {
-          "reason": "other: type Ajv: struct field validate must be a required, non-meth",
-          "percent": 0.69
-        },
-        {
           "reason": "other: expected a boolean (no truthiness coercion), got struct",
-          "percent": 0.64
-        },
-        {
-          "reason": "other: type MessageDescriptor: struct field node must be a required",
           "percent": 0
         },
         {
@@ -2728,6 +3511,16 @@
               "origin": "espree",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 2.52
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -2767,6 +3560,16 @@
               "percent": 2.63
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/index.js:10121",
+                "services/parser-service.js:1076",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2800,6 +3603,16 @@
               "percent": 5.19
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:4598",
+                "linter/source-code-traverser.js:5235",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2828,17 +3641,35 @@
         {
           "functionId": "linter/source-code-visitor.js:4354",
           "name": "SourceCodeVisitor.callSync",
-          "attributedPercent": 4.09,
+          "attributedPercent": 3.67,
           "ownPercent": 4.49,
           "byTarget": {
             "FUNCTION_SELF": 4.49,
-            "UNANALYZED_PROJECT": 0.46
+            "UNANALYZED_PROJECT": 0.09
           },
           "topExternal": [
             {
               "origin": "project",
               "target": "UNANALYZED_PROJECT",
-              "percent": 0.46
+              "percent": 0.09
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 99.4
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 0.6
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -2874,6 +3705,16 @@
               "percent": 0.06
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095",
+                "linter/linter.js:32475"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2892,44 +3733,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "eslint/eslint.js:38474",
-          "name": "format",
-          "attributedPercent": 2.94,
-          "ownPercent": 0,
-          "byTarget": {
-            "UNANALYZED_PROJECT": 2.14,
-            "RUNTIME": 0.8
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 2.14
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.8
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type LintResult[]: array element struct field messages: array element struct field endColumn must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "linter/source-code-traverser.js:5235",
           "name": "ESQueryHelper.calculateSelectors",
           "attributedPercent": 2.87,
@@ -2938,6 +3741,16 @@
             "FUNCTION_SELF": 2.5
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821",
+                "linter/linter.js:19095"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -2971,6 +3784,32 @@
             "FUNCTION_SELF": 1.31
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "languages/js/source-code/source-code.js:33679"
+              ],
+              "percentOfSite": 95.93
+            },
+            {
+              "path": [
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630",
+                "rules/no-unmodified-loop-condition.js:7844"
+              ],
+              "percentOfSite": 3.37
+            },
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:2636",
+                "shared/traverser.js:4630"
+              ],
+              "percentOfSite": 0.7
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3002,6 +3841,32 @@
               "origin": "eslint-scope",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.27
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-useless-assignment.js:16826",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 23.21
+            },
+            {
+              "path": [
+                "rules/no-alert.js:3038",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 15.19
+            },
+            {
+              "path": [
+                "rules/no-invalid-this.js:2576",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 12.97
             }
           ],
           "eligibility": "BLOCKED",
@@ -3037,6 +3902,16 @@
               "percent": 0.29
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:19718",
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3057,7 +3932,7 @@
         {
           "functionId": "linter/source-code-traverser.js:8821",
           "name": "SourceCodeTraverser.traverseSync",
-          "attributedPercent": 0.93,
+          "attributedPercent": 0.91,
           "ownPercent": 0.78,
           "byTarget": {
             "UNANALYZED_PROJECT": 0.02,
@@ -3074,6 +3949,16 @@
               "origin": "esquery",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3113,6 +3998,16 @@
               "percent": 0.05
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "config/config.js:18782",
+                "config/config.js:13207",
+                "config/flat-config-array.js:6548"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -3139,45 +4034,6 @@
           "seenInRuns": 3
         },
         {
-          "functionId": "rules/no-useless-assignment.js:16826",
-          "name": "VariableDeclarator[init!=null], AssignmentExpression, UpdateExpression:exit",
-          "attributedPercent": 0.79,
-          "ownPercent": 0.69,
-          "byTarget": {
-            "EXTERNAL_DEPENDENCY": 0.05,
-            "FUNCTION_SELF": 0.69,
-            "UNANALYZED_PROJECT": 0.06
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.06
-            },
-            {
-              "origin": "@eslint-community/eslint-utils",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.05
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type any: has no Kernel IR type"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
           "functionId": "shared/logging.js:285",
           "name": "info",
           "attributedPercent": 0.78,
@@ -3199,6 +4055,14 @@
               "percent": 0.03
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "cli.js:3696"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -3215,14 +4079,120 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "rules/no-useless-assignment.js:16826",
+          "name": "VariableDeclarator[init!=null], AssignmentExpression, UpdateExpression:exit",
+          "attributedPercent": 0.77,
+          "ownPercent": 0.69,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.05,
+            "FUNCTION_SELF": 0.69
+          },
+          "topExternal": [
+            {
+              "origin": "@eslint-community/eslint-utils",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.05
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 92.29
+            },
+            {
+              "path": [
+                "linter/linter.js:19095",
+                "linter/linter.js:32475",
+                "linter/linter.js:42326"
+              ],
+              "percentOfSite": 7.71
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "annotation": {
+            "transformability": "NOT_TRANSFORMABLE",
+            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "cli-engine/formatters/stylish.js:600",
+          "name": "callback@21",
+          "attributedPercent": 0.75,
+          "ownPercent": 0.08,
+          "byTarget": {
+            "RUNTIME": 0.77,
+            "FUNCTION_SELF": 0.08
+          },
+          "topExternal": [
+            {
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.77
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2795",
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194"
+              ],
+              "percentOfSite": 67.75
+            },
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:3744",
+                "cli-engine/formatters/stylish.js:3705",
+                "cli-engine/formatters/stylish.js:2423"
+              ],
+              "percentOfSite": 32.25
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "config/config.js:18782",
           "name": "Config.validateRulesConfig",
           "attributedPercent": 0.74,
-          "ownPercent": 0.74,
+          "ownPercent": 0.41,
           "byTarget": {
-            "FUNCTION_SELF": 0.74
+            "FUNCTION_SELF": 0.41
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "config/config.js:13207",
+                "config/flat-config-array.js:6548",
+                "eslint/eslint-helpers.js:10696"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3238,90 +4208,7 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
-          "seenInRuns": 1
-        },
-        {
-          "functionId": "config/config.js:1984",
-          "name": "getAjv",
-          "attributedPercent": 0.69,
-          "ownPercent": 0,
-          "byTarget": {
-            "RUNTIME": 0.16,
-            "EXTERNAL_DEPENDENCY": 0.5,
-            "UNANALYZED_PROJECT": 0.03
-          },
-          "topExternal": [
-            {
-              "origin": "uri-js",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.47
-            },
-            {
-              "origin": "node",
-              "target": "RUNTIME",
-              "percent": 0.16
-            },
-            {
-              "origin": "ajv",
-              "target": "EXTERNAL_DEPENDENCY",
-              "percent": 0.03
-            },
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.03
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "HOIST_INVARIANT_WORK:LOW",
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type Ajv: struct field validate must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
-        },
-        {
-          "functionId": "rules/func-style.js:1875",
-          "name": "isOverloadedFunction",
-          "attributedPercent": 0.68,
-          "ownPercent": 0.55,
-          "byTarget": {
-            "FUNCTION_SELF": 0.55,
-            "UNANALYZED_PROJECT": 0.13
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.13
-            }
-          ],
-          "eligibility": "BLOCKED",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type ASTNode: has no Kernel IR type"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 3
+          "seenInRuns": 2
         },
         {
           "functionId": "rules/no-useless-assignment.js:16187",
@@ -3332,6 +4219,16 @@
             "FUNCTION_SELF": 0.66
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431",
+                "linter/source-code-traverser.js:8821"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -3351,16 +4248,35 @@
           "functionId": "linter/interpolate.js:997",
           "name": "interpolate",
           "attributedPercent": 0.64,
-          "ownPercent": 0.38,
+          "ownPercent": 0.64,
           "byTarget": {
-            "FUNCTION_SELF": 0.38,
-            "UNANALYZED_PROJECT": 0.26
+            "FUNCTION_SELF": 0.64
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.26
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/curly.js:6936"
+              ],
+              "percentOfSite": 13.92
+            },
+            {
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/one-var.js:13655"
+              ],
+              "percentOfSite": 13.07
+            },
+            {
+              "path": [
+                "linter/file-report.js:17112",
+                "linter/linter.js:20345",
+                "rules/init-declarations.js:2983"
+              ],
+              "percentOfSite": 12.79
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3378,7 +4294,7 @@
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
-          "seenInRuns": 3
+          "seenInRuns": 1
         },
         {
           "functionId": "languages/js/source-code/token-store/index.js:1316",
@@ -3389,6 +4305,16 @@
             "FUNCTION_SELF": 0.65
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/token-store/index.js:9158",
+                "languages/js/source-code/source-code.js:10159",
+                "languages/js/index.js:10121"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [],
           "recognized": false,
@@ -3427,6 +4353,16 @@
               "percent": 0.14
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "linter/code-path-analysis/code-path-analyzer.js:20319",
+                "languages/js/source-code/source-code.js:35373",
+                "shared/traverser.js:3106"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3445,6 +4381,38 @@
           "seenInRuns": 3
         },
         {
+          "functionId": "cli-engine/formatters/stylish.js:3705",
+          "name": "callback@129",
+          "attributedPercent": 0.61,
+          "ownPercent": 0.47,
+          "byTarget": {
+            "FUNCTION_SELF": 0.47
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2423",
+                "cli-engine/formatters/stylish.js:2194",
+                "eslint/eslint.js:38474"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
           "functionId": "rules/no-useless-assignment.js:8066",
           "name": "verifyAssignmentIsUsed",
           "attributedPercent": 0.58,
@@ -3453,6 +4421,16 @@
             "FUNCTION_SELF": 0.58
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-useless-assignment.js:7131",
+                "rules/no-useless-assignment.js:16100",
+                "linter/source-code-visitor.js:4354"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3476,14 +4454,17 @@
           "attributedPercent": 0.57,
           "ownPercent": 0.44,
           "byTarget": {
-            "FUNCTION_SELF": 0.44,
-            "UNANALYZED_PROJECT": 0.11
+            "FUNCTION_SELF": 0.44
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.11
+              "path": [
+                "rules/no-unused-vars.js:49582",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "BLOCKED",
@@ -3504,22 +4485,25 @@
           "seenInRuns": 2
         },
         {
-          "functionId": "linter/linter.js:19095",
-          "name": "runRules",
-          "attributedPercent": 0.51,
-          "ownPercent": 0.38,
+          "functionId": "rules/func-style.js:1875",
+          "name": "isOverloadedFunction",
+          "attributedPercent": 0.55,
+          "ownPercent": 0.55,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.05,
-            "FUNCTION_SELF": 0.38
+            "FUNCTION_SELF": 0.55
           },
-          "topExternal": [
+          "topExternal": [],
+          "callerPaths": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.05
+              "path": [
+                "rules/func-style.js:2713",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
-          "eligibility": "CONDITIONAL",
+          "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -3527,32 +4511,42 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type SourceCode: class instances are not lowered"
+              "lowering: type ASTNode: has no Kernel IR type"
             ]
           },
           "annotation": {
             "transformability": "NOT_TRANSFORMABLE",
             "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
           },
-          "seenInRuns": 2
+          "seenInRuns": 3
         },
         {
-          "functionId": "languages/js/index.js:10121",
-          "name": "createSourceCode",
-          "attributedPercent": 0.51,
-          "ownPercent": 0.05,
+          "functionId": "cli-engine/formatters/stylish.js:2423",
+          "name": "callback@74",
+          "attributedPercent": 0.5,
+          "ownPercent": 0.47,
           "byTarget": {
-            "UNANALYZED_PROJECT": 0.46,
-            "FUNCTION_SELF": 0.05
+            "FUNCTION_SELF": 0.47,
+            "RUNTIME": 0.03
           },
           "topExternal": [
             {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.46
+              "origin": "node",
+              "target": "RUNTIME",
+              "percent": 0.03
             }
           ],
-          "eligibility": "CONDITIONAL",
+          "callerPaths": [
+            {
+              "path": [
+                "cli-engine/formatters/stylish.js:2194",
+                "eslint/eslint.js:38474",
+                "cli.js:3696"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
           ],
@@ -3560,14 +4554,49 @@
           "support": {
             "accepted": [],
             "rejected": [
-              "lowering: type File: struct field body: unions (including optional values) are not lowered"
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
             ]
           },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "shared/ajv.js:573",
+          "name": "callback@18",
+          "attributedPercent": 0.47,
+          "ownPercent": 0.03,
+          "byTarget": {
+            "FUNCTION_SELF": 0.03,
+            "EXTERNAL_DEPENDENCY": 0.45
           },
-          "seenInRuns": 1
+          "topExternal": [
+            {
+              "origin": "uri-js",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.45
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "config/config.js:1984",
+                "config/config.js:12014",
+                "config/config.js:18782"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: ArrowFunction is not a kernel function (declaration, const arrow, or method)"
+            ]
+          },
+          "seenInRuns": 3
         },
         {
           "functionId": "rules/no-control-regex.js:1231",
@@ -3582,6 +4611,16 @@
               "origin": "@eslint-community/regexpp",
               "target": "EXTERNAL_DEPENDENCY",
               "percent": 0.46
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-control-regex.js:3491",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
             }
           ],
           "eligibility": "CONDITIONAL",
@@ -3608,6 +4647,16 @@
             "FUNCTION_SELF": 0.45
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "languages/js/source-code/source-code.js:35215",
+                "shared/traverser.js:3106",
+                "shared/traverser.js:2636"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3626,37 +4675,6 @@
           "seenInRuns": 1
         },
         {
-          "functionId": "rules/no-use-before-define.js:11354",
-          "name": "checkReferencesInScope",
-          "attributedPercent": 0.45,
-          "ownPercent": 0.37,
-          "byTarget": {
-            "UNANALYZED_PROJECT": 0.08,
-            "FUNCTION_SELF": 0.37
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.08
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type Scope<Variable<Reference>, Reference>: class instances are not lowered"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 1
-        },
-        {
           "functionId": "rules/no-unmodified-loop-condition.js:8403",
           "name": "toLoopCondition",
           "attributedPercent": 0.45,
@@ -3665,6 +4683,16 @@
             "FUNCTION_SELF": 0.45
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-unmodified-loop-condition.js:9714",
+                "rules/no-unmodified-loop-condition.js:10462",
+                "linter/source-code-visitor.js:4354"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3691,6 +4719,16 @@
             "FUNCTION_SELF": 0.44
           },
           "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/require-atomic-updates.js:6325",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 100
+            }
+          ],
           "eligibility": "BLOCKED",
           "advisor": [
             "KEEP_TS:MEDIUM"
@@ -3724,6 +4762,24 @@
               "percent": 0.39
             }
           ],
+          "callerPaths": [
+            {
+              "path": [
+                "rules/no-misleading-character-class.js:13926",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 53.66
+            },
+            {
+              "path": [
+                "rules/no-misleading-character-class.js:14296",
+                "linter/source-code-visitor.js:4354",
+                "linter/source-code-traverser.js:9431"
+              ],
+              "percentOfSite": 46.34
+            }
+          ],
           "eligibility": "CONDITIONAL",
           "advisor": [
             "HOIST_INVARIANT_WORK:LOW",
@@ -3734,39 +4790,6 @@
             "accepted": [],
             "rejected": [
               "lowering: type Node: struct field childNodes: struct field item must be a required, non-method property"
-            ]
-          },
-          "annotation": {
-            "transformability": "NOT_TRANSFORMABLE",
-            "note": "Rule or traversal bookkeeping over dynamic AST nodes, class instances, or `this` state; no batchable or hoistable work shown."
-          },
-          "seenInRuns": 1
-        },
-        {
-          "functionId": "linter/file-report.js:9231",
-          "name": "normalizeFixes",
-          "attributedPercent": 0.41,
-          "ownPercent": 0.35,
-          "byTarget": {
-            "FUNCTION_SELF": 0.35,
-            "UNANALYZED_PROJECT": 0.06
-          },
-          "topExternal": [
-            {
-              "origin": "project",
-              "target": "UNANALYZED_PROJECT",
-              "percent": 0.06
-            }
-          ],
-          "eligibility": "CONDITIONAL",
-          "advisor": [
-            "KEEP_TS:MEDIUM"
-          ],
-          "recognized": false,
-          "support": {
-            "accepted": [],
-            "rejected": [
-              "lowering: type MessageDescriptor: struct field node must be a required, non-method property"
             ]
           },
           "annotation": {
