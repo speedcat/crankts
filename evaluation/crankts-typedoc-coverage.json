@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      5.3,
-      9,
-      7.45
+      4.65,
+      5.19,
+      4.33
     ]
   },
   "subject": {

@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      4.27,
-      6.73,
-      6.95
+      2.88,
+      3.54,
+      3.78
     ]
   },
   "subject": {
@@ -1120,16 +1120,67 @@
       "patternFamilyRecall": 0.52,
       "phenomena": [
         {
-          "kind": "INVARIANT_ARGUMENT",
+          "functionId": "linter/linter.js:32475",
+          "call": "linter/linter.js:1297:4",
+          "callee": "runRules",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 51.11,
+          "evidence": [
+            "args[1].no-magic-numbers: 1 distinct values over 353 calls (reuse 0.997); whole call reuse 0",
+            "callee cost 51.26% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, MUTATES_GLOBAL_STATE, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (timing)"
+        },
+        {
+          "functionId": "linter/source-code-traverser.js:4598",
+          "call": "linter/source-code-traverser.js:158:10",
+          "callee": "matches",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 6.96,
+          "evidence": [
+            "args[3]: 1 distinct values over 2052730 calls (reuse 1); whole call reuse 0.005",
+            "callee cost 6.96% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (esquery)"
+        },
+        {
           "functionId": "languages/js/index.js:1721",
           "call": "languages/js/index.js:50:9",
           "callee": "eslintScope.analyze",
+          "observation": "REPEATED_ARGUMENT",
           "upperBoundPercent": 5.79,
           "evidence": [
             "args[1]: 1 distinct values over 353 calls (reuse 0.997); whole call reuse 0",
             "callee cost 5.81% (coarse bound)"
           ],
-          "hypothesis": "`eslintScope.analyze` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once."
+          "hypothesis": {
+            "kind": "HOIST_ARGUMENT_WORK",
+            "text": "`eslintScope.analyze` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once.",
+            "preconditions": [
+              {
+                "name": "CALLEE_RESULT_DEPENDS_ONLY_ON_INPUTS",
+                "status": "UNVERIFIED",
+                "detail": "dependency or unresolved callee: effects unknown"
+              },
+              {
+                "name": "CALLEE_DERIVES_WORK_FROM_ARGUMENT",
+                "status": "UNVERIFIED",
+                "detail": "the share of the callee's cost that depends on this argument alone is not measured"
+              }
+            ]
+          }
+        },
+        {
+          "functionId": "languages/js/index.js:10121",
+          "call": "languages/js/index.js:323:4",
+          "callee": "analyzeScope",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 5.79,
+          "evidence": [
+            "args[1]: 1 distinct values over 353 calls (reuse 0.997); whole call reuse 0",
+            "callee cost 5.81% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (eslintScope, evk)"
         }
       ],
       "lowerBlockers": [
@@ -3453,7 +3504,20 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 0.43,
-      "phenomena": [],
+      "phenomena": [
+        {
+          "functionId": "linter/source-code-traverser.js:4598",
+          "call": "linter/source-code-traverser.js:158:10",
+          "callee": "matches",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 5.24,
+          "evidence": [
+            "args[1]: 17 distinct values over 878490 calls (reuse 1); whole call reuse 0.006",
+            "callee cost 5.24% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (esquery)"
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "type without Kernel IR form (any, DOM, library classes)",

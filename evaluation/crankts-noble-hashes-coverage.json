@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      4.82,
-      5.01,
-      5.9
+      3.29,
+      5.36,
+      6.15
     ]
   },
   "subject": {
@@ -114,30 +114,30 @@
       "patternFamilyRecall": 1,
       "phenomena": [
         {
-          "kind": "RECOMPUTATION",
           "functionId": "src/blake2.ts:17994",
           "call": "src/blake2.ts:506:40",
           "callee": "G2s",
+          "observation": "REPEATED_INPUT",
           "upperBoundPercent": 5.04,
           "evidence": [
             "8570880 calls, 285694 distinct inputs (reuse 0.967)",
-            "callee cost 5.21%",
+            "callee cost 5.21%, 0.02 µs per call",
             "8 call sites"
           ],
-          "hypothesis": "`G2s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+          "withheld": "CALL_COSTS_MORE_THAN_LOOKUP (0.02 µs per call vs ~0.1 µs per lookup)"
         },
         {
-          "kind": "RECOMPUTATION",
           "functionId": "src/blake2.ts:17994",
           "call": "src/blake2.ts:505:40",
           "callee": "G1s",
+          "observation": "REPEATED_INPUT",
           "upperBoundPercent": 4.87,
           "evidence": [
             "8570880 calls, 285693 distinct inputs (reuse 0.967)",
-            "callee cost 5.04%",
+            "callee cost 5.04%, 0.02 µs per call",
             "8 call sites"
           ],
-          "hypothesis": "`G1s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+          "withheld": "CALL_COSTS_MORE_THAN_LOOKUP (0.02 µs per call vs ~0.1 µs per lookup)"
         }
       ],
       "lowerBlockers": [
@@ -607,7 +607,71 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
-      "phenomena": [],
+      "phenomena": [
+        {
+          "functionId": "src/argon2.ts:17726",
+          "call": "src/argon2.ts:487:15",
+          "callee": "block",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 36.79,
+          "evidence": [
+            "255 calls, 1 distinct inputs (reuse 0.996)",
+            "callee cost 36.94%, 2343.88 µs per call",
+            "2 call sites"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, MUTATES_GLOBAL_STATE, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (A2_BUF)"
+        },
+        {
+          "functionId": "src/argon2.ts:4758",
+          "call": "src/argon2.ts:118:3",
+          "callee": "G",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 22.05,
+          "evidence": [
+            "3153888 calls, 16 distinct inputs (reuse 1)",
+            "callee cost 22.05%, 0.11 µs per call",
+            "8 call sites"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_GLOBAL_STATE, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (A2_BUF); CALL_COSTS_MORE_THAN_LOOKUP (0.11 µs per call vs ~0.1 µs per lookup)"
+        },
+        {
+          "functionId": "src/argon2.ts:5290",
+          "call": "src/argon2.ts:147:5",
+          "callee": "P",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 19.92,
+          "evidence": [
+            "1576944 calls, 8 distinct inputs (reuse 1)",
+            "callee cost 19.92%, 0.20 µs per call",
+            "2 call sites"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_GLOBAL_STATE, UNKNOWN_SIDE_EFFECT)"
+        },
+        {
+          "functionId": "src/argon2.ts:17726",
+          "call": "src/argon2.ts:469:13",
+          "callee": "block",
+          "observation": "DUPLICATE_CONTENT_FLOW",
+          "upperBoundPercent": 18.47,
+          "evidence": [
+            "same content as src/argon2.ts:487:15: 100% of 1 distinct inputs",
+            "2 call sites"
+          ],
+          "withheld": "CALLEES_HAVE_NO_OUTER_EFFECTS (a callee writes outer state or its arguments)"
+        },
+        {
+          "functionId": "src/scrypt.ts:10459",
+          "call": "src/scrypt.ts:286:7",
+          "callee": "BlockMix",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 3.18,
+          "evidence": [
+            "32768 calls, 1 distinct inputs (reuse 1)",
+            "callee cost 3.18%, 1.57 µs per call"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT)"
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "method uses this/super",
@@ -955,30 +1019,30 @@
       "patternFamilyRecall": 1,
       "phenomena": [
         {
-          "kind": "RECOMPUTATION",
           "functionId": "src/blake2.ts:17994",
           "call": "src/blake2.ts:505:40",
           "callee": "G1s",
+          "observation": "REPEATED_INPUT",
           "upperBoundPercent": 1.36,
           "evidence": [
             "2100000 calls, 1792 distinct inputs (reuse 0.999)",
-            "callee cost 1.36%",
+            "callee cost 1.36%, 0.02 µs per call",
             "8 call sites"
           ],
-          "hypothesis": "`G1s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+          "withheld": "CALL_COSTS_MORE_THAN_LOOKUP (0.02 µs per call vs ~0.1 µs per lookup)"
         },
         {
-          "kind": "RECOMPUTATION",
           "functionId": "src/blake2.ts:17994",
           "call": "src/blake2.ts:506:40",
           "callee": "G2s",
+          "observation": "REPEATED_INPUT",
           "upperBoundPercent": 1.04,
           "evidence": [
             "2100000 calls, 1792 distinct inputs (reuse 0.999)",
-            "callee cost 1.04%",
+            "callee cost 1.04%, 0.01 µs per call",
             "8 call sites"
           ],
-          "hypothesis": "`G2s` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+          "withheld": "CALL_COSTS_MORE_THAN_LOOKUP (0.01 µs per call vs ~0.1 µs per lookup)"
         }
       ],
       "lowerBlockers": [

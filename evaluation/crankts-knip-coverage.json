@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      6.26,
-      9.6,
-      7.59
+      5.03,
+      5.4,
+      4.33
     ]
   },
   "subject": {
@@ -3231,16 +3231,31 @@
       "recognitionPrecision": 1,
       "phenomena": [
         {
-          "kind": "INVARIANT_ARGUMENT",
           "functionId": "src/util/glob-core.ts:11456",
           "call": "src/util/glob-core.ts:340:23",
           "callee": "tinyGlob",
+          "observation": "REPEATED_ARGUMENT",
           "upperBoundPercent": 9.12,
           "evidence": [
             "args[1]: 92 distinct values over 4264 calls (reuse 0.978); whole call reuse 0",
             "callee cost 9.33% (coarse bound)"
           ],
-          "hypothesis": "`tinyGlob` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once."
+          "hypothesis": {
+            "kind": "HOIST_ARGUMENT_WORK",
+            "text": "`tinyGlob` receives the same `args[1]` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once.",
+            "preconditions": [
+              {
+                "name": "CALLEE_RESULT_DEPENDS_ONLY_ON_INPUTS",
+                "status": "UNVERIFIED",
+                "detail": "dependency or unresolved callee: effects unknown"
+              },
+              {
+                "name": "CALLEE_DERIVES_WORK_FROM_ARGUMENT",
+                "status": "UNVERIFIED",
+                "detail": "the share of the callee's cost that depends on this argument alone is not measured"
+              }
+            ]
+          }
         }
       ],
       "lowerBlockers": [
@@ -4532,7 +4547,20 @@
       "automatedRecognitionRecall": 0.66,
       "patternFamilyRecall": 1,
       "recognitionPrecision": 1,
-      "phenomena": [],
+      "phenomena": [
+        {
+          "functionId": "src/WorkspaceWorker.ts:14218",
+          "call": "src/WorkspaceWorker.ts:468:43",
+          "callee": "loadConfigForPlugin",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 6.82,
+          "evidence": [
+            "args[2].rootManifest: 2 distinct values over 1027 calls (reuse 0.998); whole call reuse 0",
+            "callee cost 6.83% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (UNKNOWN_SIDE_EFFECT)"
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "not a kernel function form",

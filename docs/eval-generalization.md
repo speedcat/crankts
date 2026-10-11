@@ -66,26 +66,65 @@ The largest single plausible call site per pattern, as a percent of runtime in i
 
 Instead of one recognizer per kind of waste, CrankTS now probes the expensive calls around the hottest call sites. The probes cover inner calls into costly callees, the edges along the dominant caller path, and hoisting candidates. They record generic facts:
 
-- call counts and content repetition (identity-only inputs such as no-argument calls, buffers, and class instances do not count as content)
+- call counts and content repetition (identity-only inputs such as no-argument calls, buffers, and class instances do not count)
 - identity overlap between collections passed to the same call
 - the same content reaching several call sites
 
-`derivePhenomena` turns these facts into hypotheses with an upper bound on the runtime share. Repetition is only evidence when the callee does not write outer state or its arguments (static effects). No annotations or source reading are involved.
+`derivePhenomena` separates two levels:
 
-| Project | Hypothesis (kind, call) | Upper bound | Judgment |
+- **Observations** (`IDENTICAL_OBJECT_FLOW`, `DUPLICATE_CONTENT_FLOW`, `REPEATED_INPUT`, `REPEATED_ARGUMENT`) are measured facts with an at-risk upper bound; they imply no optimization.
+- **Hypotheses** (`AVOID_REDUNDANT_WORK`, `AVOID_DUPLICATE_PROCESSING`, `CACHE_RESULT`, `HOIST_ARGUMENT_WORK`) carry preconditions marked `MET`, `UNVERIFIED`, or `VIOLATED`. A hypothesis is only attached when nothing is violated; otherwise the observation says why it was withheld. `CACHE_RESULT` needs a callee that:
+  - writes nothing outside its locals
+  - reads no mutable outer state (`this`, outer `let`/`var`, outer object/array/buffer constants, clock, environment)
+  - costs clearly more per call than a lookup
+
+  It also lists `CALLERS_DO_NOT_MUTATE_SHARED_RESULT` as unverified. Where a cost model exists (cache lookups, about 0.1 µs), the hypothesis also gives an **estimated avoidable work**: cost × (reuse − lookup / per-call cost).
+
+No annotations or source reading are involved. The results:
+
+| Project | Observation → hypothesis | Upper bound / estimate | Outcome |
 | --- | --- | ---: | --- |
-| closed source | `REDUNDANT_WORK_ON_IDENTICAL_OBJECTS`: a diff over two collections that are 100% the same objects | 16.4 / 16.6 | true, validated −17% |
-| closed source | `DUPLICATE_PROCESSING`: two index calls in one function get the same content | 15.5 / 14.4 / 1.6 | true, ≤ −23% |
-| closed source | `RECOMPUTATION`: JSON column parse, 400k calls over 5–40 distinct inputs | 2.9 / 3.1 | *new*, plausible, unvalidated |
-| Knip | `INVARIANT_ARGUMENT`: `tinyGlob` options repeat (92 values in 4,264 calls) | 9.1 | true (finding #1) |
-| ESLint | `INVARIANT_ARGUMENT`: `eslintScope.analyze` gets the same options for 353 files | 5.8 | weak: options repeat, the work is per file; at most option normalization is hoistable |
-| Effect | `RECOMPUTATION`: `Arr.range` with the same bounds | 2.9 | true repetition, small |
-| noble-hashes | `RECOMPUTATION`: `G1s`/`G2s` inputs repeat | 1.0–5.0 | true at workload level, an artifact of hashing the same buffer 30 times |
+| closed source | identical-object flow → avoid redundant work | 16.4 / – | **validated −17%** |
+| closed source | duplicate content flow → avoid duplicate processing | 15.5 / – | **validated ≤ −23%** (upper bound) |
+| closed source | repeated input → cache JSON parse (all checked preconditions met) | 3.1 / 2.7 | **not beneficial:** −0.7% / −0.8% median, within noise |
+| Knip | repeated argument → hoist `tinyGlob` option work | 9.1 / – | true (finding #1) |
+| ESLint | repeated argument → hoist `eslintScope.analyze` option work | 5.8 / – | weak: the work is per file |
+| ESLint, Knip, Effect, noble | 15 observations | up to 51 | withheld: callee writes outer state or its arguments, reads mutable outer state, or costs less than a lookup (noble `G1s`/`G2s` at 0.02 µs per call) |
 | TypeDoc | none | – | correctly silent |
 
-- **Hit rate on the known ground truth:** both closed-source findings and Knip's `glob` are reproduced mechanically. Knip's plugin-config reload (#3) is lost, because its callee does dynamic imports and is marked as having unknown side effects.
-- **Precision:** of 7 distinct hypotheses, 4 are true and actionable, 2 are true but low-value or benchmark artifacts, and 1 is weak. All false positives of the first version came from identity-only inputs and effectful callees. These were 16–22 entries per noble workload (`this.keccak()`, `G(a, b, c, d)` on mutable buffers) plus Effect's interpreter loop, and the content and effect gates removed them.
-- **Caveat:** the probe was designed after the closed-source findings were known. The fresh hits (JSON parse, `Arr.range`) are the honest test, and they are small. An ablation with an agent on new projects remains the real go/no-go for the advisor.
+- **Reproduction:** both closed-source findings and Knip's `glob` are found mechanically. Knip's plugin-config reload (finding #3) stays an observation, because its callee does dynamic imports and has unknown side effects.
+- **Precision of hypotheses:** 5 hypotheses: 3 true (2 validated), 1 weak, 1 refuted by measurement. Every earlier false positive is now an observation with a stated reason.
+- **What the refuted cache shows:** a hypothesis with every *checked* precondition met can still gain nothing. The estimate assumed the profiled cost was all parse work. In that workload, the time sits in reading rows four times, which a cache does not touch. Upper bound, estimate, and validated gain are different numbers, and only the last one counts.
+- **Caveat:** the probe was designed after the closed-source findings were known. The only fresh hit that met its preconditions did not validate. An ablation with an agent on unseen projects remains the real go/no-go for the advisor.
+
+## Parallel Execution Screening (Track P)
+
+Amdahl screening from the existing profiles (`evaluation/coverage/parallel-screen.ts`): for every workload, the hot functions whose loops or async batches the static parallelism analysis classifies as parallelizable, their inclusive CPU share P, and the ceiling 1 / ((1 − P) + P / n).
+
+| Project | Largest candidate | P | Ceiling ×4 / ×8 | Checked |
+| --- | --- | ---: | ---: | --- |
+| Knip | `walkAST`, `runPlugin` | 9–13% | 1.07–1.10 / 1.08–1.12 | small either way |
+| TypeDoc | `Application.convert` | 43–56% | 1.47–1.73 / – | **artifact:** the loop is `program.emit()` (only with `emit: both`); the share is all of `convert`, which runs on one shared checker |
+| ESLint | `validateRulesConf` | 0–2% | ≈ 1.0 | – |
+| Effect | – | 0% | 1.0 | – |
+| noble-hashes | `keccakP`, `rounds`, `digestInto` | 35–49% | 1.35–1.59 / – | **artifact:** Keccak rounds and scrypt mixing are sequential through typed-array state |
+| closed source | a read adapter loop | 3.5% | 1.03 | **missed the real structure:** see below |
+| IntentWeave index build | `buildFromPaths`, keyword extraction | 27–39% | 1.25–1.42 / 1.3–1.52 | real (per-chunk extraction) |
+
+- **Only IntentWeave has a real candidate, and JS workers already take it.** MVP-7a measured the keyword stage at 6.6 s → 2.3 s with 4 `worker_threads` (2.87×), while the wall time stays at 14.1 s because the rest of the pipeline is serial. A native thread pool could only shrink the remaining 2.3 s. Optimistically (8 threads, no boundary cost) that is ≈ 1.5 s of 14 s, about 10%, and about 6% after the 1.8× algorithmic fix. That is below the ≥ 10% gate, so the four-variant PoC was not built.
+- **CrankTS bug found:** the static parallelism classifier reports `PARALLEL_DOALL` for loops with loop-carried dependences through typed-array elements (`keccakP`), and the screening attributes a function's whole inclusive time to its loop. Both make P look larger than it is. The classification is a candidate list, not evidence.
+- **The screening is blind to async pipelines.** CPU profiles lose the caller stack at every `await`, so a pipeline stage shows up as its own root, not under the orchestrator loop that schedules it. On the closed-source project the orchestrator loop has 1.1% inclusive time, while the stages it runs take most of the runtime. A stage view from the same profile (outermost project frame per sample, idle share) shows:
+  - the run is CPU-bound on one core: idle 0–0.2%, a single thread profile
+  - a full-text index build of 30–33%, done per source
+  - delta computation and hashing of 16–17%, pure and per row
+  - load and transform per source of 6–8%
+  - SQLite reads, writes, and views (about 20%) and GC stay serial
+
+  With P ≈ 0.55 the Amdahl ceiling is about 1.7× at 4 threads and 1.9× at 8. After the two validated algorithmic fixes it is about 1.4× at 4 threads (P ≈ 0.35–0.4). The parallel units are per-source index builds and per-row hashing. The index lives in the main process, so a worker-thread design must export the index or serve queries from the worker: an architecture change in TypeScript, not a native kernel.
+- **Reading for track P:**
+  - No native thread-pool backend is warranted: where parallel work exists, `worker_threads` reach it, and the units are coarse (per source or file).
+  - Pipeline-level parallelism in async code is a real advisor topic that CrankTS cannot see today. It needs a stage view (async roots, idle share, serial sinks), which belongs to track A.
+  - The closed-source project is a candidate for that: a ceiling of 1.4–1.7×, unvalidated.
 
 ## Ground-Truth Findings and Discovery Provenance
 
@@ -95,14 +134,14 @@ The findings list for a later ablation (same agent and budget, raw `.cpuprofile`
 | --- | --- | --- | ---: | --- | --- |
 | 1 | Knip | `glob` called again and again with the same patterns | 10.2 | TOOL (hoisting, measured repetition) | repetition measured, gain not measured |
 | 2 | Knip | gitignore matching algorithm | 17.0 | HUMAN_INDEPENDENT | none |
-| 3 | Knip | plugin config loaded again for the same root manifest | 6.8 | TOOL (v0.2.6e draft only; the final effect gate drops it) | none |
+| 3 | Knip | plugin config loaded again for the same root manifest | 6.8 | TOOL observation only (callee effects unknown, no hypothesis) | none |
 | 4 | TypeDoc | cost is the TypeScript checker: a faster checker, not a kernel | – | HUMAN_FROM_TOOL_EVIDENCE (attribution) | none |
 | 5 | ESLint | prepared rule state, packed tokens | 7.1 | HUMAN_INDEPENDENT | none |
 | 6 | Effect | `assignProperty` creates dictionary-mode objects | 10.0 | HUMAN_INDEPENDENT | none |
 | 7 | noble-hashes | `keccakP` and the compression functions as native kernels | 37.7 | HUMAN_FROM_TOOL_EVIDENCE (attribution, blockers) | gain ceiling below |
 | 8 | closed source | per-row hashing of rows that are the same objects | 16.4 | HUMAN_INDEPENDENT, since v0.2.6e TOOL | −17% wall |
 | 9 | closed source | every entity indexed twice | 15.5 | HUMAN_INDEPENDENT, since v0.2.6e TOOL | ≤ −23% wall (upper bound) |
-| 10 | closed source | the same JSON column text parsed 4× per row and per source | 2.2–3.1 | TOOL (v0.2.6e, *new*) | none |
+| 10 | closed source | the same JSON column text parsed 4× per row and per source | 2.2–3.1 | TOOL (v0.2.6e, *new*) | **refuted:** memoizing gains −0.7/−0.8%, within noise |
 | 11 | IntentWeave | `extractDictionary` rebuilds its term index (and about 40% of it as `RegExp`s) on every chunk | 22.9 | HUMAN_FROM_TOOL_EVIDENCE (KWX history, attribution) | 1.8× on a synthetic benchmark (7.7 → 4.3 s, same output) |
 
 ## Offload Gain Ceiling (Option B)

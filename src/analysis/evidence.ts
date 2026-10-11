@@ -32,6 +32,8 @@ export interface ProbedCall {
   readonly calleeFunctionId?: FunctionId;
   /** Static effects of the project callee (`effects.ts`), when the call goes to a project function. */
   readonly calleeEffects?: readonly Effect[];
+  /** Mutable outer state the project callee reads (its body only); empty when none, undefined when unknown. */
+  readonly calleeReadsMutableState?: readonly string[];
   /** Profiled cost of what the call runs, in percent of runtime (dependency entry or callee inclusive time). */
   readonly costPercent: number;
 }
@@ -69,12 +71,14 @@ export function writeEvidenceProbe(
     const position = sourceFile.getLineAndCharacterOfPosition(call.getStart(sourceFile));
     const key = siteKey(facade.projectRoot, definition.absoluteFile, position.line + 1, position.character + 1);
     const executedFile = builtCounterpart(definition.absoluteFile);
+    const calleeDefinition = calleeFunctionId ? index.byId.get(calleeFunctionId) : undefined;
     probes.set(call, {
       site: { file: definition.absoluteFile, call, key, ...(executedFile ? { executedFile } : {}) },
       info: {
         key, role, functionId: fn.id, callee: call.expression.getText(sourceFile).slice(0, 80), costPercent: round(costPercent),
         ...(calleeFunctionId ? { calleeFunctionId } : {}),
         ...(calleeFunctionId && effectsOf.has(calleeFunctionId) ? { calleeEffects: effectsOf.get(calleeFunctionId) ?? [] } : {}),
+        ...(calleeDefinition ? { calleeReadsMutableState: mutableOuterReads(calleeDefinition.compilerFacade.typescript, calleeDefinition.compilerFacade.checker, calleeDefinition.node) } : {}),
       },
     });
   };
@@ -134,102 +138,174 @@ export function readProbedCalls(outDir: string): ProbedCall[] {
 
 // --- phenomena ---------------------------------------------------------------------------------
 
-export type PhenomenonKind = "REDUNDANT_WORK_ON_IDENTICAL_OBJECTS" | "DUPLICATE_PROCESSING" | "RECOMPUTATION" | "INVARIANT_ARGUMENT";
+/** Measured facts; they imply no optimization by themselves. */
+export type ObservationKind = "IDENTICAL_OBJECT_FLOW" | "DUPLICATE_CONTENT_FLOW" | "REPEATED_INPUT" | "REPEATED_ARGUMENT";
+
+/** What could be done about an observation, if its preconditions hold. */
+export type HypothesisKind = "AVOID_REDUNDANT_WORK" | "AVOID_DUPLICATE_PROCESSING" | "CACHE_RESULT" | "HOIST_ARGUMENT_WORK";
+
+export type PreconditionStatus = "MET" | "UNVERIFIED" | "VIOLATED";
+
+export interface Precondition {
+  readonly name: string;
+  readonly status: PreconditionStatus;
+  readonly detail?: string;
+}
+
+export interface Hypothesis {
+  readonly kind: HypothesisKind;
+  readonly text: string;
+  readonly preconditions: readonly Precondition[];
+  /**
+   * Upper bound minus what the remedy itself costs, where a simple model exists (cache lookups); undefined when
+   * there is no model. Only a validated gain is the truth: this is an estimate.
+   */
+  readonly estimatedAvoidablePercent?: number;
+}
 
 export interface Phenomenon {
-  readonly kind: PhenomenonKind;
+  readonly observation: ObservationKind;
   readonly functionId: FunctionId;
   readonly call: string;
   readonly callee: string;
-  /** Upper bound on the runtime share the phenomenon could account for. */
+  /** At-risk share: the runtime the observed work accounts for at most. */
   readonly upperBoundPercent: number;
   readonly evidence: readonly string[];
-  readonly hypothesis: string;
+  /** Present only when no precondition is violated. */
+  readonly hypothesis?: Hypothesis;
+  /** Why no hypothesis was derived (a violated precondition, or no avoidable work after remedy cost). */
+  readonly withheld?: string;
+}
+
+export interface DerivePhenomenaOptions {
+  /** Profiled runtime in microseconds; enables the per-call cost model. */
+  readonly totalMicros?: number;
+  /** Assumed cost of one cache lookup keyed by the inputs, in microseconds (rough model, default 0.1). */
+  readonly lookupMicros?: number;
 }
 
 /**
- * Hypotheses from measured facts, with deliberately simple thresholds:
- * - REDUNDANT_WORK_ON_IDENTICAL_OBJECTS: a call receives two collections where >= 90% of one's elements are the
- *   same objects as in the other; per-element work on them (serialize, hash, compare) cannot find differences.
- * - DUPLICATE_PROCESSING: calls in the same function receive the same content (>= 50% of distinct inputs shared).
- * - RECOMPUTATION: a call repeats with the same content-bearing inputs (whole-call reuse >= 0.75 over >= 90%
- *   content-bearing calls); identity-only inputs (no arguments, mutable buffers) are not evidence.
- * - INVARIANT_ARGUMENT: otherwise, one substantial argument (fingerprint >= 200 chars) repeats (reuse >= 0.9)
- *   while the call as a whole does not; work the callee derives from it alone could be hoisted. The bound is
- *   coarse (the callee's whole cost), since the share derived from that argument is not measured.
+ * Observations from measured facts, and hypotheses only where their preconditions are not violated:
+ * - IDENTICAL_OBJECT_FLOW: a call receives two collections where >= 90% of one's elements are the same objects as
+ *   in the other. Hypothesis AVOID_REDUNDANT_WORK (skip identical objects by reference).
+ * - DUPLICATE_CONTENT_FLOW: calls in the same function receive the same content (>= 50% of distinct inputs).
+ *   Hypothesis AVOID_DUPLICATE_PROCESSING; violated when the callee writes outer state or its arguments.
+ * - REPEATED_INPUT: a call repeats with the same content-bearing inputs (whole-call reuse >= 0.75 over >= 90%
+ *   content-bearing calls). Hypothesis CACHE_RESULT needs a callee that writes nothing outside its locals, reads
+ *   no mutable outer state, and costs more per call than a lookup.
+ * - REPEATED_ARGUMENT: one substantial argument (fingerprint >= 200 chars) repeats (reuse >= 0.9) while the call
+ *   as a whole does not. Hypothesis HOIST_ARGUMENT_WORK; the bound is coarse (the callee's whole cost).
+ * Identity-only inputs (no arguments, buffers, class instances) and recursive calls produce no observations.
  */
-export function derivePhenomena(probed: readonly ProbedCall[], evidence: ReadonlyMap<string, InputRepetition>): Phenomenon[] {
+export function derivePhenomena(
+  probed: readonly ProbedCall[],
+  evidence: ReadonlyMap<string, InputRepetition>,
+  options: DerivePhenomenaOptions = {},
+): Phenomenon[] {
   const byKey = new Map(probed.map((call) => [call.key, call]));
+  const lookupMicros = options.lookupMicros ?? 0.1;
   const phenomena: Phenomenon[] = [];
   const reported = new Set<string>();
   for (const call of probed) {
     const facts = evidence.get(call.key);
     if (!facts) continue;
+    const base = { functionId: call.functionId, call: call.key, callee: call.callee };
+    const purity = purityPreconditions(call);
+
     const identity = facts.identity?.find((entry) => entry.meanOverlap >= 0.9 && entry.meanElements >= 10);
     if (identity) {
+      const upper = round(call.costPercent * identity.meanOverlap);
       phenomena.push({
-        kind: "REDUNDANT_WORK_ON_IDENTICAL_OBJECTS",
-        functionId: call.functionId,
-        call: call.key,
-        callee: call.callee,
-        upperBoundPercent: round(call.costPercent * identity.meanOverlap),
+        ...base,
+        observation: "IDENTICAL_OBJECT_FLOW",
+        upperBoundPercent: upper,
         evidence: [`${identity.pair}: ${(identity.meanOverlap * 100).toFixed(1)}% same objects (mean ${identity.meanElements} elements, ${identity.calls} calls)`, `callee cost ${call.costPercent}%`],
-        hypothesis: `\`${call.callee}\` receives collections whose elements are mostly the same objects; per-element work that compares or fingerprints them cannot find a difference for those. Skipping identical objects (reference check) would remove up to that share of its cost.`,
+        hypothesis: {
+          kind: "AVOID_REDUNDANT_WORK",
+          text: `\`${call.callee}\` receives collections whose elements are mostly the same objects; per-element work that compares or fingerprints them cannot find a difference for those. A reference check before that work would skip it.`,
+          preconditions: [
+            { name: "PER_ELEMENT_WORK_IS_COMPARISON", status: "UNVERIFIED", detail: "that the callee's per-element work compares or fingerprints is not checked" },
+            { name: "ELEMENTS_NOT_MUTATED_BETWEEN", status: "UNVERIFIED" },
+          ],
+        },
       });
     }
-    const writes = (call.calleeEffects ?? []).some((effect) => WRITING_EFFECTS.has(effect));
-    const duplicates = writes ? [] : (facts.sharedWith ?? []).filter((other) => other.shareOfDistinct >= 0.5 && byKey.get(other.site)?.functionId === call.functionId);
-    if (duplicates.length > 0) {
-      const group = [call.key, ...duplicates.map((other) => other.site)].sort();
+
+    const shared = (facts.sharedWith ?? []).filter((other) => other.shareOfDistinct >= 0.5 && byKey.get(other.site)?.functionId === call.functionId);
+    if (shared.length > 0) {
+      const group = [call.key, ...shared.map((other) => other.site)].sort();
       const groupKey = group.join("|");
       if (!reported.has(groupKey)) {
         reported.add(groupKey);
         const cost = Math.max(...group.map((key) => byKey.get(key)?.costPercent ?? 0));
-        phenomena.push({
-          kind: "DUPLICATE_PROCESSING",
-          functionId: call.functionId,
-          call: call.key,
-          callee: call.callee,
+        const writes = group.some((key) => (byKey.get(key)?.calleeEffects ?? []).some((effect) => WRITING_EFFECTS.has(effect)));
+        const preconditions: Precondition[] = [
+          writes
+            ? { name: "CALLEES_HAVE_NO_OUTER_EFFECTS", status: "VIOLATED", detail: "a callee writes outer state or its arguments" }
+            : { name: "CALLEES_HAVE_NO_OUTER_EFFECTS", status: group.every((key) => byKey.get(key)?.calleeEffects) ? "MET" : "UNVERIFIED" },
+          { name: "SAME_RESULT_SERVES_ALL_CALLERS", status: "UNVERIFIED", detail: "the calls may need different results from the same content" },
+        ];
+        phenomena.push(withHypothesis({
+          ...base,
+          observation: "DUPLICATE_CONTENT_FLOW",
           upperBoundPercent: round((cost * (group.length - 1)) / group.length),
-          evidence: duplicates.map((other) => `same content as ${other.site}: ${(other.shareOfDistinct * 100).toFixed(0)}% of ${facts.distinctSignatures} distinct inputs`),
-          hypothesis: `${group.length} calls in the same function process the same content (${group.map((key) => byKey.get(key)?.callee ?? key).join(", ")}). Doing the work once and reusing it would remove up to ${group.length - 1} of ${group.length} shares.`,
-        });
+          evidence: shared.map((other) => `same content as ${other.site}: ${(other.shareOfDistinct * 100).toFixed(0)}% of ${facts.distinctSignatures} distinct inputs`),
+        }, {
+          kind: "AVOID_DUPLICATE_PROCESSING",
+          text: `${group.length} calls in the same function process the same content (${group.map((key) => byKey.get(key)?.callee ?? key).join(", ")}). Doing the work once would remove up to ${group.length - 1} of ${group.length} shares.`,
+          preconditions,
+        }));
       }
     }
-    // Whole-call repetition over content-bearing inputs only. A single repeating argument path is a hoisting
-    // signal (HOIST_INVARIANT_WORK), not recomputation of the call; identity-only inputs repeat trivially.
-    const reuse = facts.reuseRatio;
+
     // Recursive calls repeat small sub-values by nature (a serializer on its leaves); not a caching signal.
     const recursive = call.calleeFunctionId !== undefined && call.calleeFunctionId === call.functionId;
-    // A callee that writes outer state or its arguments is called for its effect: repeating inputs do not mean
-    // a repeating, reusable result. (Reads alone do not disqualify: module constants count as reads.)
-    if ((call.calleeEffects ?? []).some((effect) => WRITING_EFFECTS.has(effect))) continue;
     const contentShare = facts.contentCalls === undefined ? 1 : facts.contentCalls / Math.max(1, facts.calls);
-    if (!recursive && contentShare >= 0.9 && reuse >= 0.75 && facts.calls >= 10 && call.costPercent >= 0.5) {
-      phenomena.push({
-        kind: "RECOMPUTATION",
-        functionId: call.functionId,
-        call: call.key,
-        callee: call.callee,
-        upperBoundPercent: round(call.costPercent * reuse),
-        evidence: [`${facts.calls} calls, ${facts.distinctSignatures} distinct inputs (reuse ${reuse})`, `callee cost ${call.costPercent}%`],
-        hypothesis: `\`${call.callee}\` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share.`,
-      });    } else if (!recursive && facts.bestPath && facts.bestPath.reuseRatio >= 0.9 && facts.calls >= 10 && call.costPercent >= 0.5) {
-      phenomena.push({
-        kind: "INVARIANT_ARGUMENT",
-        functionId: call.functionId,
-        call: call.key,
-        callee: call.callee,
+    if (recursive || facts.calls < 10 || call.costPercent < 0.5) continue;
+    if (contentShare >= 0.9 && facts.reuseRatio >= 0.75) {
+      const upper = round(call.costPercent * facts.reuseRatio);
+      const perCall = options.totalMicros !== undefined ? (call.costPercent / 100) * options.totalMicros / facts.calls : undefined;
+      // Every call pays a lookup; hits save the call: avoidable = cost × (reuse − lookup / per-call cost).
+      const estimate = perCall !== undefined ? round(Math.max(0, call.costPercent * (facts.reuseRatio - lookupMicros / Math.max(perCall, 1e-9)))) : undefined;
+      const preconditions: Precondition[] = [
+        ...purity,
+        // A cached object is shared by every caller that hits the cache; a caller that mutates it changes the others.
+        { name: "CALLERS_DO_NOT_MUTATE_SHARED_RESULT", status: "UNVERIFIED", detail: "irrelevant for primitive results; not checked" },
+        ...(perCall !== undefined
+          ? [{ name: "CALL_COSTS_MORE_THAN_LOOKUP", status: (perCall > lookupMicros * 2 ? "MET" : "VIOLATED") as PreconditionStatus, detail: `${perCall.toFixed(2)} µs per call vs ~${lookupMicros} µs per lookup` }]
+          : []),
+      ];
+      phenomena.push(withHypothesis({
+        ...base,
+        observation: "REPEATED_INPUT",
+        upperBoundPercent: upper,
+        evidence: [`${facts.calls} calls, ${facts.distinctSignatures} distinct inputs (reuse ${facts.reuseRatio})`, `callee cost ${call.costPercent}%${perCall !== undefined ? `, ${perCall.toFixed(2)} µs per call` : ""}`],
+      }, {
+        kind: "CACHE_RESULT",
+        text: `\`${call.callee}\` is called again and again with the same inputs; caching its result by those inputs would avoid the repeated share, minus the lookups.`,
+        preconditions,
+        ...(estimate !== undefined ? { estimatedAvoidablePercent: estimate } : {}),
+      }));
+    } else if (facts.bestPath && facts.bestPath.reuseRatio >= 0.9) {
+      phenomena.push(withHypothesis({
+        ...base,
+        observation: "REPEATED_ARGUMENT",
         upperBoundPercent: round(call.costPercent * facts.bestPath.reuseRatio),
         evidence: [`${facts.bestPath.path}: ${facts.bestPath.distinct} distinct values over ${facts.calls} calls (reuse ${facts.bestPath.reuseRatio}); whole call reuse ${facts.reuseRatio}`, `callee cost ${call.costPercent}% (coarse bound)`],
-        hypothesis: `\`${call.callee}\` receives the same \`${facts.bestPath.path}\` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once.`,
-      });
+      }, {
+        kind: "HOIST_ARGUMENT_WORK",
+        text: `\`${call.callee}\` receives the same \`${facts.bestPath.path}\` again and again while other inputs vary; whatever it derives from that argument alone (compiled patterns, resolved config, indexes) could be prepared once.`,
+        preconditions: [
+          ...purity,
+          { name: "CALLEE_DERIVES_WORK_FROM_ARGUMENT", status: "UNVERIFIED", detail: "the share of the callee's cost that depends on this argument alone is not measured" },
+        ],
+      }));
     }
   }
-  // One entry per kind, function, and callee: unrolled code calls the same callee from many sites.
+  // One entry per observation, function, and callee: unrolled code calls the same callee from many sites.
   const merged = new Map<string, Phenomenon & { sites: number }>();
   for (const phenomenon of phenomena) {
-    const key = `${phenomenon.kind}\u0001${phenomenon.functionId}\u0001${phenomenon.callee}`;
+    const key = `${phenomenon.observation}\u0001${phenomenon.functionId}\u0001${phenomenon.callee}`;
     const previous = merged.get(key);
     if (!previous) merged.set(key, { ...phenomenon, sites: 1 });
     else merged.set(key, { ...(previous.upperBoundPercent >= phenomenon.upperBoundPercent ? previous : phenomenon), sites: previous.sites + 1 });
@@ -239,7 +315,71 @@ export function derivePhenomena(probed: readonly ProbedCall[], evidence: Readonl
     .sort((left, right) => right.upperBoundPercent - left.upperBoundPercent);
 }
 
+/** Attaches the hypothesis unless a precondition is violated or nothing is left to avoid. */
+function withHypothesis(observation: Omit<Phenomenon, "hypothesis" | "withheld">, hypothesis: Hypothesis): Phenomenon {
+  const violated = hypothesis.preconditions.filter((precondition) => precondition.status === "VIOLATED");
+  if (violated.length > 0) {
+    return { ...observation, withheld: violated.map((precondition) => `${precondition.name}${precondition.detail ? ` (${precondition.detail})` : ""}`).join("; ") };
+  }
+  if (hypothesis.estimatedAvoidablePercent === 0) return { ...observation, withheld: "no avoidable work after the remedy's own cost" };
+  return { ...observation, hypothesis };
+}
+
+/** Whether repeating inputs can mean a repeating result: static facts about the callee. */
+function purityPreconditions(call: ProbedCall): Precondition[] {
+  if (!call.calleeEffects) {
+    return [{ name: "CALLEE_RESULT_DEPENDS_ONLY_ON_INPUTS", status: "UNVERIFIED", detail: "dependency or unresolved callee: effects unknown" }];
+  }
+  const writes = call.calleeEffects.filter((effect) => WRITING_EFFECTS.has(effect));
+  return [
+    writes.length > 0
+      ? { name: "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS", status: "VIOLATED", detail: writes.join(", ") }
+      : { name: "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS", status: "MET" },
+    call.calleeReadsMutableState === undefined
+      ? { name: "CALLEE_READS_NO_MUTABLE_OUTER_STATE", status: "UNVERIFIED" }
+      : call.calleeReadsMutableState.length > 0
+        ? { name: "CALLEE_READS_NO_MUTABLE_OUTER_STATE", status: "VIOLATED", detail: call.calleeReadsMutableState.join(", ") }
+        : { name: "CALLEE_READS_NO_MUTABLE_OUTER_STATE", status: "MET", detail: "direct body only, callees not followed" },
+  ];
+}
+
 const WRITING_EFFECTS: ReadonlySet<Effect> = new Set(["MUTATES_ARGUMENT", "MUTATES_GLOBAL_STATE", "WRITES_EXTERNAL_STATE", "UNKNOWN_SIDE_EFFECT"]);
+
+/**
+ * Mutable state a function reads besides its parameters (its body only): `this`, outer `let`/`var`, outer
+ * `const` bound to an object, array, buffer, or instance (contents may change), clock, randomness, environment.
+ * Outer `const` functions, primitives, and regular expressions are immutable inputs.
+ */
+function mutableOuterReads(t: typeof ts, checker: ts.TypeChecker, fn: ts.Node): string[] {
+  const body = (fn as ts.FunctionLikeDeclaration).body;
+  if (!body) return [];
+  const found = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (node.kind === t.SyntaxKind.ThisKeyword) found.add("this");
+    if (t.isPropertyAccessExpression(node)) {
+      const text = node.getText();
+      if (text === "Date.now" || text === "Math.random" || text === "process.env" || text === "performance.now") found.add(text);
+    }
+    if (t.isNewExpression(node) && t.isIdentifier(node.expression) && node.expression.text === "Date" && (node.arguments?.length ?? 0) === 0) found.add("new Date()");
+    if (t.isIdentifier(node) && !(t.isPropertyAccessExpression(node.parent) && node.parent.name === node)) {
+      const declaration = checker.getSymbolAtLocation(node)?.declarations?.[0];
+      if (declaration && t.isVariableDeclaration(declaration) && (declaration.getStart() < body.getStart() || declaration.getStart() > body.end)) {
+        const list = declaration.parent;
+        const isConst = t.isVariableDeclarationList(list) && (list.flags & t.NodeFlags.Const) !== 0;
+        const init = declaration.initializer;
+        const immutable = isConst && init !== undefined && (
+          t.isArrowFunction(init) || t.isFunctionExpression(init) || t.isLiteralExpression(init) || t.isNoSubstitutionTemplateLiteral(init)
+          || init.kind === t.SyntaxKind.TrueKeyword || init.kind === t.SyntaxKind.FalseKeyword || t.isRegularExpressionLiteral(init)
+          || (t.isPrefixUnaryExpression(init) && t.isNumericLiteral(init.operand))
+        );
+        if (!immutable) found.add(node.text);
+      }
+    }
+    node.forEachChild(visit);
+  };
+  visit(body);
+  return [...found].sort();
+}
 
 // --- helpers -------------------------------------------------------------------------------------
 

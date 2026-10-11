@@ -65,7 +65,7 @@ describe("workload evidence and phenomena (v0.2.6e)", () => {
     expect(secondAdd?.calls).toBe(50);
   });
 
-  it("derives hypotheses with upper bounds from the facts", () => {
+  it("separates observations from hypotheses, which need their preconditions", () => {
     const probed: ProbedCall[] = [
       { key: "a.ts:10:5", role: "CALLER_EDGE", functionId: "a.ts:1", callee: "diff", costPercent: 16, calleeFunctionId: "a.ts:2" },
       { key: "a.ts:20:5", role: "INNER_CALL", functionId: "a.ts:3", callee: "index.add", costPercent: 30 },
@@ -73,7 +73,9 @@ describe("workload evidence and phenomena (v0.2.6e)", () => {
       { key: "a.ts:30:5", role: "INNER_CALL", functionId: "a.ts:4", callee: "walk", costPercent: 10, calleeFunctionId: "a.ts:4" },
       { key: "a.ts:40:5", role: "INNER_CALL", functionId: "a.ts:5", callee: "glob", costPercent: 8 },
       { key: "a.ts:50:5", role: "INNER_CALL", functionId: "a.ts:6", callee: "this.keccak", costPercent: 30 },
-      { key: "a.ts:60:5", role: "INNER_CALL", functionId: "a.ts:7", callee: "G", costPercent: 22, calleeFunctionId: "a.ts:8", calleeEffects: ["READS_EXTERNAL_STATE", "MUTATES_GLOBAL_STATE"] },
+      { key: "a.ts:60:5", role: "INNER_CALL", functionId: "a.ts:7", callee: "G", costPercent: 22, calleeFunctionId: "a.ts:8", calleeEffects: ["READS_EXTERNAL_STATE", "MUTATES_GLOBAL_STATE"], calleeReadsMutableState: ["BBUF"] },
+      { key: "a.ts:70:5", role: "INNER_CALL", functionId: "a.ts:9", callee: "parseJson", costPercent: 3, calleeFunctionId: "a.ts:10", calleeEffects: ["ALLOCATES", "READS_EXTERNAL_STATE"], calleeReadsMutableState: [] },
+      { key: "a.ts:80:5", role: "INNER_CALL", functionId: "a.ts:11", callee: "G1s", costPercent: 5, calleeFunctionId: "a.ts:12", calleeEffects: ["ALLOCATES", "MUTATES_LOCAL_STATE"], calleeReadsMutableState: [] },
     ];
     const phenomena = derivePhenomena(probed, new Map([
       ["a.ts:10:5", { calls: 5, distinctSignatures: 5, reuseRatio: 0, identity: [{ pair: "args[0].emitted in args[0].base", meanOverlap: 1, meanElements: 20000, calls: 5 }] }],
@@ -81,17 +83,32 @@ describe("workload evidence and phenomena (v0.2.6e)", () => {
       ["a.ts:21:5", { calls: 100, distinctSignatures: 100, reuseRatio: 0, sharedWith: [{ site: "a.ts:20:5", distinct: 100, shareOfDistinct: 1 }] }],
       // A recursive call with repeating leaves is not a caching signal.
       ["a.ts:30:5", { calls: 1000, distinctSignatures: 10, reuseRatio: 0.99 }],
-      // The options repeat while the cwd varies: an invariant argument, not recomputation of the call.
+      // The options repeat while the cwd varies: a repeated argument, not a repeated call.
       ["a.ts:40:5", { calls: 400, distinctSignatures: 300, reuseRatio: 0.25, contentCalls: 400, bestPath: { path: "args[1]", distinct: 2, reuseRatio: 0.995 } }],
-      // No arguments (state lives in `this`): repeats trivially, no evidence.
+      // No arguments (state lives in `this`): repeats trivially, no observation.
       ["a.ts:50:5", { calls: 300000, distinctSignatures: 1, reuseRatio: 1, contentCalls: 0 }],
-      // Index arguments repeat, but the callee writes outer buffers: called for its effect.
+      // Index arguments repeat, but the callee writes and reads outer buffers: observation only.
       ["a.ts:60:5", { calls: 3000000, distinctSignatures: 16, reuseRatio: 1, contentCalls: 3000000 }],
-    ]));
-    expect(phenomena.map((phenomenon) => [phenomenon.kind, phenomenon.callee, phenomenon.upperBoundPercent])).toEqual([
-      ["REDUNDANT_WORK_ON_IDENTICAL_OBJECTS", "diff", 16],
-      ["DUPLICATE_PROCESSING", "index.add", 15],
-      ["INVARIANT_ARGUMENT", "glob", 7.96],
+      // 400k parses over 40 inputs, 0.75 µs each (10 s runtime): worth a cache.
+      ["a.ts:70:5", { calls: 400000, distinctSignatures: 40, reuseRatio: 1, contentCalls: 400000 }],
+      // Pure, repeating, but 0.06 µs per call: a lookup costs more than the call.
+      ["a.ts:80:5", { calls: 8000000, distinctSignatures: 280000, reuseRatio: 0.965, contentCalls: 8000000 }],
+    ]), { totalMicros: 10_000_000 });
+    const summary = phenomena.map((phenomenon) => [phenomenon.observation, phenomenon.callee, phenomenon.upperBoundPercent, phenomenon.hypothesis?.kind ?? "withheld"]);
+    expect(summary).toEqual([
+      ["REPEATED_INPUT", "G", 22, "withheld"],
+      ["IDENTICAL_OBJECT_FLOW", "diff", 16, "AVOID_REDUNDANT_WORK"],
+      ["DUPLICATE_CONTENT_FLOW", "index.add", 15, "AVOID_DUPLICATE_PROCESSING"],
+      ["REPEATED_ARGUMENT", "glob", 7.96, "HOIST_ARGUMENT_WORK"],
+      ["REPEATED_INPUT", "G1s", 4.83, "withheld"],
+      ["REPEATED_INPUT", "parseJson", 3, "CACHE_RESULT"],
     ]);
+    const byCallee = new Map(phenomena.map((phenomenon) => [phenomenon.callee, phenomenon]));
+    expect(byCallee.get("G")?.withheld).toContain("CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS");
+    expect(byCallee.get("G1s")?.withheld).toContain("CALL_COSTS_MORE_THAN_LOOKUP");
+    // 3% × (1 − 0.1 µs / 0.75 µs) = 2.6%
+    expect(byCallee.get("parseJson")?.hypothesis?.estimatedAvoidablePercent).toBe(2.6);
+    // A dependency callee's purity cannot be checked: the hypothesis stays, marked unverified.
+    expect(byCallee.get("glob")?.hypothesis?.preconditions[0]).toMatchObject({ name: "CALLEE_RESULT_DEPENDS_ONLY_ON_INPUTS", status: "UNVERIFIED" });
   });
 });

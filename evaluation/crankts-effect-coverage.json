@@ -7,9 +7,9 @@
     "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      4.68,
-      6.12,
-      6.67
+      2.78,
+      2.67,
+      3.26
     ]
   },
   "subject": {
@@ -462,17 +462,29 @@
       ],
       "phenomena": [
         {
-          "kind": "RECOMPUTATION",
+          "functionId": "src/internal/effect.ts:47705",
+          "call": "src/internal/effect.ts:1521:10",
+          "callee": "fiber.succeedWith",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 7.43,
+          "evidence": [
+            "7350 calls, 245 distinct inputs (reuse 0.967)",
+            "callee cost 7.68%, 9.67 µs per call"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (this)"
+        },
+        {
           "functionId": "src/Stream.ts:46122",
           "call": "src/Stream.ts:1649:23",
           "callee": "Arr.range",
+          "observation": "REPEATED_INPUT",
           "upperBoundPercent": 2.94,
           "evidence": [
             "7320 calls, 244 distinct inputs (reuse 0.967)",
-            "callee cost 3.04%",
+            "callee cost 3.04%, 3.84 µs per call",
             "2 call sites"
           ],
-          "hypothesis": "`Arr.range` is called again and again with inputs that repeat; caching or hoisting its result by those inputs would remove up to the repeated share."
+          "withheld": "CALLEE_READS_NO_MUTABLE_OUTER_STATE (makeBy)"
         }
       ],
       "lowerBlockers": [
@@ -905,7 +917,20 @@
       ],
       "automatedRecognitionRecall": 0,
       "patternFamilyRecall": 1,
-      "phenomena": [],
+      "phenomena": [
+        {
+          "functionId": "src/SchemaAST.ts:65272",
+          "call": "src/SchemaAST.ts:2447:24",
+          "callee": "finish",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 1.76,
+          "evidence": [
+            "5100000 calls, 2 distinct inputs (reuse 1)",
+            "callee cost 1.76%, 0.01 µs per call"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (ast, elementLen); CALL_COSTS_MORE_THAN_LOOKUP (0.01 µs per call vs ~0.1 µs per lookup)"
+        }
+      ],
       "lowerBlockers": [
         {
           "reason": "not a kernel function form",
