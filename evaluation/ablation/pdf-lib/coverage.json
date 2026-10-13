@@ -2,21 +2,21 @@
   "schemaVersion": 2,
   "project": "CrankTS",
   "comparisonType": "pdf-lib-acceleration-coverage",
-  "capturedAt": "2026-10-11",
+  "capturedAt": "2026-10-12",
   "environment": {
-    "node": "24.21.0",
+    "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      37.17,
-      31.57,
-      21.72
+      4.18,
+      4.5,
+      4.37
     ]
   },
   "subject": {
     "name": "pdf-lib",
     "version": "v1.17.1 (4beebbef7a261ed0be089bb1d63a5b6e28cc488a)",
     "description": "PDF creation and modification with embedded fonts, images, and large page counts",
-    "analyzedFunctions": 0
+    "analyzedFunctions": 1256
   },
   "method": {
     "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
@@ -31,7 +31,11 @@
       "workload": "create-report-500-page",
       "profiledMs": 6869,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "UNANALYZED_PROJECT": 14.79,
+        "FUNCTION_SELF": 9.06,
+        "EXTERNAL_DEPENDENCY": 55,
+        "UNATTRIBUTED": 20.22,
+        "RUNTIME": 0
       },
       "topOrigins": [
         {
@@ -40,9 +44,9 @@
           "percent": 50.11
         },
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 25.32
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 25.27
         },
         {
           "origin": "pako",
@@ -80,9 +84,9 @@
           "percent": 0.56
         },
         {
-          "origin": "@pdf-lib/standard-fonts",
-          "kind": "PACKAGE",
-          "percent": 0.08
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.05
         }
       ],
       "funnel": [
@@ -92,15 +96,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 79.78
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 9.06
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (3)",
+          "percent": 65.26
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -112,20 +116,176 @@
         }
       ],
       "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 65.26
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/core/embedders/CustomFontSubsetEmbedder.ts:1364",
+          "name": "CustomFontSubsetEmbedder.encodeText",
+          "attributedPercent": 51.18,
+          "ownPercent": 1.37,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 48.73,
+            "FUNCTION_SELF": 1.37,
+            "UNANALYZED_PROJECT": 1.08
+          },
+          "topExternal": [
+            {
+              "origin": "@pdf-lib/fontkit",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 48.73
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 1.08
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/api/PDFFont.ts:2158",
+                "src/api/PDFPage.ts:31101"
+              ],
+              "percentOfSite": 99.98
+            },
+            {
+              "path": [
+                "src/api/PDFPage.ts:31101"
+              ],
+              "percentOfSite": 0.02
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/api/PDFPage.ts:31101",
+          "name": "PDFPage.drawText",
+          "attributedPercent": 8.82,
+          "ownPercent": 0.73,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 7.46,
+            "FUNCTION_SELF": 0.73
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 7.46
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils/Cache.ts:334",
+          "name": "Cache.access",
+          "attributedPercent": 5.44,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 5.86,
+            "UNANALYZED_PROJECT": 0.02,
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "pako",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 5.86
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009",
+                "src/core/objects/PDFStream.ts:1149"
+              ],
+              "percentOfSite": 98.7
+            },
+            {
+              "path": [
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009",
+                "src/core/structures/PDFCrossRefStream.ts:5232"
+              ],
+              "percentOfSite": 1.07
+            },
+            {
+              "path": [
+                "src/core/structures/PDFCrossRefStream.ts:4072",
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009"
+              ],
+              "percentOfSite": 0.23
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        }
+      ]
     },
     {
       "workload": "modify-large-existing-pdf",
       "profiledMs": 12053,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "FUNCTION_SELF": 21.36,
+        "UNANALYZED_PROJECT": 23.91,
+        "RUNTIME": 0.09,
+        "EXTERNAL_DEPENDENCY": 38.98,
+        "UNATTRIBUTED": 14.96
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 46.93
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 46.91
         },
         {
           "origin": "@pdf-lib/fontkit",
@@ -168,8 +328,8 @@
           "percent": 1.69
         },
         {
-          "origin": "@pdf-lib/standard-fonts",
-          "kind": "PACKAGE",
+          "origin": "other",
+          "kind": "OTHER",
           "percent": 0.04
         }
       ],
@@ -180,15 +340,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 85.04
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 21.36
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (5)",
+          "percent": 69.18
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -199,9 +359,307 @@
           "percent": 0
         }
       ],
-      "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "phenomena": [
+        {
+          "functionId": "src/core/parser/PDFObjectParser.ts:7976",
+          "call": "src/core/parser/PDFObjectParser.ts:252:11",
+          "callee": "this.matchKeyword",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 13.34,
+          "evidence": [
+            "7003013 calls (115610 sampled), 1 distinct inputs (reuse 1)",
+            "callee cost 13.34%, 0.16 µs per call",
+            "5 call sites"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (this); CALL_COSTS_MORE_THAN_LOOKUP (0.16 µs per call vs ~0.1 µs per lookup)"
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 69.18
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/core/embedders/CustomFontSubsetEmbedder.ts:1364",
+          "name": "CustomFontSubsetEmbedder.encodeText",
+          "attributedPercent": 37.19,
+          "ownPercent": 0.73,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 37.3,
+            "UNANALYZED_PROJECT": 0.53,
+            "FUNCTION_SELF": 0.73
+          },
+          "topExternal": [
+            {
+              "origin": "@pdf-lib/fontkit",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 37.3
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.53
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/api/PDFFont.ts:2158",
+                "src/api/PDFPage.ts:31101"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/core/parser/ByteStream.ts:782",
+          "name": "ByteStream.next",
+          "attributedPercent": 16.53,
+          "ownPercent": 4.12,
+          "byTarget": {
+            "FUNCTION_SELF": 4.12,
+            "UNANALYZED_PROJECT": 10.64
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 10.64
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/core/parser/BaseParser.ts:3100",
+                "src/core/parser/PDFObjectParser.ts:7976",
+                "src/core/parser/PDFObjectParser.ts:6939"
+              ],
+              "percentOfSite": 79.32
+            },
+            {
+              "path": [
+                "src/core/parser/PDFObjectParser.ts:7976",
+                "src/core/parser/PDFObjectParser.ts:6939",
+                "src/core/parser/PDFObjectParser.ts:2122"
+              ],
+              "percentOfSite": 15.05
+            },
+            {
+              "path": [
+                "src/core/parser/PDFObjectParser.ts:5034",
+                "src/core/parser/PDFObjectParser.ts:5824",
+                "src/core/parser/PDFObjectParser.ts:6939"
+              ],
+              "percentOfSite": 0.68
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/api/PDFPage.ts:31101",
+          "name": "PDFPage.drawText",
+          "attributedPercent": 5.88,
+          "ownPercent": 0.52,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 5.36,
+            "FUNCTION_SELF": 0.52
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 5.36
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/core/parser/PDFObjectParser.ts:7976",
+          "name": "PDFObjectParser.findEndOfStreamFallback",
+          "attributedPercent": 4.33,
+          "ownPercent": 2.44,
+          "byTarget": {
+            "FUNCTION_SELF": 2.44,
+            "UNANALYZED_PROJECT": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.03
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/core/parser/PDFObjectParser.ts:6939",
+                "src/core/parser/PDFObjectParser.ts:2122",
+                "src/core/parser/PDFParser.ts:4508"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/utils/Cache.ts:334",
+          "name": "Cache.access",
+          "attributedPercent": 3.13,
+          "ownPercent": 0.03,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 7.34,
+            "UNANALYZED_PROJECT": 0.13,
+            "FUNCTION_SELF": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "pako",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.34
+            },
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.13
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009",
+                "src/core/objects/PDFStream.ts:1149"
+              ],
+              "percentOfSite": 96.38
+            },
+            {
+              "path": [
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009",
+                "src/core/structures/PDFCrossRefStream.ts:5232"
+              ],
+              "percentOfSite": 2.59
+            },
+            {
+              "path": [
+                "src/core/structures/PDFCrossRefStream.ts:4072",
+                "src/core/structures/PDFFlateStream.ts:905",
+                "src/core/objects/PDFStream.ts:1009"
+              ],
+              "percentOfSite": 0.87
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/core/parser/BaseParser.ts:3100",
+          "name": "BaseParser.matchKeyword",
+          "attributedPercent": 2.52,
+          "ownPercent": 2.52,
+          "byTarget": {
+            "FUNCTION_SELF": 2.52
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/core/parser/PDFObjectParser.ts:7976",
+                "src/core/parser/PDFObjectParser.ts:6939",
+                "src/core/parser/PDFObjectParser.ts:2122"
+              ],
+              "percentOfSite": 96.26
+            },
+            {
+              "path": [],
+              "percentOfSite": 2.54
+            },
+            {
+              "path": [
+                "src/core/parser/PDFObjectParser.ts:6939",
+                "src/core/parser/PDFObjectParser.ts:2122",
+                "src/core/parser/PDFParser.ts:4508"
+              ],
+              "percentOfSite": 1.02
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
     }
   ]
 }

@@ -5,7 +5,8 @@
 // Each arm directory is self-contained. Annotations are never exported (the study configs of new projects have none).
 // Usage: node --import tsx evaluation/ablation/export-bundle.ts <study.ts> <study out dir> <bundle dir>
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyzeProject } from "../../src/analysis/analyze-project.js";
@@ -30,6 +31,21 @@ function mainProfile(directory: string): string | undefined {
 
 const slug = (text: string): string => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
 
+/**
+ * Profile URLs name the machine's directories (the pinned checkout, the home directory, the editor's debugger):
+ * rewrite them to the layout the agent sees, so profiles carry neither the tool's directory names nor personal paths.
+ */
+function sanitizeProfile(text: string, subjectRoot: string): string {
+  const home = homedir();
+  return text
+    .split(`file://${subjectRoot}`).join("file:///subject")
+    .replace(/file:\/\/\/[^"]*ms-vscode\.js-debug\/bootloader\.js/g, "file:///debugger/bootloader.js")
+    .split(`file://${home}`).join("file:///home/user")
+    // Plain paths also occur, e.g. in the names of loader-generated matcher functions.
+    .split(subjectRoot).join("/subject")
+    .split(home).join("/home/user");
+}
+
 function describe(analysis: AnalysisResult): (id: string) => string {
   const byId = new Map(analysis.functions.map((fn) => [fn.id, fn]));
   return (id) => {
@@ -38,13 +54,23 @@ function describe(analysis: AnalysisResult): (id: string) => string {
   };
 }
 
-function evidenceOf(analysis: AnalysisResult, phenomena: readonly Phenomenon[]): unknown {
+interface ProbeStatus { readonly ran: boolean; readonly probedCalls: number; readonly recordedSites: number }
+
+function evidenceOf(analysis: AnalysisResult, phenomena: readonly Phenomenon[], probe: ProbeStatus): unknown {
   const coverage = computeCoverage(analysis);
   const name = describe(analysis);
   const byId = new Map<string, FunctionAnalysis>(analysis.functions.map((fn) => [fn.id, fn]));
   return {
     tool: "CrankTS evidence (v0.2.6e)",
     note: "Percentages are shares of the profiled runtime. Upper bounds are at-risk shares, not expected gains.",
+    workloadProbe: {
+      ran: probe.ran,
+      probedCalls: probe.probedCalls,
+      recordedSites: probe.recordedSites,
+      meaning: probe.ran
+        ? "Calls around the hottest call sites were instrumented during one extra run; an empty observations list then means none of the checked patterns were observed."
+        : "The instrumented run did not happen or failed; observations are missing, not absent.",
+    },
     runtimeByAttributionTarget: coverage.attribution,
     selfTimeByOrigin: coverage.buckets.slice(0, 15).map((bucket) => ({ origin: bucket.origin, kind: bucket.kind, percent: bucket.percent })),
     callSites: coverage.callSites.map((site) => ({
@@ -107,19 +133,25 @@ for (const [index, workload] of study.workloads.entries()) {
     workspaceReferences: study.workspaceReferences === true,
     ...(existsSync(signatures) ? { inputSignaturePaths: [signatures] } : {}),
   });
+  const probedCalls = readProbedCalls(join(studyOut, `probe-${index}`));
+  const recorded = existsSync(signatures) ? readInputSignatures([signatures]) : new Map();
   const phenomena = existsSync(signatures)
-    ? derivePhenomena(readProbedCalls(join(studyOut, `probe-${index}`)), readInputSignatures([signatures]), { totalMicros: analysis.cpuProfile?.totalSampleMicros })
+    ? derivePhenomena(probedCalls, recorded, { totalMicros: analysis.cpuProfile?.totalSampleMicros })
     : [];
+  // A probe that ran records at least one call site; an empty file means the hook never saw the code.
+  const probe: ProbeStatus = { ran: recorded.size > 0, probedCalls: probedCalls.length, recordedSites: recorded.size };
+  if (!probe.ran) console.error(`${workload.name}: WARNING the evidence probe recorded nothing (${probe.probedCalls} calls were selected); E and H will carry no observations`);
   const base = join(bundleRoot, study.name, slug(workload.name));
   const summary = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", summaryScript, profile, study.cwd], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   if (summary.status !== 0) throw new Error(`profile summary failed: ${summary.stderr}`);
   const workloadText = `# Workload\n\n${workload.name}${workload.degraded ? `\n\nStatus: degraded - ${workload.degraded}` : ""}\n\nRun from this isolated workload's subject copy:\n\n\`\`\`sh\nnode ${workload.args.join(" ")}\n\`\`\`\n${workload.env ? `\nEnvironment: \`${JSON.stringify(workload.env)}\`\n` : ""}`;
-  const evidence = evidenceOf(analysis, phenomena);
+  const sanitizedProfile = sanitizeProfile(readFileSync(profile, "utf8"), study.cwd);
+  const evidence = evidenceOf(analysis, phenomena, probe);
   const hypotheses = hypothesesOf(analysis, phenomena);
   for (const arm of ["P", "E", "H"] as const) {
     const directory = join(base, arm);
     mkdirSync(directory, { recursive: true });
-    copyFileSync(profile, join(directory, "profile.cpuprofile"));
+    writeFileSync(join(directory, "profile.cpuprofile"), sanitizedProfile);
     writeFileSync(join(directory, "profile-summary.md"), summary.stdout);
     writeFileSync(join(directory, "WORKLOAD.md"), workloadText);
     if (arm !== "P") {

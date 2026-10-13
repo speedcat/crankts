@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -63,6 +63,39 @@ describe("workload evidence and phenomena (v0.2.6e)", () => {
     expect(diffCall?.identity?.[0]).toMatchObject({ pair: "args[0].emitted in args[0].base", meanOverlap: 1, meanElements: 50, calls: 5 });
     expect(firstAdd?.sharedWith).toEqual([{ site: sites[1]?.key, distinct: 50, shareOfDistinct: 1 }]);
     expect(secondAdd?.calls).toBe(50);
+  });
+
+  it("samples hot calls: the call count stays exact, ratios use the sampled calls", () => {
+    const dir = mkdtempSync(join(tmpdir(), "crankts-sampling-"));
+    temporaryDirectories.push(dir);
+    writeFileSync(join(dir, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true, module: "esnext", target: "es2022", allowImportingTsExtensions: true, noEmit: true }, include: ["*.ts"] }));
+    writeFileSync(join(dir, "hot.ts"), "export function hot(value: string): number {\n  return value.length;\n}\n");
+    writeFileSync(join(dir, "run.ts"), 'import { hot } from "./hot.ts";\nlet sink = 0;\nfor (let index = 0; index < 30000; index += 1) sink += hot("repeating input that is long enough to count as content");\nconsole.log(sink);\n');
+    const facade = createCompilerFacade(dir);
+    const file = join(dir, "run.ts");
+    const t = facade.typescript;
+    let site: ProbeSite | undefined;
+    const visit = (node: ts.Node): void => {
+      if (t.isCallExpression(node) && node.expression.getText() === "hot") {
+        const position = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart());
+        site = { file, call: node, key: siteKey(facade.projectRoot, file, position.line + 1, position.character + 1) };
+      }
+      node.forEachChild(visit);
+    };
+    const source = facade.program.getSourceFile(file);
+    if (source) visit(source);
+    expect(site).toBeDefined();
+    const probe = writeInputSignatureProbe([site as ProbeSite], join(dir, "probe"));
+    const signatures = join(dir, "signatures.json");
+    const child = spawnSync(process.execPath, ["--import", probe.importPath, file], { encoding: "utf8", env: { ...process.env, CRANKTS_SIGNATURES_OUT: signatures } });
+    expect(child.status, child.stderr).toBe(0);
+    const facts = readInputSignatures([signatures]).get((site as ProbeSite).key);
+    expect(facts?.calls).toBe(30000);
+    // 2,000 exact + (20,000 − 2,000) / 4 + (30,000 − 20,000) / 64, rounded the way the modulo schedule counts them.
+    expect(facts?.sampledCalls).toBeGreaterThan(6000);
+    expect(facts?.sampledCalls).toBeLessThan(7500);
+    expect(facts?.distinctSignatures).toBe(1);
+    expect(facts?.reuseRatio).toBeGreaterThan(0.99);
   });
 
   it("separates observations from hypotheses, which need their preconditions", () => {

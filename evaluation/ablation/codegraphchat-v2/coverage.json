@@ -2,21 +2,21 @@
   "schemaVersion": 2,
   "project": "CrankTS",
   "comparisonType": "codegraphchat-v2-acceleration-coverage",
-  "capturedAt": "2026-10-11",
+  "capturedAt": "2026-10-12",
   "environment": {
-    "node": "24.21.0",
+    "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      4.71,
-      4.29,
-      7.24
+      2.8,
+      3.49,
+      3.96
     ]
   },
   "subject": {
     "name": "codegraphchat-v2",
     "version": "c35c76b5a22032b6ebe733adf7b720ad6f85bcf2",
     "description": "Workspace validation of 128 branching 2,048-state capture graphs; this revision has no repository-index or query command",
-    "analyzedFunctions": 0
+    "analyzedFunctions": 1769
   },
   "method": {
     "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
@@ -37,9 +37,9 @@
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 54.03
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 53.74
         },
         {
           "origin": "(native)",
@@ -82,9 +82,9 @@
           "percent": 0.05
         },
         {
-          "origin": "chalk",
-          "kind": "PACKAGE",
-          "percent": 0.05
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.29
         }
       ],
       "funnel": [

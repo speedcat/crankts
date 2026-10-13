@@ -260,7 +260,7 @@ export function derivePhenomena(
 
     // Recursive calls repeat small sub-values by nature (a serializer on its leaves); not a caching signal.
     const recursive = call.calleeFunctionId !== undefined && call.calleeFunctionId === call.functionId;
-    const contentShare = facts.contentCalls === undefined ? 1 : facts.contentCalls / Math.max(1, facts.calls);
+    const contentShare = facts.contentCalls === undefined ? 1 : facts.contentCalls / Math.max(1, facts.sampledCalls ?? facts.calls);
     if (recursive || facts.calls < 10 || call.costPercent < 0.5) continue;
     if (contentShare >= 0.9 && facts.reuseRatio >= 0.75) {
       const upper = round(call.costPercent * facts.reuseRatio);
@@ -279,7 +279,7 @@ export function derivePhenomena(
         ...base,
         observation: "REPEATED_INPUT",
         upperBoundPercent: upper,
-        evidence: [`${facts.calls} calls, ${facts.distinctSignatures} distinct inputs (reuse ${facts.reuseRatio})`, `callee cost ${call.costPercent}%${perCall !== undefined ? `, ${perCall.toFixed(2)} µs per call` : ""}`],
+        evidence: [`${facts.calls} calls${facts.sampledCalls ? ` (${facts.sampledCalls} sampled)` : ""}, ${facts.distinctSignatures} distinct inputs (reuse ${facts.reuseRatio})`, `callee cost ${call.costPercent}%${perCall !== undefined ? `, ${perCall.toFixed(2)} µs per call` : ""}`],
       }, {
         kind: "CACHE_RESULT",
         text: `\`${call.callee}\` is called again and again with the same inputs; caching its result by those inputs would avoid the repeated share, minus the lookups.`,

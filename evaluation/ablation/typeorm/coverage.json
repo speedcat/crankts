@@ -2,21 +2,21 @@
   "schemaVersion": 2,
   "project": "CrankTS",
   "comparisonType": "typeorm-acceleration-coverage",
-  "capturedAt": "2026-10-11",
+  "capturedAt": "2026-10-12",
   "environment": {
-    "node": "24.21.0",
+    "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      2.82,
-      3.91,
-      7.18
+      2.72,
+      3.52,
+      3.98
     ]
   },
   "subject": {
     "name": "typeorm",
     "version": "1.1.2 (a0ea55323662dcd3cff1fa5ab6153be43ded80a7)",
     "description": "TypeORM metadata bootstrap, 500k relational inserts, and 20k varied joined hydration queries on SQLite",
-    "analyzedFunctions": 0
+    "analyzedFunctions": 18489
   },
   "method": {
     "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
@@ -32,13 +32,19 @@
       "wallMs": 8466,
       "profiledMs": 8419,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "FUNCTION_SELF": 91.81,
+        "RUNTIME": 0.06,
+        "IO": 0.02,
+        "EXTERNAL_DEPENDENCY": 1.04,
+        "EXTERNAL_NATIVE": 0,
+        "UNANALYZED_PROJECT": 2.93,
+        "UNATTRIBUTED": 4.11
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 95.16
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 95.03
         },
         {
           "origin": "node",
@@ -71,6 +77,11 @@
           "percent": 0.23
         },
         {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.12
+        },
+        {
           "origin": "(idle)",
           "kind": "IDLE",
           "percent": 0.05
@@ -79,11 +90,6 @@
           "origin": "ansis",
           "kind": "PACKAGE",
           "percent": 0.01
-        },
-        {
-          "origin": "get-tsconfig",
-          "kind": "PACKAGE",
-          "percent": 0.02
         }
       ],
       "funnel": [
@@ -93,15 +99,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 95.89
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 91.81
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (1)",
+          "percent": 88.17
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -113,21 +119,73 @@
         }
       ],
       "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 88.17
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064",
+          "name": "BetterSqlite3QueryRunner.query",
+          "attributedPercent": 88.17,
+          "ownPercent": 87.27,
+          "byTarget": {
+            "FUNCTION_SELF": 87.27,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 99.97
+            },
+            {
+              "path": [
+                "src/query-runner/BaseQueryRunner.ts:23864"
+              ],
+              "percentOfSite": 0.03
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        }
+      ]
     },
     {
       "workload": "relational-insert-500000-orders",
       "wallMs": 11178,
       "profiledMs": 11108,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "RUNTIME": 0.02,
+        "IO": 0.01,
+        "EXTERNAL_DEPENDENCY": 8.52,
+        "FUNCTION_SELF": 70.82,
+        "UNANALYZED_PROJECT": 13.14,
+        "UNATTRIBUTED": 7.59
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 81.5
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 80.35
         },
         {
           "origin": "better-sqlite3",
@@ -150,6 +208,11 @@
           "percent": 1.5
         },
         {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 1.07
+        },
+        {
           "origin": "(program)",
           "kind": "PROGRAM",
           "percent": 0.58
@@ -168,11 +231,6 @@
           "origin": "get-tsconfig",
           "kind": "PACKAGE",
           "percent": 0.02
-        },
-        {
-          "origin": "@sqltools/formatter",
-          "kind": "PACKAGE",
-          "percent": 0
         }
       ],
       "funnel": [
@@ -182,41 +240,311 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 92.41
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 70.82
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (6)",
+          "percent": 77.39
         },
         {
           "step": "CrankTS-recognized (advisor)",
-          "percent": 0
+          "percent": 19.99
         },
         {
           "step": "CrankTS-transformable (a fail-closed pass accepts it)",
           "percent": 0
         }
       ],
-      "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "phenomena": [
+        {
+          "functionId": "src/query-builder/InsertQueryBuilder.ts:34745",
+          "call": "src/query-builder/InsertQueryBuilder.ts:882:35",
+          "callee": "this.createColumnValueExpression",
+          "observation": "REPEATED_ARGUMENT",
+          "upperBoundPercent": 25.37,
+          "evidence": [
+            "args[0]: 1503 distinct values over 8510000 calls (reuse 0.989); whole call reuse 0",
+            "callee cost 25.65% (coarse bound)"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, MUTATES_GLOBAL_STATE, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (this)"
+        },
+        {
+          "functionId": "src/query-builder/QueryBuilder.ts:15717",
+          "call": "src/query-builder/QueryBuilder.ts:465:18",
+          "callee": "this.hasParameter",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 14.18,
+          "evidence": [
+            "8510000 calls (139156 sampled), 2813 distinct inputs (reuse 0.98)",
+            "callee cost 14.47%, 0.19 µs per call"
+          ],
+          "withheld": "CALLEE_READS_NO_MUTABLE_OUTER_STATE (this); CALL_COSTS_MORE_THAN_LOOKUP (0.19 µs per call vs ~0.1 µs per lookup)"
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 77.39
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/driver/sqlite-abstract/AbstractSqliteDriver.ts:15217",
+          "name": "AbstractSqliteDriver.escapeQueryWithParameters",
+          "attributedPercent": 19.99,
+          "ownPercent": 10.75,
+          "byTarget": {
+            "FUNCTION_SELF": 10.75,
+            "UNANALYZED_PROJECT": 8.83
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 8.83
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:17234",
+                "src/query-builder/InsertQueryBuilder.ts:2370"
+              ],
+              "percentOfSite": 99.97
+            },
+            {
+              "path": [
+                "src/query-builder/InsertQueryBuilder.ts:2370"
+              ],
+              "percentOfSite": 0.03
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "NATIVE_OFFLOAD:MEDIUM"
+          ],
+          "recognized": true,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/QueryBuilder.ts:16061",
+          "name": "QueryBuilder.getParameters",
+          "attributedPercent": 17.22,
+          "ownPercent": 17.37,
+          "byTarget": {
+            "FUNCTION_SELF": 17.37,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:17234",
+                "src/query-builder/InsertQueryBuilder.ts:2370"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/QueryBuilder.ts:14375",
+          "name": "QueryBuilder.hasParameter",
+          "attributedPercent": 13.88,
+          "ownPercent": 14.47,
+          "byTarget": {
+            "FUNCTION_SELF": 14.47
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:15717",
+                "src/query-builder/InsertQueryBuilder.ts:61213",
+                "src/query-builder/InsertQueryBuilder.ts:34745"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064",
+          "name": "BetterSqlite3QueryRunner.query",
+          "attributedPercent": 10.39,
+          "ownPercent": 10.24,
+          "byTarget": {
+            "FUNCTION_SELF": 10.24,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 98.78
+            },
+            {
+              "path": [
+                "src/query-builder/InsertQueryBuilder.ts:2370"
+              ],
+              "percentOfSite": 1.17
+            },
+            {
+              "path": [
+                "src/driver/sqlite-abstract/AbstractSqliteQueryRunner.ts:4609"
+              ],
+              "percentOfSite": 0.05
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/QueryBuilder.ts:14756",
+          "name": "QueryBuilder.setParameter",
+          "attributedPercent": 8.54,
+          "ownPercent": 8.41,
+          "byTarget": {
+            "FUNCTION_SELF": 8.41
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:15717",
+                "src/query-builder/InsertQueryBuilder.ts:61213",
+                "src/query-builder/InsertQueryBuilder.ts:34745"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:1674",
+          "name": "BetterSqlite3QueryRunner.getStmt",
+          "attributedPercent": 7.41,
+          "ownPercent": 0.07,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 7.34,
+            "FUNCTION_SELF": 0.07
+          },
+          "topExternal": [
+            {
+              "origin": "better-sqlite3",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.34
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 99.62
+            },
+            {
+              "path": [
+                "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064"
+              ],
+              "percentOfSite": 0.38
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        }
+      ]
     },
     {
       "workload": "joined-hydration-20000-varied-queries",
       "wallMs": 6147,
       "profiledMs": 6093,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "UNANALYZED_PROJECT": 6.59,
+        "RUNTIME": 0.1,
+        "IO": 0.25,
+        "EXTERNAL_DEPENDENCY": 8.5,
+        "FUNCTION_SELF": 70.03,
+        "UNATTRIBUTED": 13.94
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 76.87
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 76.11
         },
         {
           "origin": "better-sqlite3",
@@ -244,6 +572,11 @@
           "percent": 1.56
         },
         {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.87
+        },
+        {
           "origin": "tsx",
           "kind": "PACKAGE",
           "percent": 0.6
@@ -257,11 +590,6 @@
           "origin": "get-tsconfig",
           "kind": "PACKAGE",
           "percent": 0.03
-        },
-        {
-          "origin": "ansis",
-          "kind": "PACKAGE",
-          "percent": 0.01
         }
       ],
       "funnel": [
@@ -271,15 +599,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 86.06
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 70.03
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (10)",
+          "percent": 69.04
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -290,9 +618,540 @@
           "percent": 0
         }
       ],
-      "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "phenomena": [
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064",
+          "call": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:117:32",
+          "callee": "this.getStmt",
+          "observation": "REPEATED_INPUT",
+          "upperBoundPercent": 7.51,
+          "evidence": [
+            "40001 calls (6813 sampled), 1001 distinct inputs (reuse 0.853)",
+            "callee cost 8.81%, 13.43 µs per call"
+          ],
+          "withheld": "CALLEE_WRITES_NOTHING_OUTSIDE_LOCALS (MUTATES_ARGUMENT, UNKNOWN_SIDE_EFFECT); CALLEE_READS_NO_MUTABLE_OUTER_STATE (this)"
+        }
+      ],
+      "lowerBlockers": [
+        {
+          "reason": "method uses this/super",
+          "percent": 66.89
+        },
+        {
+          "reason": "other: expression TemplateExpression is not lowered",
+          "percent": 1.95
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064",
+          "name": "BetterSqlite3QueryRunner.query",
+          "attributedPercent": 41.81,
+          "ownPercent": 41.16,
+          "byTarget": {
+            "FUNCTION_SELF": 41.16,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 99.83
+            },
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:141369",
+                "src/query-builder/SelectQueryBuilder.ts:55076",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 0.1
+            },
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:141369",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 0.07
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:1674",
+          "name": "BetterSqlite3QueryRunner.getStmt",
+          "attributedPercent": 9.12,
+          "ownPercent": 1.23,
+          "byTarget": {
+            "FUNCTION_SELF": 1.23,
+            "EXTERNAL_DEPENDENCY": 7.58
+          },
+          "topExternal": [
+            {
+              "origin": "better-sqlite3",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 7.58
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 87.29
+            },
+            {
+              "path": [
+                "src/driver/better-sqlite3/BetterSqlite3QueryRunner.ts:3064"
+              ],
+              "percentOfSite": 12.71
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:10506",
+          "name": "RawSqlResultsToEntityTransformer.transformJoins",
+          "attributedPercent": 3.33,
+          "ownPercent": 1.8,
+          "byTarget": {
+            "FUNCTION_SELF": 1.8,
+            "UNANALYZED_PROJECT": 1.53
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 1.53
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 62.11
+            },
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681"
+              ],
+              "percentOfSite": 36.96
+            },
+            {
+              "path": [],
+              "percentOfSite": 0.62
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:3978",
+          "name": "RawSqlResultsToEntityTransformer.group",
+          "attributedPercent": 3.06,
+          "ownPercent": 2.98,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.08,
+            "FUNCTION_SELF": 2.98
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.08
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:10506",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681"
+              ],
+              "percentOfSite": 72.55
+            },
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 27.11
+            },
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 0.34
+            }
+          ],
+          "eligibility": "BLOCKED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/QueryBuilder.ts:24317",
+          "name": "QueryBuilder.replacePropertyNamesForTheWholeQuery",
+          "attributedPercent": 2.99,
+          "ownPercent": 2.43,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.63,
+            "FUNCTION_SELF": 2.43
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.63
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/QueryBuilder.ts:17234",
+                "src/query-builder/SelectQueryBuilder.ts:141369"
+              ],
+              "percentOfSite": 51.74
+            },
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/SelectQueryBuilder.ts:124130",
+                "src/query-builder/SelectQueryBuilder.ts:56598"
+              ],
+              "percentOfSite": 48.26
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "HOIST_INVARIANT_WORK:LOW",
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:9464",
+          "name": "RawSqlResultsToEntityTransformer.transformColumns",
+          "attributedPercent": 2.94,
+          "ownPercent": 2.73,
+          "byTarget": {
+            "FUNCTION_SELF": 2.73
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:10506"
+              ],
+              "percentOfSite": 68.92
+            },
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 29.91
+            },
+            {
+              "path": [],
+              "percentOfSite": 1.18
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/driver/sqlite-abstract/AbstractSqliteDriver.ts:17490",
+          "name": "AbstractSqliteDriver.escape",
+          "attributedPercent": 1.95,
+          "ownPercent": 1.95,
+          "byTarget": {
+            "FUNCTION_SELF": 1.95
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:19471",
+                "src/query-builder/SelectQueryBuilder.ts:105867",
+                "src/query-builder/SelectQueryBuilder.ts:102430"
+              ],
+              "percentOfSite": 38.82
+            },
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:19471",
+                "src/query-builder/SelectQueryBuilder.ts:74646",
+                "src/query-builder/SelectQueryBuilder.ts:4555"
+              ],
+              "percentOfSite": 27.87
+            },
+            {
+              "path": [
+                "src/query-builder/QueryBuilder.ts:19471",
+                "src/query-builder/QueryBuilder.ts:24317",
+                "src/query-builder/SelectQueryBuilder.ts:4555"
+              ],
+              "percentOfSite": 16.74
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: expression TemplateExpression is not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/SelectQueryBuilder.ts:102430",
+          "name": "SelectQueryBuilder.buildEscapedEntityColumnSelects",
+          "attributedPercent": 1.76,
+          "ownPercent": 1,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.76,
+            "FUNCTION_SELF": 1
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.76
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:74646",
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 53.43
+            },
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:74646",
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/QueryBuilder.ts:17234"
+              ],
+              "percentOfSite": 46.57
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/query-builder/SelectQueryBuilder.ts:74646",
+          "name": "SelectQueryBuilder.createSelectExpression",
+          "attributedPercent": 1.45,
+          "ownPercent": 1.08,
+          "byTarget": {
+            "FUNCTION_SELF": 1.08,
+            "UNANALYZED_PROJECT": 0.43
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.43
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/QueryBuilder.ts:17234",
+                "src/query-builder/SelectQueryBuilder.ts:141369"
+              ],
+              "percentOfSite": 52.29
+            },
+            {
+              "path": [
+                "src/query-builder/SelectQueryBuilder.ts:4555",
+                "src/query-builder/SelectQueryBuilder.ts:124130",
+                "src/query-builder/SelectQueryBuilder.ts:56598"
+              ],
+              "percentOfSite": 47.71
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/metadata/ColumnMetadata.ts:34337",
+          "name": "ColumnMetadata.setEntityValue",
+          "attributedPercent": 1.45,
+          "ownPercent": 1.45,
+          "byTarget": {
+            "FUNCTION_SELF": 1.45
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:9464",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:6681",
+          "name": "RawSqlResultsToEntityTransformer.transformRawResultsGroup",
+          "attributedPercent": 1.18,
+          "ownPercent": 1.09,
+          "byTarget": {
+            "FUNCTION_SELF": 1.09,
+            "UNANALYZED_PROJECT": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.09
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:10506",
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596"
+              ],
+              "percentOfSite": 57.49
+            },
+            {
+              "path": [
+                "src/query-builder/transformer/RawSqlResultsToEntityTransformer.ts:2596",
+                "src/query-builder/SelectQueryBuilder.ts:124130"
+              ],
+              "percentOfSite": 42.51
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
     }
   ]
 }

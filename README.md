@@ -53,12 +53,12 @@ Six projects were profiled and reviewed (Knip, TypeDoc, ESLint, Effect, noble-ha
 The remaining question is a product question: *does a workload-aware evidence graph make a competent performance engineer, human or agent, materially better at finding validated improvements?*
 
 - **Design:** three arms on unfamiliar code (RxDB, pdf-lib, TypeORM, and one more repository). The agent gets either a plain CPU profile and summary (P), plus CrankTS evidence (E), plus CrankTS hypotheses (H). Every reported finding is re-measured blind to the arm. Protocol: [docs/ablation-protocol.md](docs/ablation-protocol.md); tools: [evaluation/ablation](evaluation/ablation).
-- **State:** the 24 isolated runs (2 per arm per repository) are prepared. A review of the preparation found a blocker: the E and H material is empty, because the analysis was pointed at a project folder that does not contain the sources. That needs to be fixed and the material regenerated before any run. Two smaller gaps are open as well (no fixed, offline test command per repository; a few mentions of the tool name in the P material). Nothing has been run yet.
+- **State:** the 24 isolated runs (2 per arm per repository) are prepared, and a review of the preparation found and fixed a blocker: the E and H material had been empty, because the analysis was pointed at a folder that does not contain the sources, and the evidence probe could not run under the Node/tsx combination used. The material is regenerated and synced into the workspaces; the pre-flight script (`evaluation/ablation/preflight.mjs`) passes except for one workload that is not measurable (RxDB live query: 95% of its 5 s is a dangling timer). Still open before the first run: a fixed offline test command per repository, the sandbox read check, and recording model, effort, and Copilot version. Nothing has been run yet.
 - **Rule:** E must beat P by at least 15 points of validated recall (or match it at 60% of the cost) in 3 of 4 repositories, with no worse false-positive severity.
 
 ### What happens next
 
-1. Fix the preparation (analysis roots, regenerated E and H material, a fixed test command per repository), then run the 24 sessions and score them blind.
+1. Finish the preparation (decide the live-query workload, a fixed test command per repository), then run the 24 sessions and score them blind.
 2. **If E clearly beats P:** CrankTS continues as an evidence and diagnosis tool. Next features: a stage view for async pipelines, and database statements joined to the call sites that issue them. Both are blind spots found on the closed-source project.
 3. **If not:** CrankTS ends as a research result with a final write-up of what generalized (call-site attribution, evidence probes, fail-closed lowering with proofs) and what did not (per-hotspot recognition, TypeScript-to-native gains).
 
@@ -180,7 +180,7 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | v0.2.6e: evidence before patterns | Done: caller paths, position-based profile matching, typed-array and `throw` eligibility, the evidence probe with observations and hypotheses |
 | Evaluations #1–#6 | Done: Knip, TypeDoc, ESLint, Effect, noble-hashes, a closed-source monorepo ([generalization review](docs/eval-generalization.md)) |
 | Decision (2026-10-11) | Taken: evidence and diagnosis go to validation; native tier, native thread pool, and the hybrid tier are stopped |
-| **Agent ablation** | **In preparation**: blocker found in the E and H material (see above); then 24 runs and blind scoring |
+| **Agent ablation** | **In preparation**: E and H material fixed; open items above; then 24 runs and blind scoring |
 | v0.2.7 `TransformationPlan`, v0.3 automatic offload | **Parked / no longer planned** |
 | Exit | If the ablation does not favor evidence over a plain profile, the project ends as a research write-up |
 

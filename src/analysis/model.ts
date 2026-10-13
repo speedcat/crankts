@@ -369,6 +369,8 @@ export interface InputRepetition {
   readonly reuseRatio: number;
   /** Best reuse ratio over substantial argument paths (fingerprint ≥ 200 chars: pattern lists, sources), e.g. `args[1].ignore`. */
   readonly bestPath?: { readonly path: string; readonly distinct: number; readonly reuseRatio: number };
+  /** Calls whose inputs were fingerprinted, when the probe sampled (a hot call is fingerprinted every Nth time); ratios use this count. */
+  readonly sampledCalls?: number;
   /** Calls whose inputs carry values, not only object identities (no arguments, buffers, class instances). */
   readonly contentCalls?: number;
   /** Identity overlap between collections in the arguments: share of B's elements that are the same objects as in A. */

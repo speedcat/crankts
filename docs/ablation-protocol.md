@@ -63,7 +63,19 @@ Whoever prepares a subject must not read its profile or look for performance pro
 
 ## 2b. Pre-Flight Checks (before the first run)
 
-Added after a review of the first preparation, which found E and H bundles with no content. Run all of these; do not start a session until they pass.
+Added after a review of the first preparation, which found E and H bundles with no content. Run all of these; do not start a session until they pass. Checks 1, 2, 5, and 6 are automated:
+
+```sh
+node evaluation/ablation/preflight.mjs ../ablation-bundles/<bundle dir> ../ablation-runs/<campaign dir>
+```
+
+To replace the material of already prepared workspaces without rebuilding them (refuses once a run has started; `perf-input/` is not part of the baseline commit):
+
+```sh
+node evaluation/ablation/sync-perf-input.mjs ../ablation-bundles/<bundle dir> ../ablation-runs/<campaign dir> --apply
+```
+
+**Run the evidence study under Node 24** (the study configs pin `~/.nvm/versions/node/v24.21.0`, the Node the agents use). Node 22.19 with tsx 4.20 rejects every synchronous load hook, which the evidence probe registers; the exported evidence records whether the probe recorded anything (`workloadProbe.ran`), so a failed probe cannot pass as "nothing found".
 
 1. **The E and H material has content.** In every `crankts-evidence.json`:
    - `runtimeByAttributionTarget` is not 100% `UNATTRIBUTED`
@@ -152,6 +164,7 @@ Scoring is blind to the arm: rename runs to random ids before scoring.
    - **tokens and wall time.**
    - **false-positive severity:** findings reported as validated whose re-measurement fails or changes results.
    - **attribution of the source:** per validated finding, the material the agent named.
+   - **claim reliability:** of the findings an agent reports as validated (its own before/after numbers), the share that fails the blind re-measurement, and the ratio of claimed to re-measured gain. This is the evidence for or against a validation layer: if agents' self-measured gains replicate, an independent evaluator adds little; if they do not (the measurement noise floor on a loaded machine was 5–11% run to run in earlier studies, above the 2% threshold), it fills a real gap.
 
 **Decision:**
 

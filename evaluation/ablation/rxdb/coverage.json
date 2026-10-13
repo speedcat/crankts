@@ -2,21 +2,21 @@
   "schemaVersion": 2,
   "project": "CrankTS",
   "comparisonType": "rxdb-acceleration-coverage",
-  "capturedAt": "2026-10-11",
+  "capturedAt": "2026-10-12",
   "environment": {
-    "node": "24.21.0",
+    "node": "22.19.0",
     "host": "darwin-arm64",
     "loadAverage": [
-      3.19,
-      4.4,
-      7.81
+      3.97,
+      4.47,
+      4.38
     ]
   },
   "subject": {
     "name": "rxdb",
     "version": "17.6.0 (9d60a86373730211c291f8c25668fca7aa531887)",
     "description": "In-memory RxDB storage with 750k indexed records, repeated sorted queries, and a live query",
-    "analyzedFunctions": 0
+    "analyzedFunctions": 7103
   },
   "method": {
     "profiles": "3 fresh processes per workload, round-robin, --cpu-prof-interval 500us",
@@ -32,13 +32,17 @@
       "wallMs": 6609,
       "profiledMs": 6418,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "FUNCTION_SELF": 42.54,
+        "RUNTIME": 0.01,
+        "UNANALYZED_PROJECT": 18.17,
+        "EXTERNAL_DEPENDENCY": 0.01,
+        "UNATTRIBUTED": 38.86
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 66.12
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 66.04
         },
         {
           "origin": "(garbage collector)",
@@ -76,6 +80,11 @@
           "percent": 0.06
         },
         {
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.04
+        },
+        {
           "origin": "rxjs",
           "kind": "PACKAGE",
           "percent": 0.05
@@ -88,15 +97,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 61.14
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 42.54
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (6)",
+          "percent": 49.02
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -108,21 +117,247 @@
         }
       ],
       "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "lowerBlockers": [
+        {
+          "reason": "other: generic functions are not lowered",
+          "percent": 41.22
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 7.8
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:6314",
+          "name": "bulkInsertToState",
+          "attributedPercent": 17.53,
+          "ownPercent": 12.29,
+          "byTarget": {
+            "FUNCTION_SELF": 12.29,
+            "UNANALYZED_PROJECT": 3.5
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 3.5
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518",
+                "src/rx-database.ts:20390"
+              ],
+              "percentOfSite": 99.95
+            },
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322"
+              ],
+              "percentOfSite": 0.05
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:1475",
+          "name": "sortByIndexStringComparator",
+          "attributedPercent": 13.73,
+          "ownPercent": 12.76,
+          "byTarget": {
+            "FUNCTION_SELF": 12.76
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/memory-helper.ts:6314",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518"
+              ],
+              "percentOfSite": 99.24
+            },
+            {
+              "path": [],
+              "percentOfSite": 0.76
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/doc-cache.ts:19349",
+          "name": "mapDocumentsDataToCacheDocs",
+          "attributedPercent": 9.68,
+          "ownPercent": 0.2,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 9.48,
+            "FUNCTION_SELF": 0.2
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 9.48
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-query.ts:7757"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/doc-cache.ts:7606",
+          "name": "DocumentCache.processTasks",
+          "attributedPercent": 3.79,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 3.79
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 3.79
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/rx-collection.ts:14391",
+          "name": "RxCollectionBase.bulkInsert",
+          "attributedPercent": 3.6,
+          "ownPercent": 3.37,
+          "byTarget": {
+            "FUNCTION_SELF": 3.37
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/change-event-buffer.ts:2013",
+          "name": "ChangeEventBuffer._handleChangeEvents",
+          "attributedPercent": 2.97,
+          "ownPercent": 2.97,
+          "byTarget": {
+            "FUNCTION_SELF": 2.97
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/change-event-buffer.ts:1797",
+                "src/change-event-buffer.ts:2714",
+                "src/rx-query.ts:22459"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
     },
     {
       "workload": "indexed-sorted-queries-20000",
       "wallMs": 5651,
       "profiledMs": 5471,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "UNANALYZED_PROJECT": 23.98,
+        "FUNCTION_SELF": 45.39,
+        "EXTERNAL_DEPENDENCY": 0.03,
+        "RUNTIME": 0.01,
+        "UNATTRIBUTED": 30.45
       },
       "topOrigins": [
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 72.81
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 72.77
         },
         {
           "origin": "(garbage collector)",
@@ -165,9 +400,9 @@
           "percent": 0.06
         },
         {
-          "origin": "custom-idle-queue",
-          "kind": "PACKAGE",
-          "percent": 0.02
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.05
         }
       ],
       "funnel": [
@@ -177,15 +412,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 69.55
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 45.39
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (5)",
+          "percent": 55.91
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -197,15 +432,207 @@
         }
       ],
       "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "lowerBlockers": [
+        {
+          "reason": "other: generic functions are not lowered",
+          "percent": 48.25
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 7.47
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:6314",
+          "name": "bulkInsertToState",
+          "attributedPercent": 19.19,
+          "ownPercent": 14.99,
+          "byTarget": {
+            "FUNCTION_SELF": 14.99,
+            "UNANALYZED_PROJECT": 4.31
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 4.31
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518",
+                "src/rx-database.ts:20390"
+              ],
+              "percentOfSite": 99.97
+            },
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322"
+              ],
+              "percentOfSite": 0.03
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:1475",
+          "name": "sortByIndexStringComparator",
+          "attributedPercent": 15.38,
+          "ownPercent": 15.44,
+          "byTarget": {
+            "FUNCTION_SELF": 15.44
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/memory-helper.ts:6314",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518"
+              ],
+              "percentOfSite": 99.34
+            },
+            {
+              "path": [],
+              "percentOfSite": 0.66
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/doc-cache.ts:19349",
+          "name": "mapDocumentsDataToCacheDocs",
+          "attributedPercent": 13.74,
+          "ownPercent": 0.17,
+          "byTarget": {
+            "FUNCTION_SELF": 0.17,
+            "UNANALYZED_PROJECT": 13.8
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 13.8
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-query.ts:7757"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/rx-collection.ts:14391",
+          "name": "RxCollectionBase.bulkInsert",
+          "attributedPercent": 4.2,
+          "ownPercent": 4.2,
+          "byTarget": {
+            "FUNCTION_SELF": 4.2
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/change-event-buffer.ts:2013",
+          "name": "ChangeEventBuffer._handleChangeEvents",
+          "attributedPercent": 3.28,
+          "ownPercent": 3.27,
+          "byTarget": {
+            "FUNCTION_SELF": 3.27
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/change-event-buffer.ts:1797",
+                "src/change-event-buffer.ts:2714",
+                "src/rx-query.ts:22459"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 2
+        }
+      ]
     },
     {
       "workload": "live-query-10000-record-inserts",
       "wallMs": 5248,
       "profiledMs": 5202,
       "attribution": {
-        "UNATTRIBUTED": 100
+        "UNANALYZED_PROJECT": 0.26,
+        "RUNTIME": 0.01,
+        "FUNCTION_SELF": 0.36,
+        "EXTERNAL_DEPENDENCY": 0.06,
+        "UNATTRIBUTED": 99.26
       },
       "topOrigins": [
         {
@@ -219,9 +646,9 @@
           "percent": 1.75
         },
         {
-          "origin": "other",
-          "kind": "OTHER",
-          "percent": 0.87
+          "origin": "project",
+          "kind": "PROJECT",
+          "percent": 0.81
         },
         {
           "origin": "(native)",
@@ -254,9 +681,9 @@
           "percent": 0.06
         },
         {
-          "origin": "broadcast-channel",
-          "kind": "PACKAGE",
-          "percent": 0.01
+          "origin": "other",
+          "kind": "OTHER",
+          "percent": 0.05
         }
       ],
       "funnel": [
@@ -266,15 +693,15 @@
         },
         {
           "step": "attributable to project call sites",
-          "percent": 0
+          "percent": 0.74
         },
         {
           "step": "project's own JavaScript (FUNCTION_SELF)",
-          "percent": 0
+          "percent": 0.36
         },
         {
-          "step": "top call sites (0)",
-          "percent": 0
+          "step": "top call sites (8)",
+          "percent": 0.59
         },
         {
           "step": "CrankTS-recognized (advisor)",
@@ -286,8 +713,407 @@
         }
       ],
       "phenomena": [],
-      "lowerBlockers": [],
-      "callSites": []
+      "lowerBlockers": [
+        {
+          "reason": "other: generic functions are not lowered",
+          "percent": 0.39
+        },
+        {
+          "reason": "type without Kernel IR form (any, DOM, library classes)",
+          "percent": 0.12
+        },
+        {
+          "reason": "method uses this/super",
+          "percent": 0.09
+        }
+      ],
+      "callSites": [
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:1475",
+          "name": "sortByIndexStringComparator",
+          "attributedPercent": 0.18,
+          "ownPercent": 0.17,
+          "byTarget": {
+            "FUNCTION_SELF": 0.17
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/memory-helper.ts:6314",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "SUPPORTED",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/plugins/storage-memory/memory-helper.ts:6314",
+          "name": "bulkInsertToState",
+          "attributedPercent": 0.17,
+          "ownPercent": 0.09,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.09,
+            "FUNCTION_SELF": 0.09
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.09
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518",
+                "src/rx-database.ts:20390"
+              ],
+              "percentOfSite": 86.46
+            },
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322"
+              ],
+              "percentOfSite": 13.54
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/plugins/utils/utils-object.ts:6132",
+          "name": "sortObject",
+          "attributedPercent": 0.12,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.11
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.11
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-schema-helper.ts:5147",
+                "src/rx-schema.ts:8642",
+                "src/rx-database.ts:11371"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: type any: has no Kernel IR type"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/event-reduce.ts:3206",
+          "name": "calculateNewResults",
+          "attributedPercent": 0.05,
+          "ownPercent": 0,
+          "byTarget": {
+            "FUNCTION_SELF": 0,
+            "EXTERNAL_DEPENDENCY": 0.03
+          },
+          "topExternal": [
+            {
+              "origin": "mingo",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.03
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-query.ts:23790"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/plugins/storage-memory/rx-storage-instance-memory.ts:5322",
+          "name": "RxStorageInstanceMemory.ensurePersistence",
+          "attributedPercent": 0.04,
+          "ownPercent": 0.04,
+          "byTarget": {
+            "FUNCTION_SELF": 0.04
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/plugins/storage-memory/rx-storage-instance-memory.ts:9518",
+                "src/rx-database.ts:20390",
+                "src/rx-storage-helper.ts:31239"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/rx-collection.ts:14391",
+          "name": "RxCollectionBase.bulkInsert",
+          "attributedPercent": 0.02,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 3
+        },
+        {
+          "functionId": "src/rx-storage-helper.ts:23098",
+          "name": "bulkWrite",
+          "attributedPercent": 0.02,
+          "ownPercent": 0.02,
+          "byTarget": {
+            "FUNCTION_SELF": 0.02
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-database.ts:11371"
+              ],
+              "percentOfSite": 51.59
+            },
+            {
+              "path": [
+                "src/rx-collection.ts:14391"
+              ],
+              "percentOfSite": 48.41
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/doc-cache.ts:19349",
+          "name": "mapDocumentsDataToCacheDocs",
+          "attributedPercent": 0.02,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "FUNCTION_SELF": 0.01,
+            "UNANALYZED_PROJECT": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-query.ts:7757"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: generic functions are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/doc-cache.ts:7606",
+          "name": "DocumentCache.processTasks",
+          "attributedPercent": 0.02,
+          "ownPercent": 0,
+          "byTarget": {
+            "UNANALYZED_PROJECT": 0.02
+          },
+          "topExternal": [
+            {
+              "origin": "project",
+              "target": "UNANALYZED_PROJECT",
+              "percent": 0.02
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        },
+        {
+          "functionId": "src/plugins/storage-memory/rx-storage-instance-memory.ts:3088",
+          "name": "RxStorageInstanceMemory.bulkWrite",
+          "attributedPercent": 0.01,
+          "ownPercent": 0.01,
+          "byTarget": {
+            "FUNCTION_SELF": 0.01
+          },
+          "topExternal": [],
+          "callerPaths": [
+            {
+              "path": [
+                "src/rx-database.ts:20390",
+                "src/rx-storage-helper.ts:23098",
+                "src/rx-collection.ts:14391"
+              ],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 2
+        },
+        {
+          "functionId": "src/rx-collection.ts:7523",
+          "name": "RxCollectionBase.prepare",
+          "attributedPercent": 0.01,
+          "ownPercent": 0,
+          "byTarget": {
+            "EXTERNAL_DEPENDENCY": 0.01
+          },
+          "topExternal": [
+            {
+              "origin": "rxjs",
+              "target": "EXTERNAL_DEPENDENCY",
+              "percent": 0.01
+            }
+          ],
+          "callerPaths": [
+            {
+              "path": [],
+              "percentOfSite": 100
+            }
+          ],
+          "eligibility": "CONDITIONAL",
+          "advisor": [
+            "KEEP_TS:MEDIUM"
+          ],
+          "recognized": false,
+          "support": {
+            "accepted": [],
+            "rejected": [
+              "lowering: methods that use `this` or `super` are not lowered"
+            ]
+          },
+          "seenInRuns": 1
+        }
+      ]
     }
   ]
 }

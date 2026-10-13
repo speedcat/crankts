@@ -80,6 +80,8 @@ Instead of one recognizer per kind of waste, CrankTS now probes the expensive ca
 
   It also lists `CALLERS_DO_NOT_MUTATE_SHARED_RESULT` as unverified. Where a cost model exists (cache lookups, about 0.1 µs), the hypothesis also gives an **estimated avoidable work**: cost × (reuse − lookup / per-call cost).
 
+The probe samples hot calls so that it cannot dominate the workload (a 500k-call workload ran 100× slower unsampled): the first 2,000 calls of a site are fingerprinted exactly, then every 4th up to 20,000, then every 64th. Counts stay exact; ratios use the sampled calls and the evidence says so (`sampledCalls`). The studies below ran before this budget; sites with more than 2,000 calls would show somewhat different ratios on a rerun (repetition whose repeats are far apart is the part sampling can miss).
+
 No annotations or source reading are involved. The results:
 
 | Project | Observation → hypothesis | Upper bound / estimate | Outcome |
