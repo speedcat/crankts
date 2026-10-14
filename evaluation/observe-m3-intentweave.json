@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe M3 on IntentWeave (docs/observe-plan.md §10): heap measurement and per-call estimates",
+  "date": "2026-10-14",
+  "environment": { "machine": "Apple M3, macOS", "node": "22.19.0", "intentweave": "3ca03f6, packages built with tsc (sourceMap: true)" },
+  "liveOnlyCheck": {
+    "question": "Does node --heap-prof count short-lived allocations? (plan §7.4)",
+    "workload": "a loop that allocates and drops objects (churn) plus 100k retained objects (retain)",
+    "heapProf": { "churn": "0 MB", "retain": "11.9 MB", "samples": 22 },
+    "preloadSamplingWithCollectedObjects": { "churn": "25.1 MB", "retain": "12.9 MB", "samples": 1123 },
+    "conclusion": "--heap-prof keeps only objects alive at the end. Observe's preload samples via node:inspector with includeObjectsCollectedByMajorGC/MinorGC."
+  },
+  "command": "crankts observe --sessions-dir <tmp> -- node --max-old-space-size=4096 packages/cli/dist/cli.js index build --depth full --no-native --output <tmp>/obs.db .",
+  "measurements": {
+    "cpu-01": { "wallMs": 20552 },
+    "cov-01": { "wallMs": 22635 },
+    "heap-01": { "wallMs": 19678, "heapIntervalBytes": 524288 }
+  },
+  "heap": {
+    "sampledAllocatedMB": 29409.8,
+    "samples": 54646,
+    "byCategoryMB": { "own": 19642.7, "dependency": 2139.5, "runtime": 78.4, "native": 7549.3 },
+    "crossCheck": { "source": "node --trace-gc-nvp, sum of allocated= over 1698 GCs", "allocatedMB": 31107.1, "sampledShare": 0.945 }
+  },
+  "topOwnAllocators": [
+    { "key": "@intentweave/analyzer::src/kwg/heuristicExtractor.ts::HeuristicKeywordExtractor.extractDictionary", "selfMB": 18534.3, "bytesPerCall": 1623960, "executions": 11413, "confidence": "high" },
+    { "key": "@intentweave/analyzer::src/tcg/stlStage.ts::runStlStage", "selfMB": 804.3, "bytesPerCall": 804308176, "executions": 1, "confidence": "high" }
+  ],
+  "quality": { "level": "high", "artifactAgreement": true, "sampledButNotExecutedRatio": 0 },
+  "acceptance": {
+    "topAllocatorOnFixture": "pass: allocateTemporaries (short-lived arrays, ~16 MB) is the top own allocator (test/observe-m3.test.ts)",
+    "cpuPerCallOnAmplified": "pass: normalizeToken selfCpuPerCall within ±25% of the expected 2 units / 2000 calls, confidence ≥ medium"
+  }
+}

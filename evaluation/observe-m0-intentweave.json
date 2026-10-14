@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe M0 acceptance on IntentWeave (docs/observe-plan.md §10)",
+  "date": "2026-10-13",
+  "environment": { "machine": "Apple M3, macOS", "node": "22.19.0", "intentweave": "3ca03f6, packages rebuilt with tsc (sourceMap: true)" },
+  "workloads": {
+    "noNative": {
+      "command": "node --max-old-space-size=4096 --cpu-prof --cpu-prof-interval=1000 packages/cli/dist/cli.js index build --depth full --no-native --output <tmp>/index-ts.db .",
+      "observe": "crankts observe-m0 <profile> --root ../intentweave --out <tmp>/out",
+      "sampledMs": 16401.46,
+      "idleMs": 2272.29,
+      "samples": 13232,
+      "leafCategoriesMs": { "own": 7865.16, "dependency": 6521.59, "runtime": 171.5, "native": 1055.54, "gc": 655.76, "program": 131.92, "unmapped": 0 },
+      "unmappedOwnSampleRatio": 0,
+      "entities": 303,
+      "edges": 257,
+      "nameSources": { "context": 56, "ordinal": 0, "duplicateSuffixes": 3 },
+      "topSelf": [
+        ["@intentweave/analyzer::src/kwg/heuristicExtractor.ts::HeuristicKeywordExtractor.extractDictionary", 4508.57],
+        ["@intentweave/analyzer::src/kwg/heuristicExtractor.ts::HeuristicKeywordExtractor.extract", 549.75],
+        ["@intentweave/sqlite-compat::src/index.ts::Database.transaction/return", 516.5],
+        ["@intentweave/sqlite-compat::src/index.ts::StatementCompat.run", 490.59],
+        ["@intentweave/analyzer::src/tcg/stlStage.ts::runStlStage", 324.92]
+      ],
+      "topCaused": [
+        { "key": "@intentweave/ast-extractor::src/extractor.ts::AstExtractor.isFunctionLikeNode", "dependencyMs": 1412.21, "package": "tree-sitter" },
+        { "key": "@intentweave/analyzer::src/kwg/heuristicExtractor.ts::HeuristicKeywordExtractor.extractDictionary", "nativeMs": 804.67, "note": "RegExp frames" },
+        { "key": "@intentweave/ast-extractor::src/extractor.ts::AstExtractor.extractUsages/visit", "dependencyMs": 654.29, "package": "tree-sitter" }
+      ],
+      "nativeAddonDependencies": ["tree-sitter", "tree-sitter-typescript", "tree-sitter-swift"]
+    },
+    "native": {
+      "command": "same without --no-native",
+      "sampledMs": 631,
+      "idleMs": 3410.38,
+      "unmappedOwnSampleRatio": 0,
+      "note": "The Rust engine runs off the main thread; the main-thread profile is mostly idle. Profiling other threads is out of scope (D4, D9)."
+    }
+  },
+  "comparisonWithAnalyze": {
+    "command": "crankts analyze ../intentweave --workspace-references --profile <same profile> --format json",
+    "analyze": { "wallSeconds": 6.5, "outputBytes": 26596878, "matchedSamplePercent": 82.61 },
+    "observeM0": { "wallSeconds": 0.29, "outputBytes": { "summary": 11058, "entities": 174894, "metrics": 161326, "edges": 80815 }, "mappedOwnSamplePercent": 100 },
+    "note": "analyze's matched percentage is over all samples (own + external); observe reports own-sample mapping separately. Sample weights differ slightly (observe: DevTools rule)."
+  },
+  "acceptance": {
+    "fixtures": "pass: order and ±25% magnitude for expensive/amplified/depHeavy/recursive/anonymous, with type stripping and with tsc + source maps (test/observe-m0.test.ts)",
+    "intentweaveMapped": "pass: 100% of own samples mapped (criterion > 95%)",
+    "anonymousStable": "pass: keys unchanged when a function is inserted above (test/observe-m0.test.ts, test/observe-entity.test.ts)",
+    "agentTest": "open: M0 gate, see docs/observe-plan.md §10"
+  }
+}

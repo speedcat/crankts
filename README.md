@@ -20,13 +20,14 @@ CrankTS is an evidence-first performance analysis tool for existing TypeScript p
 **Today:**
 - Static analysis, profile correlation, call-site attribution, and caller paths (`analyze`).
 - A workload evidence probe that records call counts, repeated inputs, identical objects, and duplicate content, and derives observations and hypotheses with preconditions (v0.2.6e).
+- `crankts observe [--entry <script>] -- <cmd...>` (Observe M1–M4), with the queries `summary`, `top`, `inspect`, `callers`, `callees`, `deps`, `sessions`, and `gc`, and `crankts mcp`, which serves them to coding agents: runs a workload three times, with the CPU profiler, precise coverage, and heap sampling that includes collected objects. It finds the primary Node process and writes a session to `.crankts/sessions/<id>/`, with CPU time, exact execution counts, hot block ranges, allocated bytes, and per-call estimates per entity. `crankts observe-m0 <file.cpuprofile> --root <dir>` (Observe M0) does the attribution for an existing profile: it attributes a V8 CPU profile to stable TypeScript code entities, covering self, inclusive, and caused time and observed caller edges. It writes compact JSON for agents ([plan](docs/observe-plan.md)).
 - `crankts extract`, which transforms explicitly selected kernels into Rust/N-API crates. It does this only when a fail-closed contract validates, and each crate comes with a TypeScript fallback wrapper, a parity runner, and a benchmark with an acceptance gate. This backend is frozen (see below).
 
 The `analyze` command does not execute the analyzed application or rewrite its source. Whether an optimization is worth making is decided by measuring a patch, not by this tool.
 
 ## Status of the Experiment
 
-*As of 2026-10-11. The decision record and exit criterion are in [docs/plan.md](docs/plan.md#decision-after-the-sixth-review-round-2026-10-11); the data is in [docs/eval-generalization.md](docs/eval-generalization.md).*
+*As of 2026-10-13. The decision records are in [docs/plan.md](docs/plan.md#decision-after-the-sixth-review-round-2026-10-11) and [the Observe decision](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe); the data is in [docs/eval-generalization.md](docs/eval-generalization.md).*
 
 ### What the evidence says
 
@@ -48,19 +49,13 @@ Six projects were profiled and reviewed (Knip, TypeDoc, ESLint, Effect, noble-ha
 | `TransformationPlan` (v0.2.7) | **Parked** |
 | Guarded specialization | **On hold** until a TypeScript-only specialization of a hot spot leaves a real gap |
 
-### What is happening now: the agent ablation
+### What is happening now: CrankTS Observe
 
-The remaining question is a product question: *does a workload-aware evidence graph make a competent performance engineer, human or agent, materially better at finding validated improvements?*
+The seventh review round (2026-10-13) moves CrankTS from pattern recognition and advice to **code-level runtime observability for coding agents**. CrankTS runs a real workload, attributes CPU, executions, and allocations to stable TypeScript code entities with observed caller edges, and serves the result over CLI, JSON, and MCP. It reports measurements and does not interpret them. Plan: [docs/observe-plan.md](docs/observe-plan.md); decision record: [docs/plan.md](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe).
 
-- **Design:** three arms on unfamiliar code (RxDB, pdf-lib, TypeORM, and one more repository). The agent gets either a plain CPU profile and summary (P), plus CrankTS evidence (E), plus CrankTS hypotheses (H). Every reported finding is re-measured blind to the arm. Protocol: [docs/ablation-protocol.md](docs/ablation-protocol.md); tools: [evaluation/ablation](evaluation/ablation).
-- **State:** the 24 isolated runs (2 per arm per repository) are prepared, and a review of the preparation found and fixed a blocker: the E and H material had been empty, because the analysis was pointed at a folder that does not contain the sources, and the evidence probe could not run under the Node/tsx combination used. The material is regenerated and synced into the workspaces; the pre-flight script (`evaluation/ablation/preflight.mjs`) passes except for one workload that is not measurable (RxDB live query: 95% of its 5 s is a dangling timer). Still open before the first run: a fixed offline test command per repository, the sandbox read check, and recording model, effort, and Copilot version. Nothing has been run yet.
-- **Rule:** E must beat P by at least 15 points of validated recall (or match it at 60% of the cost) in 3 of 4 repositories, with no worse false-positive severity.
-
-### What happens next
-
-1. Finish the preparation (decide the live-query workload, a fixed test command per repository), then run the 24 sessions and score them blind.
-2. **If E clearly beats P:** CrankTS continues as an evidence and diagnosis tool. Next features: a stage view for async pipelines, and database statements joined to the call sites that issue them. Both are blind spots found on the closed-source project.
-3. **If not:** CrankTS ends as a research result with a final write-up of what generalized (call-site attribution, evidence probes, fail-closed lowering with proofs) and what did not (per-hotspot recognition, TypeScript-to-native gains).
+- **M0 done** (2026-10-13): the entity model and CPU path. On IntentWeave, 100% of own samples map to entities ([evaluation/observe-m0-intentweave.json](evaluation/observe-m0-intentweave.json)). **M1–M5 built**: `crankts observe -- <cmd>` writes a session with CPU attribution, exact execution counts, allocations, and per-call estimates ([M2](evaluation/observe-m2-intentweave.json), [M3](evaluation/observe-m3-intentweave.json)). The CLI queries and `crankts mcp` serve it to agents ([M4](evaluation/observe-m4-intentweave.json)). **Agent comparison (2026-10-14):** fresh agents scored 10/10 with Observe, 9/10 with the raw profile, and 8/10 with the `analyze` JSON on IntentWeave. All found the same #1 hotspot; only the Observe agents quantified it with calls, iterations, and allocation ([details](docs/observe-agent-comparison.md)). M5 (quality checks, schemas, toolchain matrix, overhead, CI) is done ([M5](evaluation/observe-m5-intentweave.json)).
+- **Gates:** after M0, the output must be clearly easier for an agent to use than today's `analyze --profile` JSON. After M4, an agent must find hotspots and caller paths through MCP alone. If the M0 gate fails, CrankTS ends as a research write-up.
+- **Agent ablation:** parked and not run. The prepared material stays in [evaluation/ablation](evaluation/ablation); the protocol is [docs/ablation-protocol.md](docs/ablation-protocol.md).
 
 Native offload is no longer a promised direction. The earlier statement that CrankTS is intended to perform qualified transformations itself is withdrawn.
 
@@ -76,6 +71,38 @@ pnpm dev analyze src/
 pnpm build
 node dist/cli.js analyze /path/to/project
 ```
+
+### Observe a workload and query it (agents: MCP)
+
+```bash
+# In the project to observe: three runs (CPU, coverage, heap) → .crankts/sessions/<id>/
+node /path/to/crankts/dist/cli.js observe -- node dist/main.js
+# Several Node processes (npm, scripts)? Name the one that matters:
+node /path/to/crankts/dist/cli.js observe --entry dist/main.js -- npm run start
+
+# Query the newest session (--json gives the MCP structures)
+crankts summary
+crankts top --by self            # or inclusive | alloc | executions | cpu-per-call
+crankts inspect GraphParser.parseNode   # key, unique name, or file:line
+crankts callers parseNode
+crankts deps
+
+# Serve the sessions to a coding agent over MCP (stdio), e.g. for Claude Code:
+claude mcp add crankts -- node /path/to/crankts/dist/cli.js mcp --root /path/to/project
+```
+
+Add `.crankts/` to the project's `.gitignore`. Keys look like `<package>::<module>::<name>`, e.g. `app::src/index.ts::buildIndex/items.map#cb0`. `crankts schema` prints the JSON Schemas of the session files. `--verify-determinism` repeats the coverage run and compares counts; `--baseline` adds an uninstrumented run and reports each measurement's overhead (IntentWeave: CPU 1.05×, coverage 1.38×, heap 1.07×).
+
+**Limits of Observe.**
+- **Separate runs:** CPU, coverage, and heap come from separate runs of the workload. Per-call values combine runs and are estimates with a confidence. Non-deterministic workloads show up in `--verify-determinism` and in the quality checks.
+- **One process:** only the primary Node process is attributed. Child processes and workers are recorded, not merged; Rust/N-API code inside an addon is time in that dependency.
+- **async:** CPU stacks end at `await`. Such entities carry `asyncTruncated`, and time spent waiting is not attributed.
+- **Inlining:** an inlined leaf function's samples are moved back to it from the caller's per-line ticks (flag `inlinedSuspected`). An inlined *intermediate* function can disappear from stacks, so its callers' edges then skip it.
+- **Wall-time weights:** CPU sample weights are wall time, as in Chrome DevTools, so heavy CPU contention during a run shifts shares.
+- **Bundles:** top-level code is one entity per bundle (`<bundle>::(module)`), and dependencies inlined by a bundler are attributed through the source map to their package.
+- **Requirements:** Node 22.18 or later for type-stripped `.ts` entry points; tsx and ts-node need the coverage measurement to map positions.
+
+### Static analysis
 
 The target can be a file or directory and defaults to the current directory. CrankTS loads the nearest `tsconfig.json`, uses the project's installed TypeScript compiler when available, and includes transitively resolved local callees in the analysis.
 
@@ -124,7 +151,7 @@ flowchart TD
   Agent["Optional coding agent<br/>explain evidence; assist unsupported cases"] -.-> Advisor
 ```
 
-Advisor-to-transformer is a mechanical transition gated by proof obligations, not an agent hop. An optional coding agent can explain findings and propose experiments; it cannot raise confidence or authorize a transformation. Whether an agent working from CrankTS's evidence beats one working from a plain profile is exactly what the ablation measures.
+Advisor-to-transformer is a mechanical transition gated by proof obligations, not an agent hop. An optional coding agent can explain findings and propose experiments; it cannot raise confidence or authorize a transformation. Whether an agent working from CrankTS's evidence beats one working from a plain profile is what the Observe gates check (the blinded ablation is parked).
 
 ### Deterministic Transformation
 
@@ -180,9 +207,10 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | v0.2.6e: evidence before patterns | Done: caller paths, position-based profile matching, typed-array and `throw` eligibility, the evidence probe with observations and hypotheses |
 | Evaluations #1–#6 | Done: Knip, TypeDoc, ESLint, Effect, noble-hashes, a closed-source monorepo ([generalization review](docs/eval-generalization.md)) |
 | Decision (2026-10-11) | Taken: evidence and diagnosis go to validation; native tier, native thread pool, and the hybrid tier are stopped |
-| **Agent ablation** | **In preparation**: E and H material fixed; open items above; then 24 runs and blind scoring |
+| Agent ablation | **Parked** (2026-10-13), not run; material kept |
+| **Observe (v0.3 → v0.4)** | **Current**: M0–M5 done; agent comparison: M0 gate and M4 pass, v0.4 gate met with a small margin ([comparison](docs/observe-agent-comparison.md)) |
 | v0.2.7 `TransformationPlan`, v0.3 automatic offload | **Parked / no longer planned** |
-| Exit | If the ablation does not favor evidence over a plain profile, the project ends as a research write-up |
+| Exit | If the Observe M0 gate fails, the project ends as a research write-up |
 
 Other backends, including WebAssembly and native JIT, are not planned.
 

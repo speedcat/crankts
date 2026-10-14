@@ -1,4 +1,6 @@
 #!/usr/bin/env node
 import { runCli } from "./index.js";
 
-process.exitCode = runCli(process.argv.slice(2));
+void Promise.resolve(runCli(process.argv.slice(2))).then((code) => {
+  process.exitCode = code;
+});

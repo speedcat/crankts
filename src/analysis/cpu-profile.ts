@@ -603,10 +603,6 @@ export function matchFunction(
 }
 
 function getSourceFileCandidates(profileUrl: string, projectRoot: string): string[] {
-
-  function percentOf(part: number, total: number): number {
-    return total === 0 ? 0 : Math.round((part / total) * 10_000) / 100;
-  }
   if (!profileUrl || profileUrl.startsWith("node:")) {
     return [];
   }

@@ -189,7 +189,7 @@ globalThis.__cranktsSig = (key, args) => {
   site.signatures.add(whole);
   // Content weight: what the inputs say about values, not which objects they are. Identity-only inputs
   // (no arguments, mutable buffers and class instances fingerprinted by reference) repeat trivially.
-  const content = parts.join("|").replace(/(?:fn|obj|deep)#\d+/g, "").length >= 16;
+  const content = parts.join("|").replace(/(?:fn|obj|deep)#\\d+/g, "").length >= 16;
   if (content) site.contentCalls = (site.contentCalls ?? 0) + 1;
   // Per-site budget for the shared-content index, so one very hot call cannot crowd out the others.
   site.indexed ??= 0;

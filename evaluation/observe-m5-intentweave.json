@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe M5 on IntentWeave (docs/observe-plan.md §10): overhead, determinism, quality",
+  "date": "2026-10-14",
+  "environment": { "machine": "Apple M3, macOS", "node": "22.19.0", "intentweave": "3ca03f6, packages built with tsc (sourceMap: true)" },
+  "command": "crankts observe --baseline --verify-determinism -- node --max-old-space-size=4096 packages/cli/dist/cli.js index build --depth full --no-native --output <tmp>/obs.db .",
+  "baselineWallMs": 18639,
+  "measurements": [
+    { "id": "cpu-01", "wallMs": 19622, "wallRatio": 1.05 },
+    { "id": "cov-01", "wallMs": 25661, "wallRatio": 1.38 },
+    { "id": "heap-01", "wallMs": 20018, "wallRatio": 1.07 },
+    { "id": "cov-02", "wallMs": 25375, "wallRatio": 1.36 }
+  ],
+  "attributionMs": 1428,
+  "quality": {
+    "level": "high",
+    "checks": { "artifactAgreement": true, "unmappedOwnSampleRatio": 0, "sampledButNotExecutedRatio": 0, "allocatedButNotExecutedRatio": 0, "repeatCountAgreement": 1 }
+  },
+  "localVerification": {
+    "tests": "161 passed on Node 22.19.0 and Node 24.21.0",
+    "lint": "oxlint 1.88: clean",
+    "typecheck": "TypeScript 5.9.3 and 7.0.2: clean",
+    "ciMatrix": "defined (ubuntu/macOS × Node 22/24); not yet run on GitHub"
+  }
+}

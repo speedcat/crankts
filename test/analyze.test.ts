@@ -168,7 +168,6 @@ describe("analyzeProject", () => {
 
   it("writes clean versioned JSON from the CLI and rejects invalid scores", () => {
     let output = "";
-    let cliError = "";
     const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
       output += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
       return true;

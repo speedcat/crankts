@@ -15,17 +15,25 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node node_modules/typescript/bin/tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
+    "lint": "oxlint src test",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+    "typecheck:ts7": "node node_modules/typescript7/bin/tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "typescript": "^5.9.3"
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "oxc-parser": "0.154.0",
+    "typescript": "^5.9.3",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
+    "oxlint": "1.88.0",
+    "tsdown": "0.23.1",
     "tsx": "^4.20.6",
+    "typescript7": "npm:typescript@7.0.2",
     "vitest": "^3.2.4"
   }
 }

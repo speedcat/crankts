@@ -1,6 +1,5 @@
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import type * as ts from "typescript";
 import { collectFunctions } from "../analysis/functions.js";
 import { createCompilerFacade } from "../compiler/compiler-facade.js";
 import { emitRustCrate, RustBackendError } from "./backend-rust.js";

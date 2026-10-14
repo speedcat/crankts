@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["test/fixtures/**", "dist/**", "evaluation/**"],
+  "rules": {
+    "unicorn/no-thenable": "off",
+    "unicorn/no-new-array": "off"
+  }
+}

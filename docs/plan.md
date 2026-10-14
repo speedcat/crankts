@@ -1,6 +1,6 @@
 # Plan: CrankTS on CrankTS – a Second Offload Shape and v0.2
 
-Status: 2026-10-10. This plan is the working basis for the next implementation steps. It does not change existing claims in the [README](../README.md) or [analysis-and-evaluation.md](analysis-and-evaluation.md); measurement results continue to land as JSON under `evaluation/` and as a section in the evaluation history.
+Status: 2026-10-13. **This document is now the v0.2 history and decision record. The current plan is [observe-plan.md](observe-plan.md)** (see [the seventh review round](#decision-after-the-seventh-review-round-2026-10-13-observe)). Original status, 2026-10-10: this plan was the working basis for the next implementation steps. It does not change existing claims in the [README](../README.md) or [analysis-and-evaluation.md](analysis-and-evaluation.md); measurement results continue to land as JSON under `evaluation/` and as a section in the evaluation history.
 
 ## Thesis
 
@@ -455,9 +455,9 @@ Knip did not show that the approach fails. It showed that CrankTS's pattern fami
 | Generalization review | draft written ([eval-generalization.md](eval-generalization.md)); the stop/go decision is open | Acceleration coverage, automated recognition recall, pattern-family recall, pattern yield, stop/go decision |
 | **v0.2.6e** | done | **Evidence before patterns** (sixth review round):<br>E1 profile-weighted caller paths per call site (JSON and text report)<br>E2 profile frames matched by position when V8 names differ (computed-key and factory-object methods)<br>E3 eligibility: typed arrays through aliases/intersections, `throw new Error` as a guard<br>E4 evidence probe around the hottest call sites (`writeEvidenceProbe`): call counts, content repetition, identity overlap between argument collections, the same content reaching several call sites; works on tsc-built `dist/` files and behind tsx (in-thread `registerHooks`)<br>E5 observations with an at-risk upper bound (`IDENTICAL_OBJECT_FLOW`, `DUPLICATE_CONTENT_FLOW`, `REPEATED_INPUT`, `REPEATED_ARGUMENT`), and hypotheses only where no precondition is violated (static write effects, mutable outer reads, per-call cost vs lookup), with an estimated avoidable share where a cost model exists |
 | Decision point | **taken 2026-10-11** (see below) | Advisor (A), static tier (B), hybrid (C), or stop: inputs in [eval-generalization.md](eval-generalization.md) (ground truth with provenance, offload gain ceiling, scriptc comparison, phenomena precision) |
-| v0.2.7 | parked until the decision | `TransformationPlan` built from the patterns that actually recur |
-| Advisor v2 | | Transformation vs. execution strategy, gain attribution, call-site recommendations |
-| v0.3 | | Automatic selection and execution |
+| v0.2.7 | parked | `TransformationPlan` built from the patterns that actually recur |
+| Advisor v2 | parked (2026-10-13) | Transformation vs. execution strategy, gain attribution, call-site recommendations |
+| v0.3 | superseded: v0.3 is now [Observe](observe-plan.md) | Automatic selection and execution |
 
 **v0.2.6d is done.** Details are in [analysis-and-evaluation.md](analysis-and-evaluation.md) and [eval-knip.md](eval-knip.md).
 
@@ -537,15 +537,30 @@ The architectural boundary for them is a `CompilerFrontend` (TS 5/6 JS API today
 | S, profile-guided guarded specialization | **hold** | Only after a TypeScript-only specialization test of the same hot spot leaves a real gap for native code |
 | v0.2.7 `TransformationPlan` | **parked** | Only for validated findings that are mechanically supported |
 
-**Product gate:** a blind agent ablation on unseen code bases with three arms: raw profile and source (P), plus CrankTS evidence (E), plus CrankTS hypotheses (H). Metrics: validated findings and gain (denominator: union over the arms plus a time-boxed independent pass), precision, time and tokens to the first useful finding, several runs per arm.
+**Product gate** (superseded on 2026-10-13: the ablation is parked; see the seventh review round below)**:** a blind agent ablation on unseen code bases with three arms: raw profile and source (P), plus CrankTS evidence (E), plus CrankTS hypotheses (H). Metrics: validated findings and gain (denominator: union over the arms plus a time-boxed independent pass), precision, time and tokens to the first useful finding, several runs per arm.
 
-**Exit criterion.** If E does not clearly beat P (more validated gain, or the same gain at clearly lower cost), and P/S do not pass their gates, CrankTS ends as a research result: a final write-up of what generalized (call-site attribution, evidence probes, fail-closed lowering with proofs) and what did not (pattern recognition per hotspot, TS→native gain), with no further product work.
+**Exit criterion** (superseded on 2026-10-13; see below)**.** If E does not clearly beat P (more validated gain, or the same gain at clearly lower cost), and P/S do not pass their gates, CrankTS ends as a research result: a final write-up of what generalized (call-site attribution, evidence probes, fail-closed lowering with proofs) and what did not (pattern recognition per hotspot, TS→native gain), with no further product work.
+
+### Decision after the seventh review round (2026-10-13): Observe
+
+The seventh round ([review.md](review.md)) moves CrankTS from pattern recognition and advice to **code-level runtime observability for coding agents**. CrankTS measures a real workload, attributes it to stable TypeScript code entities, and serves the result to an agent over CLI, JSON, and MCP. It does not interpret. The analyses built so far (call graph, effects, call-site attribution, caller paths, dependency and native-boundary classification) feed that model rather than a recommender.
+
+| Track | Status |
+| --- | --- |
+| **Observe (v0.3 → v0.4)** | **current plan**: [observe-plan.md](observe-plan.md) |
+| Agent ablation (P/E/H) | **parked, not run**. The material stays in [evaluation/ablation](../evaluation/ablation/) and the protocol in [ablation-protocol.md](ablation-protocol.md); revisit with Observe output as the evidence arm (v0.5 outlook) |
+| v0.2.7 `TransformationPlan`, Advisor v2, automatic selection | parked |
+| Native backend | feature freeze, as decided in the sixth round |
+
+**Gates now:** the Observe M0 gate (the Observe output on IntentWeave is clearly easier for an agent to use than the `analyze --profile` JSON) and the M4 gate (an agent finds hotspots and caller paths through MCP alone, plus a short non-blinded comparison against the raw profile). They replace the ablation as the product gate. If the M0 gate fails, the exit criterion above applies in spirit: CrankTS ends as a research write-up.
 
 ### Open point: a faster TypeScript checker
 
 TypeScript itself dominates CrankTS's own runtime: 95% of W1 wall time is spent in compiler-bound stages (MVP-9a). TypeScript 7 (the Go port, stable since July 2026) would be the lever for that. CrankTS, however, depends on the full checker API (`getTypeAtLocation`, symbols, signatures), and it is not confirmed that TypeScript 7 exposes it to JavaScript. Rust checkers (stc, Ezno) do not implement full TypeScript semantics.
 
 Decision: keep the TypeScript 5.x API behind `CompilerFacade` and re-evaluate TypeScript 7 once its programmatic checker API is available. Analysis speed affects how quickly CrankTS itself runs, not the results it produces.
+
+Update 2026-10-13: `typescript@7.0.2` is the npm `latest`. It exports only `typescript/unstable/{sync,async,ast,…}`; the classic `ts.*` API is gone. `unstable/sync` has a `Checker` with `getTypeAtLocation`, `getSymbolAtLocation`, `getResolvedSignature`, and `getTypeOfSymbol`, so a programmatic checker API exists, but it is marked unstable. CrankTS keeps `typescript@^5.9.3` (the caret excludes 7). Adoption is a spike at the start of Observe v0.4: a `CompilerFrontend` on `unstable/sync` with 5.9 as the fallback. Observe M0–M5 needs no checker and parses with `oxc-parser`. See [observe-plan.md §16](observe-plan.md#16-toolchain).
 
 ## Open Points
 

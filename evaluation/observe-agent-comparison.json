@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe agent comparison: M0 gate, M4 acceptance, v0.4 gate (docs/observe-agent-comparison.md)",
+  "date": "2026-10-14",
+  "workload": "IntentWeave index build --depth full --no-native (session 20261014-215040-b344, Node 22.19.0)",
+  "agents": "fresh general-purpose subagents (same model), two per arm, identical task text, read-only",
+  "arms": {
+    "P": { "material": "raw .cpuprofile of cpu-01 (1.1 MB)", "scores": [9, 9], "tokens": [64009, 65446], "toolUses": [10, 13], "durationMs": [123983, 137093] },
+    "A": { "material": "crankts analyze --profile JSON (26.6 MB)", "scores": [8, 8], "tokens": [82593, 79194], "toolUses": [13, 14], "durationMs": [133423, 130867] },
+    "O": { "material": "Observe session via crankts query CLI --json (MCP structures), no raw files", "scores": [10, 10], "tokens": [64895, 62984], "toolUses": [12, 10], "durationMs": [101780, 98179] }
+  },
+  "rubricMax": 10,
+  "groundTruthCheckedAgainstRawProfile": { "extractDictionarySelfPct": 26.3, "treeSitterPct": 36.8, "regexpPct": 4.4 },
+  "allRunsFound": "extractDictionary as #1 with the per-chunk dictionary rebuild and the prepare-once fix; tree-sitter time caused by the AST walkers",
+  "onlyObserveQuantified": ["11,413 calls", "51.3 M filter-callback executions (~4,490 terms per call)", "18.6 GB allocated (1.6 MB per call)", "exact per-line counts", "1,402 SQLite transactions / 130,472 run() calls"],
+  "gates": {
+    "M0": "pass: Observe output clearly easier for an agent than the analyze JSON (+2 points per run, -21% tokens, -24% time)",
+    "M4": "pass: both O runs found the top hotspots and caller paths through the query interface alone (CLI --json instead of MCP transport)",
+    "v0.4": "formally met, small margin: O 10 vs P 9 and faster; same top 3 and fixes found from the raw profile; v0.4's static additions were not tested"
+  },
+  "caveats": ["n=2 per arm, one workload, one model", "workload studied before in this project (agents were fresh)", "non-blind grader who built the tool; rubric fixed before answers", "R2's quantification point needs counts only arm O had", "O had three measurements vs one CPU profile for P"]
+}

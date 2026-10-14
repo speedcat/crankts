@@ -102,7 +102,6 @@ class InternPass {
   ) {}
 
   run(): InternResult {
-    const t = this.t;
     const name = this.fn.name?.text ?? "anonymous";
     this.inferParamRoles();
     this.inferLocals();

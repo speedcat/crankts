@@ -5,6 +5,11 @@ import { analyzeProject, writeHoistInputProbe } from "./analysis/analyze-project
 import { StageTimer } from "./analysis/timings.js";
 import { SUPPORTED_KERNEL_SHAPES, type SupportedKernelShape } from "./lowering/contract.js";
 import { extractKernel, type ExtractRequest } from "./lowering/extract.js";
+import { observeCpuProfile, renderM0Text } from "./observe/m0.js";
+import { QUERY_COMMANDS, runQueryCommand } from "./observe/cli/index.js";
+import { startMcpServer } from "./observe/mcp/server.js";
+import { sessionJsonSchemas } from "./observe/schema.js";
+import { observeWorkload, type MeasurementKind } from "./observe/session.js";
 import { renderJsonReport } from "./report/json.js";
 import { renderTextReport } from "./report/text.js";
 
@@ -66,7 +71,8 @@ interface AnalyzeOptions {
   readonly verbose: boolean;
 }
 
-export function runCli(arguments_: readonly string[]): number {
+/** Synchronous for every command except `observe`, which runs a workload and returns a promise. */
+export function runCli(arguments_: readonly string[]): number | Promise<number> {
   const cliStart = performance.now();
   if (arguments_.length === 0 || arguments_[0] === "--help" || arguments_[0] === "help") {
     printUsage();
@@ -75,6 +81,27 @@ export function runCli(arguments_: readonly string[]): number {
 
   if (arguments_[0] === "extract") {
     return runExtract(arguments_.slice(1));
+  }
+
+  if (arguments_[0] === "observe") {
+    return runObserve(arguments_.slice(1));
+  }
+
+  if (QUERY_COMMANDS.has(arguments_[0] as string)) {
+    return runQueryCommand(arguments_[0] as string, arguments_.slice(1));
+  }
+
+  if (arguments_[0] === "schema") {
+    console.log(JSON.stringify(sessionJsonSchemas(), null, 2));
+    return 0;
+  }
+
+  if (arguments_[0] === "mcp") {
+    return runMcp(arguments_.slice(1));
+  }
+
+  if (arguments_[0] === "observe-m0") {
+    return runObserveM0(arguments_.slice(1));
   }
 
   if (arguments_[0] !== "analyze") {
@@ -150,6 +177,135 @@ function writeTimings(path: string, target: string, timer: StageTimer, cliMs: nu
     peakRssBytes: resourceUsage.maxRSS * 1024,
   };
   writeFileSync(resolve(path), `${JSON.stringify(timings, null, 2)}\n`);
+}
+
+async function runMcp(arguments_: readonly string[]): Promise<number> {
+  const options: { root?: string; sessionsDir?: string } = {};
+  for (let index = 0; index < arguments_.length; index += 2) {
+    const argument = arguments_[index];
+    const value = arguments_[index + 1];
+    if ((argument !== "--root" && argument !== "--sessions-dir") || value === undefined) {
+      console.error("Usage: crankts mcp [--root <dir>] [--sessions-dir <dir>]");
+      return 2;
+    }
+    if (argument === "--root") options.root = value;
+    else options.sessionsDir = value;
+  }
+  await startMcpServer(options);
+  // The stdio transport keeps the process alive until the client disconnects.
+  return new Promise<number>((resolvePromise) => process.stdin.once("close", () => resolvePromise(0)));
+}
+
+async function runObserve(arguments_: readonly string[]): Promise<number> {
+  const separator = arguments_.indexOf("--");
+  const optionArguments = separator === -1 ? arguments_ : arguments_.slice(0, separator);
+  const command = separator === -1 ? [] : arguments_.slice(separator + 1);
+  const values = new Map<string, string>();
+  const valueOptions = new Set(["--only", "--cpu-interval", "--heap-interval", "--timeout", "--entry", "--root", "--sessions-dir", "--workload"]);
+  const flags = new Set<string>();
+  for (let index = 0; index < optionArguments.length; index += 1) {
+    const argument = optionArguments[index] as string;
+    if (argument === "--help") {
+      printUsage();
+      return 0;
+    }
+    if (argument === "--verify-determinism" || argument === "--baseline") {
+      flags.add(argument);
+      continue;
+    }
+    const value = optionArguments[index + 1];
+    if (!valueOptions.has(argument) || value === undefined) {
+      console.error(valueOptions.has(argument) ? `${argument} requires a value.` : `Unknown option '${argument}'.`);
+      return 2;
+    }
+    values.set(argument, value);
+    index += 1;
+  }
+  if (command.length === 0) {
+    console.error("Missing workload: crankts observe [options] -- <cmd...>");
+    return 2;
+  }
+  const number = (name: string): number | undefined => {
+    const raw = values.get(name);
+    if (raw === undefined) return undefined;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) throw new Error(`${name} must be a positive number.`);
+    return parsed;
+  };
+  try {
+    const cpuIntervalUs = number("--cpu-interval");
+    const heapIntervalBytes = number("--heap-interval");
+    const timeoutSec = number("--timeout");
+    const result = await observeWorkload({
+      command,
+      ...(values.has("--only") ? { only: (values.get("--only") as string).split(",").map((kind) => kind.trim()) as MeasurementKind[] } : {}),
+      ...(cpuIntervalUs !== undefined ? { cpuIntervalUs } : {}),
+      ...(heapIntervalBytes !== undefined ? { heapIntervalBytes } : {}),
+      ...(timeoutSec !== undefined ? { timeoutSec } : {}),
+      ...(values.has("--entry") ? { entry: values.get("--entry") as string } : {}),
+      ...(values.has("--root") ? { root: values.get("--root") as string } : {}),
+      ...(values.has("--sessions-dir") ? { sessionsDir: values.get("--sessions-dir") as string } : {}),
+      ...(values.has("--workload") ? { workloadId: values.get("--workload") as string } : {}),
+      ...(flags.has("--verify-determinism") ? { verifyDeterminism: true } : {}),
+      ...(flags.has("--baseline") ? { baseline: true } : {}),
+    });
+    // The workload owns stdout; the report goes to stderr.
+    console.error("");
+    console.error(`crankts observe: session ${result.session.sessionId} (quality ${result.session.quality.level}${result.session.quality.reasons.length ? `: ${result.session.quality.reasons.join(", ")}` : ""})`);
+    for (const measurement of result.session.measurements) {
+      const roles = measurement.processes.map((info) => `${info.role} pid ${info.pid}${info.threadId ? `/${info.threadId}` : ""}`).join(", ");
+      const overhead = measurement.overhead ? ` (${measurement.overhead.wallRatio}× the uninstrumented ${measurement.overhead.baselineWallMs} ms)` : "";
+      console.error(`${measurement.measurementId}: ${measurement.wallMs} ms${overhead}${roles ? `; ${roles}` : ""}`);
+      for (const error of measurement.errors) console.error(`! ${error}`);
+    }
+    if (result.attribution) console.error(renderM0Text({ ...result.attribution, outDir: result.sessionDir }, 10));
+    if (!result.attribution) return 1;
+    return result.exitCode && result.exitCode !== 0 ? result.exitCode : 0;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return 1;
+  }
+}
+
+function runObserveM0(arguments_: readonly string[]): number {
+  let profilePath: string | undefined;
+  let root = ".";
+  let outDir = ".crankts/m0";
+  let format = "text";
+  for (let index = 0; index < arguments_.length; index += 1) {
+    const argument = arguments_[index] as string;
+    const value = arguments_[index + 1];
+    if (argument === "--root" || argument === "--out" || argument === "--format") {
+      if (!value) {
+        console.error(`${argument} requires a value.`);
+        return 2;
+      }
+      if (argument === "--root") root = value;
+      else if (argument === "--out") outDir = value;
+      else format = value;
+      index += 1;
+    } else if (argument === "--help") {
+      printUsage();
+      return 0;
+    } else if (!profilePath && !argument.startsWith("--")) {
+      profilePath = argument;
+    } else {
+      console.error(`Unknown option '${argument}'.`);
+      return 2;
+    }
+  }
+  if (!profilePath || (format !== "text" && format !== "json")) {
+    printUsage();
+    return 2;
+  }
+  try {
+    const result = observeCpuProfile({ profilePath, root, outDir });
+    console.log(format === "json" ? JSON.stringify(result.summary, null, 2) : renderM0Text(result));
+    return 0;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return 1;
+  }
 }
 
 function runExtract(arguments_: readonly string[]): number {
@@ -274,7 +430,7 @@ function printUsage(): void {
   console.log("  --verbose             Include resolved and unresolved call edges");
   console.log("  --min-score <0-100>   Only report candidate islands at or above this score");
   console.log("  --profile <file>      Attach a Node/V8 .cpuprofile; Native Priority is unchanged");
-  console.log("  --heap-profile <file> Attach a Node/V8 .heapprofile of sampled allocated bytes");
+  console.log("  --heap-profile <file> Attach a Node/V8 .heapprofile (--heap-prof keeps only objects alive at exit)");
   console.log("  --pipeline <file>     Add a versioned pipeline/sink evidence descriptor");
   console.log("  --workload <label>    Label the workload represented by attached profiles");
   console.log("  --workspace-references Analyze transitive TypeScript project references");
@@ -296,6 +452,42 @@ function printUsage(): void {
   console.log("  --intern <IdAlias>    Intern string ids of this type alias into indices (CSR graphs, bitmaps, ranks)");
   console.log("  --batch               With --intern: batch the per-group calls of f(group, graph) into one kernel call");
   console.log("                        and seal the graph after its producer (upstream packing)");
+  console.log("");
+  console.log("Usage: crankts observe [options] -- <cmd...>");
+  console.log("Run a workload once per measurement (CPU profile, precise coverage, heap sampling) and attribute its primary");
+  console.log("Node process to TypeScript code entities: CPU time, execution counts, hot block ranges, allocated bytes,");
+  console.log("per-call estimates, and observed caller edges.");
+  console.log("Writes .crankts/sessions/<id>/ (session.json, entities.json, metrics.json, edges.json, summary.json, raw/).");
+  console.log("Options:");
+  console.log("  --entry <script>      The primary process's script; needed when the command starts several Node processes");
+  console.log("  --root <dir>          Project root for attribution (default: current directory)");
+  console.log("  --cpu-interval <us>   CPU sampling interval in microseconds (default: 1000)");
+  console.log("  --timeout <s>         SIGTERM after this many seconds, SIGKILL 10 s later (default: 600)");
+  console.log("  --only <kinds>        Measurements to run, comma-separated: cpu, coverage, heap (default: all)");
+  console.log("  --heap-interval <b>   Heap sampling interval in bytes (default: 524288)");
+  console.log("  --sessions-dir <dir>  Where sessions go (default: <root>/.crankts/sessions)");
+  console.log("  --workload <label>    Label stored as workloadId");
+  console.log("  --verify-determinism  Run coverage twice and compare the top 50 execution counts (quality check)");
+  console.log("  --baseline            Run once without instrumentation first and report each measurement's overhead");
+  console.log("");
+  console.log("Queries over the newest session (or --session <id>); add --json for the MCP data structures:");
+  console.log("  crankts summary");
+  console.log("  crankts top --by self|inclusive|alloc|executions|cpu-per-call [--limit 20] [--scope own|all]");
+  console.log("  crankts inspect <key | name | file:line>");
+  console.log("  crankts callers <key> [--limit 10]    crankts callees <key> [--limit 10]");
+  console.log("  crankts deps [<key>]                  dependency time by the own code that caused it");
+  console.log("  crankts sessions                      crankts gc --keep <n>");
+  console.log("  Common: --root <dir> | --sessions-dir <dir>, --session <id>, --json");
+  console.log("");
+  console.log("Usage: crankts schema    JSON Schemas of session.json, entities.json, metrics.json, edges.json (0.3)");
+  console.log("");
+  console.log("Usage: crankts mcp [--root <dir>] [--sessions-dir <dir>]");
+  console.log("Serve the sessions over MCP (stdio): get_summary, get_hot_functions, get_function_metrics, get_hot_allocators,");
+  console.log("get_hot_ranges, get_callers, get_callees, get_dependency_costs, list_sessions.");
+  console.log("");
+  console.log("Usage: crankts observe-m0 <file.cpuprofile> [--root <dir>] [--out <dir>] [--format text|json]");
+  console.log("Observe M0: attribute a V8 CPU profile to TypeScript code entities with observed caller edges.");
+  console.log("Writes entities.json, metrics.json, edges.json, and summary.json (default --out .crankts/m0).");
 }
 
 function parseAnalyzeOptions(arguments_: readonly string[]): AnalyzeOptions {

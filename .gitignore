@@ -159,3 +159,6 @@ evaluation/arc-platform/annotations.json
 evaluation/arc-platform/REPORT.md
 evaluation/arc-platform/scripts/generate-data.mjs
 evaluation/arc-platform/study.ts
+
+# CrankTS Observe sessions and M0 output
+.crankts/

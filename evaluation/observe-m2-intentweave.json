@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe M2 acceptance on IntentWeave (docs/observe-plan.md §10): coverage and execution counts",
+  "date": "2026-10-13",
+  "environment": { "machine": "Apple M3, macOS", "node": "22.19.0", "intentweave": "3ca03f6, packages built with tsc (sourceMap: true)" },
+  "command": "crankts observe --sessions-dir <tmp> -- node --max-old-space-size=4096 packages/cli/dist/cli.js index build --depth full --no-native --output <tmp>/obs.db .",
+  "measurements": {
+    "cpu-01": { "wallMs": 19058, "sampledMs": 16501.38, "unmappedOwnSampleRatio": 0 },
+    "cov-01": { "wallMs": 22284, "note": "precise block coverage; wall time is not comparable to the CPU run" }
+  },
+  "coverage": { "ownScripts": 237, "ownFunctions": 1958, "matchedFunctions": 1923, "unmatchedExecutedFunctions": 10, "executedEntities": 630 },
+  "quality": { "level": "high", "artifactAgreement": true, "sampledButNotExecutedRatio": 0, "unmappedOwnSampleRatio": 0 },
+  "examples": {
+    "mostExecuted": [
+      ["@intentweave/analyzer::src/kwg/heuristicExtractor.ts::HeuristicKeywordExtractor.extractDictionary/….filter#cb0", 51255783],
+      ["@intentweave/ast-extractor::src/extractor.ts::AstExtractor.isFunctionLikeNode", 1699582],
+      ["@intentweave/ast-extractor::src/extractor.ts::AstExtractor.walkFunctionScope/walk", 995841]
+    ],
+    "extractDictionary": {
+      "functionExecutionCount": 11413,
+      "selfPct": 27.3,
+      "hottestRange": { "lines": "303-315", "rangeExecutionCount": 51073175 }
+    }
+  },
+  "outputBytes": { "session": 70727, "summary": 14858, "entities": 445127, "metrics": 426695, "edges": 81357 },
+  "acceptance": {
+    "fixtureFunctionCounts": "pass: exact for tsc + source maps, Node type stripping, and tsx (test/observe-coverage.test.ts)",
+    "loopRangeCounts": "pass: nestedLoops(50, 200) × 3 → inner body 30000 (lines 6-8), outer body 150 (lines 4-9)",
+    "sampledButNotExecutedRatio": "pass: 0% on IntentWeave (criterion < 5%)"
+  }
+}

@@ -1,5 +1,4 @@
 import { fileURLToPath } from "node:url";
-import type * as ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { collectFunctions } from "../src/analysis/functions.js";
 import { createCompilerFacade, type CompilerFacade } from "../src/compiler/compiler-facade.js";

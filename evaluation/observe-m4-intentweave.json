@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe M4 on IntentWeave (docs/observe-plan.md §9, §10): CLI queries and MCP server",
+  "date": "2026-10-14",
+  "session": "IntentWeave index build --depth full --no-native, cpu + coverage + heap (see observe-m3-intentweave.json)",
+  "transport": "crankts mcp --sessions-dir <dir>, real stdio server, MCP SDK 1.32.1 client",
+  "answerSizes": [
+    { "tool": "get_summary", "chars": 4869, "approxTokens": 1217 },
+    { "tool": "get_hot_functions", "args": { "by": "self" }, "chars": 2082, "approxTokens": 521 },
+    { "tool": "get_hot_functions", "args": { "by": "cpu-per-call" }, "chars": 2119, "approxTokens": 530 },
+    { "tool": "get_function_metrics", "args": { "key": "HeuristicKeywordExtractor.extractDictionary" }, "chars": 1672, "approxTokens": 418 },
+    { "tool": "get_callers", "args": { "key": "AstExtractor.isFunctionLikeNode" }, "chars": 590, "approxTokens": 148 },
+    { "tool": "get_dependency_costs", "chars": 1945, "approxTokens": 486 },
+    { "tool": "get_hot_ranges", "chars": 1927, "approxTokens": 482 },
+    { "tool": "get_hot_allocators", "chars": 2377, "approxTokens": 594 },
+    { "tool": "list_sessions", "chars": 1014, "approxTokens": 254 }
+  ],
+  "targetPerAnswerTokens": 2000,
+  "comparison": "The same profile as analyze --profile JSON is 26.6 MB (observe-m0-intentweave.json).",
+  "acceptance": {
+    "toolsAndQueries": "pass: 9 MCP tools, CLI parity via --json (test/observe-query.test.ts)",
+    "agentFindsHotspotsThroughMcpAlone": "open: needs an agent session (Claude Code or Codex) with only the MCP server",
+    "nonBlindedComparisonForV04Gate": "open: 1-2 known IntentWeave issues, MCP vs raw .cpuprofile"
+  }
+}

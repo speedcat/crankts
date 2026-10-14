@@ -1,5 +1,7 @@
 # Agent Ablation Protocol (Product Gate for Track A)
 
+> **Parked on 2026-10-13; not run.** CrankTS moved to Observe ([observe-plan.md](observe-plan.md)), whose M0 and M4 gates replace this product gate. See [plan.md](plan.md#decision-after-the-seventh-review-round-2026-10-13-observe).
+
 **Question:** does CrankTS's workload evidence make a competent agent materially better at finding *validated* performance improvements in unfamiliar TypeScript code?
 
 Three arms, same model, same budget, same prompt skeleton:

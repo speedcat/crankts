@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,7 +23,7 @@ function probeSites(): ProbeSite[] {
     if (!["indexTwice", "diffRows"].includes(definition.name) || !definition.absoluteFile.endsWith("evidence.ts")) continue;
     const t = definition.compilerFacade.typescript;
     const visit = (node: ts.Node): void => {
-      if (t.isCallExpression(node) && /\.add$/.test(node.expression.getText())) {
+      if (t.isCallExpression(node) && node.expression.getText().endsWith(".add")) {
         const position = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart());
         sites.push({ file: definition.absoluteFile, call: node, key: siteKey(facade.projectRoot, definition.absoluteFile, position.line + 1, position.character + 1) });
       }
@@ -46,6 +46,21 @@ function probeSites(): ProbeSite[] {
 }
 
 describe("workload evidence and phenomena (v0.2.6e)", () => {
+  it("strips identity placeholders before weighing content (generated probe keeps its regex escapes)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "crankts-probe-regex-"));
+    try {
+      writeInputSignatureProbe([], dir);
+      const probe = readFileSync(join(dir, "probe.mjs"), "utf8");
+      const pattern = /\.replace\((\/\(\?:fn\|obj\|deep\)#[^/]+\/g)/.exec(probe)?.[1];
+      expect(pattern).toBe("/(?:fn|obj|deep)#\\d+/g");
+      // Identity-only inputs leave nothing behind; real content stays.
+      const strip = (text: string) => text.replace(/(?:fn|obj|deep)#\d+/g, "");
+      expect(strip("fn#12|obj#3|deep#7")).toBe("||");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("measures identity overlap and shared content in a real run", () => {
     const sites = probeSites();
     expect(sites).toHaveLength(3);
