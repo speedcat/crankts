@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "study": "Observe agent comparison 2: P vs P+ vs O, scored by measured outcome (evaluation/observe-comparison-2/README.md)",
+  "agentsRun": "2026-10-14/15",
+  "measuredAt": "2026-10-15",
+  "node": "24.21.0",
+  "measurement": "measure-outcome.mjs: allowed files, output checksum, 10 interleaved baseline/candidate pairs after one warm-up each, subject tests",
+  "noiseBand": "dry runs on untouched workspaces: 0.992x (TypeORM), 0.978x (pdf-lib); about +-3% around 1.0 is noise",
+  "runs": [
+    { "runId": "r01", "arm": "P",  "workload": "typeorm-insert", "rep": 1, "baselineMedianMs": 8496, "candidateMedianMs": 6897, "baselineMadMs": 52, "candidateMadMs": 32, "speedup": 1.232, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "no copy of the parameter map per execute; new protected helper, public getParameters() still copies", "toolCallsSelfReported": 18 },
+    { "runId": "r02", "arm": "O",  "workload": "typeorm-insert", "rep": 1, "baselineMedianMs": 8472, "candidateMedianMs": 6902, "baselineMadMs": 73, "candidateMadMs": 50, "speedup": 1.227, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "public getParameters() returns the live map unless the discriminator branch adds values", "toolCallsSelfReported": 12 },
+    { "runId": "r03", "arm": "P",  "workload": "typeorm-insert", "rep": 2, "baselineMedianMs": 8472, "candidateMedianMs": 6849, "baselineMadMs": 36, "candidateMadMs": 37, "speedup": 1.237, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "getQueryAndParameters() passes the live map; public getParameters() unchanged", "toolCallsSelfReported": 22 },
+    { "runId": "r04", "arm": "O",  "workload": "pdflib-modify",  "rep": 2, "baselineMedianMs": 4165, "candidateMedianMs": 3958, "baselineMadMs": 12, "candidateMadMs": 18, "speedup": 1.052, "valid": true, "files": ["src/core/parser/PDFObjectParser.ts"], "lever": "first-byte skip in findEndOfStreamFallback; CharCodes read per byte", "toolCallsSelfReported": 21 },
+    { "runId": "r05", "arm": "O",  "workload": "pdflib-modify",  "rep": 1, "baselineMedianMs": 4174, "candidateMedianMs": 3336, "baselineMadMs": 26, "candidateMadMs": 22, "speedup": 1.251, "valid": true, "files": ["src/core/parser/ByteStream.ts", "src/core/parser/PDFObjectParser.ts"], "lever": "ByteStream.skipUntil over the raw bytes with a module-level stop-byte lookup", "toolCallsSelfReported": 22 },
+    { "runId": "r06", "arm": "O",  "workload": "typeorm-insert", "rep": 2, "baselineMedianMs": 8531, "candidateMedianMs": 7025, "baselineMadMs": 85, "candidateMadMs": 87, "speedup": 1.214, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "public getParameters() returns the live map unless the discriminator branch adds values", "toolCallsSelfReported": 24 },
+    { "runId": "r07", "arm": "P+", "workload": "pdflib-modify",  "rep": 1, "baselineMedianMs": 4143, "candidateMedianMs": 3328, "baselineMadMs": 34, "candidateMadMs": 7,  "speedup": 1.245, "valid": true, "files": ["src/core/parser/PDFObjectParser.ts"], "lever": "first-byte skip plus CharCodes values hoisted once per call; agent measured skip-only at about 4% and then hoisted", "toolCallsSelfReported": 28 },
+    { "runId": "r08", "arm": "P",  "workload": "pdflib-modify",  "rep": 1, "baselineMedianMs": 4173, "candidateMedianMs": 3950, "baselineMadMs": 26, "candidateMadMs": 9,  "speedup": 1.056, "valid": true, "files": ["src/core/parser/PDFObjectParser.ts"], "lever": "first-byte skip in findEndOfStreamFallback; CharCodes read per byte", "toolCallsSelfReported": 21 },
+    { "runId": "r09", "arm": "P+", "workload": "typeorm-insert", "rep": 1, "baselineMedianMs": 8536, "candidateMedianMs": 6954, "baselineMadMs": 75, "candidateMadMs": 34, "speedup": 1.227, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "public getParameters() returns the live map unless the discriminator branch adds values", "toolCallsSelfReported": 21 },
+    { "runId": "r10", "arm": "P+", "workload": "typeorm-insert", "rep": 2, "baselineMedianMs": 8484, "candidateMedianMs": 6878, "baselineMadMs": 68, "candidateMadMs": 33, "speedup": 1.234, "valid": true, "files": ["packages/typeorm/src/query-builder/QueryBuilder.ts"], "lever": "public getParameters() returns the live map unless the discriminator branch adds values", "toolCallsSelfReported": 27 },
+    { "runId": "r11", "arm": "P",  "workload": "pdflib-modify",  "rep": 2, "baselineMedianMs": 4167, "candidateMedianMs": 3329, "baselineMadMs": 9,  "candidateMadMs": 9,  "speedup": 1.252, "valid": true, "files": ["src/core/parser/PDFObjectParser.ts"], "lever": "first-byte prechecks plus the four CharCodes values hoisted to module constants", "toolCallsSelfReported": 18 },
+    { "runId": "r12", "arm": "P+", "workload": "pdflib-modify",  "rep": 2, "baselineMedianMs": 4157, "candidateMedianMs": 3662, "baselineMadMs": 10, "candidateMadMs": 17, "speedup": 1.135, "valid": true, "files": ["src/core/parser/PDFObjectParser.ts"], "lever": "first-byte prechecks; s/e from Keywords[0] per call, CR/LF still read from CharCodes per byte", "toolCallsSelfReported": 19 }
+  ],
+  "armMeans": {
+    "typeorm-insert": { "P": 1.235, "P+": 1.231, "O": 1.220 },
+    "pdflib-modify":  { "P": 1.154, "P+": 1.190, "O": 1.151 }
+  },
+  "findings": {
+    "armEffect": "none: all 12 runs valid; per workload all runs chose the same lever, and arm means differ by less than the within-arm spread",
+    "joinHypothesis": "not supported: O vs P+ is 1.220 vs 1.231 (TypeORM) and 1.151 vs 1.190 (pdf-lib)",
+    "quantityDecidesLever": "did not discriminate: every arm, P included, chose the getParameters copy on TypeORM",
+    "pdflibSpread": "explained by the variant, not the machine: baseline medians are 4143-4174 ms in all six runs; runs that still read the CharCodes enum per byte reached about 1.05x, runs that hoisted it about 1.25x, r12 with partial hoisting 1.135x. Under tsx, CharCodes members are esbuild export getters, the loader artifact the protocol named as a trap, so much of the 1.05-1.25 gap is specific to the tsx-run workload and would likely shrink in a compiled build (not measured)",
+    "feedbackLoop": "agents could time their candidates with the measure script (no profilers); r04 and r08 measured their small gain and attributed it to noise under machine load (r08 reports load averages up to 41); r07 measured skip-only at about 4% and then hoisted the constants",
+    "semantics": "4 of 6 TypeORM runs (both O, both P+) made the public getParameters() return the live map; both P runs kept the public copy and changed only the internal execute path. Not graded; the blind grading was not run"
+  },
+  "notRecorded": "tokens and duration per run (task notifications were not saved); toolCallsSelfReported comes from each agent's final JSON",
+  "blindGrading": "not run; the anonymized kit and key stay in the campaign folder outside the repository",
+  "gate": "v0.4 gate not met; v0.4 not built; project closed (docs/outcome.md)"
+}

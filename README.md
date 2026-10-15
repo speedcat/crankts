@@ -7,7 +7,7 @@
 <p align="center"><strong>Crank up your TS.</strong></p>
 
 > [!IMPORTANT]
-> **CrankTS is a research experiment, not a product.** It started as a TypeScript-to-native offload idea and has become an evidence-and-diagnosis tool. Six external evaluations and several gain measurements have stopped the native direction; the one open bet, whether CrankTS's workload evidence makes an agent better at finding validated speedups, is being tested now. See [Status of the Experiment](#status-of-the-experiment). Report formats and heuristics may change at any time.
+> **CrankTS is a closed research experiment (2026-10-15), not a product, and it is no longer developed.** It started as a TypeScript-to-native offload idea and became an evidence-and-diagnosis tool. Six external evaluations and several gain measurements stopped the native direction. The last open bet was whether CrankTS's runtime evidence makes a coding agent pick better optimizations. It was tested by measured speedup and did not hold: an agent with a raw CPU profile did as well. The write-up is [docs/outcome.md](docs/outcome.md); see also [Status of the Experiment](#status-of-the-experiment). The code stays available as research code.
 
 <p align="center">
   <img src="ressources/crankts-illustration2.png" alt="CrankTS analyzes TypeScript, measures workload behavior, and recommends acceleration opportunities" width="960" />
@@ -27,7 +27,7 @@ The `analyze` command does not execute the analyzed application or rewrite its s
 
 ## Status of the Experiment
 
-*As of 2026-10-13. The decision records are in [docs/plan.md](docs/plan.md#decision-after-the-sixth-review-round-2026-10-11) and [the Observe decision](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe); the data is in [docs/eval-generalization.md](docs/eval-generalization.md).*
+*As of 2026-10-15: **closed.** The write-up is [docs/outcome.md](docs/outcome.md). The decision records are in [docs/plan.md](docs/plan.md#decision-after-the-sixth-review-round-2026-10-11), [the Observe decision](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe), and [the final decision](docs/plan.md#final-decision-2026-10-15-project-closed); the data is in [docs/eval-generalization.md](docs/eval-generalization.md).*
 
 ### What the evidence says
 
@@ -49,13 +49,14 @@ Six projects were profiled and reviewed (Knip, TypeDoc, ESLint, Effect, noble-ha
 | `TransformationPlan` (v0.2.7) | **Parked** |
 | Guarded specialization | **On hold** until a TypeScript-only specialization of a hot spot leaves a real gap |
 
-### What is happening now: CrankTS Observe
+### The last track: CrankTS Observe (closed 2026-10-15)
 
-The seventh review round (2026-10-13) moves CrankTS from pattern recognition and advice to **code-level runtime observability for coding agents**. CrankTS runs a real workload, attributes CPU, executions, and allocations to stable TypeScript code entities with observed caller edges, and serves the result over CLI, JSON, and MCP. It reports measurements and does not interpret them. Plan: [docs/observe-plan.md](docs/observe-plan.md); decision record: [docs/plan.md](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe).
+The seventh review round (2026-10-13) moved CrankTS from pattern recognition and advice to **code-level runtime observability for coding agents**. CrankTS runs a real workload, attributes CPU, executions, and allocations to stable TypeScript code entities with observed caller edges, and serves the result over CLI, JSON, and MCP. It reports measurements and does not interpret them. Plan: [docs/observe-plan.md](docs/observe-plan.md); decision record: [docs/plan.md](docs/plan.md#decision-after-the-seventh-review-round-2026-10-13-observe).
 
 - **M0 done** (2026-10-13): the entity model and CPU path. On IntentWeave, 100% of own samples map to entities ([evaluation/observe-m0-intentweave.json](evaluation/observe-m0-intentweave.json)). **M1–M5 built**: `crankts observe -- <cmd>` writes a session with CPU attribution, exact execution counts, allocations, and per-call estimates ([M2](evaluation/observe-m2-intentweave.json), [M3](evaluation/observe-m3-intentweave.json)). The CLI queries and `crankts mcp` serve it to agents ([M4](evaluation/observe-m4-intentweave.json)). **Agent comparison (2026-10-14):** fresh agents scored 10/10 with Observe, 9/10 with the raw profile, and 8/10 with the `analyze` JSON on IntentWeave. All found the same #1 hotspot and fix; only the Observe agents quantified it with calls, iterations, and allocation. The 10 vs 9 over the raw profile comes from a rubric point only Observe could earn, so the v0.4 gate is not decided ([details](docs/observe-agent-comparison.md)). M5 (quality checks, schemas, toolchain matrix, overhead, CI) is done ([M5](evaluation/observe-m5-intentweave.json)).
+- **Agent comparison 2 (2026-10-15), scored by measured speedup:** 12 valid runs on TypeORM and pdf-lib with three arms: P (raw CPU profile), P+ (raw CPU, coverage, and heap recordings without CrankTS), and O (Observe). No arm was better. Every run chose the same lever per workload, and O did not beat P+ (TypeORM 1.235 / 1.231 / 1.220, pdf-lib 1.154 / 1.190 / 1.151). The v0.4 gate is not met, and the project is closed ([results](docs/observe-agent-comparison.md#comparison-2-results-2026-10-15)).
 - **Gates:** after M0, the output must be clearly easier for an agent to use than today's `analyze --profile` JSON. After M4, an agent must find hotspots and caller paths through MCP alone. If the M0 gate fails, CrankTS ends as a research write-up.
-- **Agent ablation:** parked and not run. The prepared material stays in [evaluation/ablation](evaluation/ablation); the protocol is [docs/ablation-protocol.md](docs/ablation-protocol.md).
+- **Agent ablation:** not run; superseded by the two comparisons. The prepared material stays in [evaluation/ablation](evaluation/ablation); the protocol is [docs/ablation-protocol.md](docs/ablation-protocol.md).
 
 Native offload is no longer a promised direction. The earlier statement that CrankTS is intended to perform qualified transformations itself is withdrawn.
 
@@ -151,7 +152,7 @@ flowchart TD
   Agent["Optional coding agent<br/>explain evidence; assist unsupported cases"] -.-> Advisor
 ```
 
-Advisor-to-transformer is a mechanical transition gated by proof obligations, not an agent hop. An optional coding agent can explain findings and propose experiments; it cannot raise confidence or authorize a transformation. Whether an agent working from CrankTS's evidence beats one working from a plain profile is what the Observe gates check (the blinded ablation is parked).
+Advisor-to-transformer is a mechanical transition gated by proof obligations, not an agent hop. An optional coding agent can explain findings and propose experiments; it cannot raise confidence or authorize a transformation. Whether an agent working from CrankTS's evidence beats one working from a plain profile was tested in two comparisons; on the tested workloads it did not ([outcome](docs/outcome.md)).
 
 ### Deterministic Transformation
 
@@ -208,9 +209,9 @@ Detailed measurements, caveats, and follow-up gates are in [the evaluation histo
 | Evaluations #1–#6 | Done: Knip, TypeDoc, ESLint, Effect, noble-hashes, a closed-source monorepo ([generalization review](docs/eval-generalization.md)) |
 | Decision (2026-10-11) | Taken: evidence and diagnosis go to validation; native tier, native thread pool, and the hybrid tier are stopped |
 | Agent ablation | **Parked** (2026-10-13), not run; material kept |
-| **Observe (v0.3 → v0.4)** | **Current**: M0–M5 done; agent comparison: M0 gate and M4 pass, v0.4 gate not decided; next: P / P+ / O comparison scored by measured speedup ([comparison](docs/observe-agent-comparison.md)) |
+| **Observe (v0.3 → v0.4)** | **Closed** (2026-10-15): M0–M5 done; M0 gate and M4 pass; v0.4 gate not met in the P / P+ / O comparison scored by measured speedup, so v0.4 is not built ([comparison](docs/observe-agent-comparison.md)) |
 | v0.2.7 `TransformationPlan`, v0.3 automatic offload | **Parked / no longer planned** |
-| Exit | If the Observe M0 gate fails, the project ends as a research write-up |
+| Exit | **Taken** (2026-10-15): the project ends as a research write-up ([outcome](docs/outcome.md)) |
 
 Other backends, including WebAssembly and native JIT, are not planned.
 

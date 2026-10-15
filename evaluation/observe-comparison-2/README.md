@@ -1,5 +1,7 @@
 # Observe agent comparison 2: P vs P+ vs O, scored by measured outcome
 
+**Results (2026-10-15):** all 12 runs valid, no difference between the arms; see [results.json](results.json) and [the comparison document](../../docs/observe-agent-comparison.md#comparison-2-results-2026-10-15).
+
 Follows [observe-agent-comparison.md](../../docs/observe-agent-comparison.md), whose v0.4 gate was not decided: the first comparison's 10 vs 9 came from a rubric point only Observe could earn, and the scale data changed no decision. This protocol is fixed before any run.
 
 ## Question
