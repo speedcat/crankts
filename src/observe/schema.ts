@@ -27,7 +27,7 @@ export const entitySchema: z.ZodType<Entity> = z.object({
     }),
   }),
   kind: z.enum([
-    "function", "method", "getter", "setter", "constructor", "arrow", "function-expression", "module-init",
+    "function", "method", "getter", "setter", "constructor", "arrow", "function-expression", "module-init", "generated",
     "dependency", "runtime", "native", "gc", "program", "idle", "unmapped",
   ]),
   source: z.object({

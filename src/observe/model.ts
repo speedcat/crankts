@@ -23,7 +23,9 @@ export interface EntityIdentity {
 
 export type OwnEntityKind =
   | "function" | "method" | "getter" | "setter" | "constructor"
-  | "arrow" | "function-expression" | "module-init";
+  | "arrow" | "function-expression" | "module-init"
+  /** Code a loader or transpiler generated for the module (e.g. esbuild's CommonJS export getters under tsx). */
+  | "generated";
 
 export type PseudoEntityKind = "dependency" | "runtime" | "native" | "gc" | "program" | "idle" | "unmapped";
 

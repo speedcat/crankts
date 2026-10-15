@@ -55,7 +55,12 @@ Arm O used the query CLI with `--json`, not an MCP transport, because subagents 
 
 - **M0 gate: pass.** The Observe output was clearly easier for an agent to use than the `analyze --profile` JSON: +2 points in each run, 21% fewer tokens, 24% less time, fewer tool calls, and no closure-merging ambiguity.
 - **M4 acceptance: pass,** with the CLI-instead-of-MCP caveat above. Both O runs found the top hotspots and their caller paths using only the query interface, without opening raw files.
-- **v0.4 gate: formally met, with a small margin.** O beat the raw profile 10 vs 9 in both runs and was faster. But a capable agent with the raw profile and the source found the same top 3 and the same fixes. Observe's advantage here is measured scale (counts and allocation) and speed, not finding problems a profile hides. This comparison did not test what v0.4 adds: static call edges and semantic annotations.
+- **v0.4 gate: not decided** (corrected after review on 2026-10-14; the first version said "formally met"). The 10 vs 9 gap is entirely R2's second point. Both P runs earned everything else, R6 included. R2's second point needs counts that only arm O's material contains, so the rubric built the gap in; it was not measured. Without it the score is 9 vs 9. In substance it was a tie: the same top 3, mechanism, caller path, and fix. O's shorter duration (98–102 s vs 124–137 s) is not evidence at n = 2. This comparison also did not test what v0.4 adds (static call edges and semantic annotations).
+
+## What the result does not show
+
+- **The counts changed no decision.** Only O had the 11,413 calls, 51 M callback executions, and 18.6 GB of allocation, yet all six runs proposed the same fix. On this task the scale gave the answer better support, not a better answer. The rubric scored what agents reported, not whether a fix works; the agents could not run the workload.
+- **Join or just more data.** O had three measurements, P one. Whether O's edge comes from CrankTS's join (one model across CPU, coverage, and heap, mapped to entities) or simply from having more raw data stays open. An arm **P+** separates the two: the raw `.cpuprofile` plus the raw coverage and heap files, without CrankTS. If O only matches P+, the collector settings are the product, not the model.
 
 ## Caveats
 
@@ -65,6 +70,15 @@ Arm O used the query CLI with `--json`, not an MCP transport, because subagents 
 - **Unequal material:** O had three measurements (CPU, coverage, heap), while P had one CPU profile. That asymmetry is intended, since it compares Observe against what a profiler gives, but it is not a like-for-like data comparison.
 - **Two counts of tool calls:** the self-reported counts in the agents' JSON differ slightly from the counts in the harness notification; the table uses the notification.
 
-## Recommendation for v0.4
+## Next comparison (before any v0.4 work)
 
-The gate is met, but the evidence for v0.4's specific additions is thin. Before 8–10 days of v0.4 work, it is worth one more comparison where a raw profile is likely to struggle and static context could matter: a dependency- or async-heavy workload in unfamiliar code (e.g. one of the parked ablation's subjects, such as pdf-lib or TypeORM), with the same three arms.
+There is no evidence for v0.4 yet. The next comparison should decide it, on unfamiliar code where a raw profile is likely to struggle: a dependency- or async-heavy workload such as pdf-lib or TypeORM (subjects of the parked ablation).
+
+- **Arms:** P (raw CPU profile), **P+** (raw CPU profile plus raw coverage and heap files, no CrankTS), O (Observe), and, if v0.4 is to be justified, **O+S** (Observe plus a prototype of static annotations).
+- **A task where quantity decides:** two plausible hotspots, one cheap per call but multiplied, the other expensive per call, with different payoffs. Only an agent that knows the counts picks the right one.
+- **Score the outcome, not the report:** agents implement their fix; the speedup is measured with hyperfine; the project's tests must stay green. That removes the rubric asymmetry above.
+- **Partly blind grading:** anonymized answers in shuffled order, scored by a second model or person.
+
+The 8–10 days for v0.4 are worth spending only if O or O+S beats P+ on measured outcome.
+
+**Prepared (2026-10-14), without O+S:** [evaluation/observe-comparison-2](../evaluation/observe-comparison-2/README.md). It covers 12 runs (P, P+, O × TypeORM insert and pdf-lib modify × 2) with isolated workspaces, an outcome harness (allowed files, checksum, interleaved timing, tests), and a blind-grading kit. The agents have not run yet.

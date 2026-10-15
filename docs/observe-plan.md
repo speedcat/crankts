@@ -1,6 +1,6 @@
 # CrankTS Observe – Implementation Plan (M0 → v0.3 → v0.4)
 
-Status: 2026-10-14 · **M0–M5 done; agent comparison run** ([observe-agent-comparison.md](observe-agent-comparison.md)): M0 gate pass, M4 acceptance pass, v0.4 gate formally met with a small margin. Recommended before v0.4: one comparison on an unfamiliar, dependency- or async-heavy workload. Replaces the v0.2 roadmap in [plan.md](plan.md) (decision record: [seventh review round](plan.md#decision-after-the-seventh-review-round-2026-10-13-observe)). Background: [review.md](review.md).
+Status: 2026-10-14 · **M0–M5 done; agent comparison run** ([observe-agent-comparison.md](observe-agent-comparison.md)): M0 gate pass, M4 acceptance pass, **v0.4 gate not decided**: O's 10 vs 9 over the raw profile came entirely from a rubric point only O could earn. Before v0.4: a comparison with arms P, P+ (raw coverage and heap, no CrankTS), O (and O+S), scored by measured speedup on unfamiliar code (see the comparison document). Replaces the v0.2 roadmap in [plan.md](plan.md) (decision record: [seventh review round](plan.md#decision-after-the-seventh-review-round-2026-10-13-observe)). Background: [review.md](review.md).
 
 ## 1. Goal
 
