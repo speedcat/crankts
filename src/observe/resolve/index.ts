@@ -267,6 +267,10 @@ export class FrameResolver {
     }
     const location = this.locate(frame.url ?? "", frame.lineNumber ?? -1, frame.columnNumber ?? -1);
     if (!location) return this.unmapped(frame.url ?? "");
+    // A real position that the module's source map does not cover is code the loader generated (export getters, helpers).
+    if (location.approximate && location.offset === undefined && (frame.lineNumber ?? -1) >= 0 && (frame.columnNumber ?? -1) >= 0) {
+      return this.own(location.module, location.module.generated, false);
+    }
     const indexed = location.offset === undefined ? (location.module.entities[0] as IndexedEntity) : entityAtOffset(location.module, location.offset);
     return this.own(location.module, indexed, location.approximate);
   }

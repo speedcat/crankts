@@ -1,6 +1,6 @@
 # CrankTS Observe – Implementation Plan (M0 → v0.3 → v0.4)
 
-Status: 2026-10-14 · **M0–M5 done; agent comparison run** ([observe-agent-comparison.md](observe-agent-comparison.md)): M0 gate pass, M4 acceptance pass, v0.4 gate formally met with a small margin. Recommended before v0.4: one comparison on an unfamiliar, dependency- or async-heavy workload. Replaces the v0.2 roadmap in [plan.md](plan.md) (decision record: [seventh review round](plan.md#decision-after-the-seventh-review-round-2026-10-13-observe)). Background: [review.md](review.md).
+Status: 2026-10-15 · **Closed.** M0–M5 are done; v0.4 and v0.5 are not built. The second agent comparison (P, P+, O on TypeORM and pdf-lib, scored by measured speedup) found no difference between the arms, so the v0.4 gate is not met ([comparison 2 results](observe-agent-comparison.md#comparison-2-results-2026-10-15)). The project ends as a research write-up: [outcome.md](outcome.md). Before that, the first comparison had passed the M0 gate and the M4 acceptance and left the v0.4 gate undecided ([observe-agent-comparison.md](observe-agent-comparison.md)). This plan replaced the v0.2 roadmap in [plan.md](plan.md) (decision record: [seventh review round](plan.md#decision-after-the-seventh-review-round-2026-10-13-observe)). Background: [review.md](review.md). Sections 11 and 12 below stay as the plan that was not carried out.
 
 ## 1. Goal
 

@@ -1,6 +1,6 @@
 # Plan: CrankTS on CrankTS – a Second Offload Shape and v0.2
 
-Status: 2026-10-13. **This document is now the v0.2 history and decision record. The current plan is [observe-plan.md](observe-plan.md)** (see [the seventh review round](#decision-after-the-seventh-review-round-2026-10-13-observe)). Original status, 2026-10-10: this plan was the working basis for the next implementation steps. It does not change existing claims in the [README](../README.md) or [analysis-and-evaluation.md](analysis-and-evaluation.md); measurement results continue to land as JSON under `evaluation/` and as a section in the evaluation history.
+Status: 2026-10-15. **The project is closed** (see [the final decision](#final-decision-2026-10-15-project-closed) and [outcome.md](outcome.md)). This document is the v0.2 history and decision record; the Observe plan that followed is [observe-plan.md](observe-plan.md) (see [the seventh review round](#decision-after-the-seventh-review-round-2026-10-13-observe)). Original status, 2026-10-10: this plan was the working basis for the next implementation steps. It does not change existing claims in the [README](../README.md) or [analysis-and-evaluation.md](analysis-and-evaluation.md); measurement results continue to land as JSON under `evaluation/` and as a section in the evaluation history.
 
 ## Thesis
 
@@ -553,6 +553,20 @@ The seventh round ([review.md](review.md)) moves CrankTS from pattern recognitio
 | Native backend | feature freeze, as decided in the sixth round |
 
 **Gates now:** the Observe M0 gate (the Observe output on IntentWeave is clearly easier for an agent to use than the `analyze --profile` JSON) and the M4 gate (an agent finds hotspots and caller paths through MCP alone, plus a short non-blinded comparison against the raw profile). They replace the ablation as the product gate. If the M0 gate fails, the exit criterion above applies in spirit: CrankTS ends as a research write-up.
+
+### Final decision (2026-10-15): project closed
+
+The M0 gate and the M4 acceptance passed. The first comparison left the v0.4 gate undecided, because O's lead over the raw profile came from a rubric point only O could earn. The second comparison scored the arms by measured speedup on two unfamiliar workloads: P (raw CPU profile), P+ (the same raw recordings without CrankTS), and O (Observe). It found no difference between them. Every arm chose the same lever per workload, and O did not beat P+ ([results](observe-agent-comparison.md#comparison-2-results-2026-10-15)).
+
+| Track | Status |
+| --- | --- |
+| Observe v0.4 (CodeEntityGraph), v0.5 (matching, `diff`) | **not built** |
+| Observe M0–M5, `analyze`, the evidence probe | kept in the repository as they are; no further development |
+| Native backend, Kernel IR, `extract` | stays frozen; kept as research code |
+| Agent ablation (P/E/H) | **not run**; superseded by the two comparisons |
+| Runtime architecture visualization | not started; it would be a new project with its own stop criterion, not a continuation |
+
+The exit criterion of the sixth round applies: CrankTS ends as a research result. The write-up is [outcome.md](outcome.md).
 
 ### Open point: a faster TypeScript checker
 

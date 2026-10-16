@@ -46,6 +46,8 @@ export interface ModuleIndex {
   readonly language: "typescript" | "javascript";
   /** Sorted by start; the module-init entity is first. */
   readonly entities: readonly IndexedEntity[];
+  /** Positions with no source-map entry inside a transpiled module (loader-generated code); never matched by offset. */
+  readonly generated: IndexedEntity;
   readonly lineStarts: readonly number[];
   readonly parseErrors: number;
   /** The parsed text, for checks against generated code (source-map column extrapolation). */
@@ -62,6 +64,7 @@ const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "Ar
 const TS_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts"]);
 
 export const MODULE_INIT_NAME = "(module)";
+export const GENERATED_NAME = "(generated)";
 
 export function indexModuleSource(
   source: string,
@@ -231,6 +234,18 @@ export function indexModuleSource(
     packageName: options.packageName,
     language,
     entities: [moduleEntity, ...entities],
+    generated: {
+      key: keyPrefix + GENERATED_NAME,
+      kind: "generated",
+      qualifiedName: GENERATED_NAME,
+      nameSource: "context",
+      start: 0,
+      end: 0,
+      headerStart: 0,
+      bodyStart: 0,
+      async: false,
+      flags: [],
+    },
     lineStarts: computeLineStarts(source),
     parseErrors: parsed.errors.length,
     source,

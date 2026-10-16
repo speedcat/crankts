@@ -90,6 +90,7 @@ export function aggregateCoverage(
   const topRanges = options.topRanges ?? 5;
   const best = new Map<string, Candidate>();
   const candidateCount = new Map<string, number>();
+  const generatedCalls = new Map<string, { module: ModuleIndex; calls: number }>();
   let ownScripts = 0;
   let ownFunctions = 0;
   let matchedFunctions = 0;
@@ -112,6 +113,15 @@ export function aggregateCoverage(
         if (location?.offset !== undefined && !location.approximate) {
           const entity = entityWithHeaderAt(location.module, location.offset);
           if (entity) candidate = { module: location.module, entity, url: script.url, fn, distance: location.offset - entity.start };
+        } else if (location && location.offset === undefined) {
+          // No source-map entry: code the loader generated for this module (e.g. esbuild export getters). Its calls are
+          // summed into the module's (generated) entity, the same entity the CPU run attributes those frames to.
+          const generated = location.module.generated;
+          const entry = generatedCalls.get(generated.key) ?? { module: location.module, calls: 0 };
+          entry.calls += range.count;
+          generatedCalls.set(generated.key, entry);
+          matchedFunctions += 1;
+          return;
         }
       }
       if (!candidate) {
@@ -139,6 +149,10 @@ export function aggregateCoverage(
       hotRanges: hotRanges(candidate, resolver, topRanges),
       flags,
     });
+  }
+  for (const [key, entry] of generatedCalls) {
+    resolver.register(entry.module, entry.module.generated);
+    executions.set(key, { functionExecutionCount: entry.calls, hotRanges: [], flags: [] });
   }
   return {
     executions,
