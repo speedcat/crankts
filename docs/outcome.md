@@ -25,6 +25,14 @@ Sources: [eval-generalization.md](eval-generalization.md), [analysis-and-evaluat
 - **A capable coding agent with a CPU profile and the source finds the same levers.** In both comparisons, more data (counts, allocation) and CrankTS's model gave better-supported answers but did not change which fix was chosen or how much it gained.
 - **What the comparisons cover:** two comparisons, three workloads, one model, n = 2 per arm. On the tested workloads, the agents found the levers without CrankTS. They do not show that runtime evidence can never help.
 
+## Why the target language mattered less than the data model
+
+Moving existing TypeScript to Rust fails mostly on the data model, not on the compiler. TypeScript code is full of cyclic object graphs: parent pointers, objects that refer to each other, maps of objects. Rust's borrow checker rules these out. So CrankTS's lowering had to change the data representation first: CSR arrays (`offsets`/`neighbors`) for `GRAPH_BATCH`, interned strings, prepared state. Only kernels with packable, self-contained data passed, and no hot function from a real application did.
+
+Anders Hejlsberg gave the same reason in an interview for porting the TypeScript compiler to Go rather than Rust. The compiler is full of circular data structures, and Rust would have meant a rewrite with new problems instead of a port. He also said Rust would not have produced better code or better concurrency gains. Hand-written Rust here reached 1.75× over V8. tsgo's large gain comes from native code together with shared-memory parallelism across a whole compiler, not from the language alone.
+
+A garbage-collected target such as Go would have made CrankTS's lowering much easier, since object graphs translate almost directly. It would have made in-process integration harder, though. There is no Go counterpart to napi-rs. cgo calls cost a multiple of a Rust FFI call, cgo's pointer rules force copies at the boundary, and the process then holds a second runtime with its own garbage collector, scheduler, and threads. Region-level offload depends on cheap calls and cheap data transfer, so Go fits process-level boundaries better. That is how tsgo is used: as a separate process for a whole subsystem, not for single regions inside a Node application. Neither choice changes the Amdahl ceiling above. The practical rule for mixed TypeScript/Rust code: use Rust where the data has clear ownership, such as parsers, compute kernels, storage, and crypto, and expect a rewrite rather than a port.
+
 ## Lessons for evaluating agent tools
 
 - **A rubric point only one arm can earn measures the material, not the effect.** Comparison 1's lead came entirely from such a point.
